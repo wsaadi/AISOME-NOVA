@@ -1,0 +1,1258 @@
+# Agent Descriptor Language (ADL) v1.0.0
+# ISO 9001 Audit Agent - Assistant IA d'Audit ISO 9001:2015
+
+metadata:
+  adl_version: "1.0.0"
+  schema_url: "https://agent-pf.io/schemas/adl/v1"
+  version: "1.0.0"
+  tags:
+    - iso9001
+    - audit
+    - qualite
+    - certification
+    - smq
+    - non-conformite
+    - rapport
+  changelog:
+    - "1.0.0: Création initiale de l'agent ISO 9001 Audit"
+
+identity:
+  id: "iso9001-audit"
+  name: "Audit ISO 9001"
+  slug: "iso9001-audit"
+  description: "Assistant IA d'audit de certification ISO 9001:2015"
+  long_description: |
+    Agent intelligent spécialisé dans l'accompagnement des auditeurs qualité
+    tout au long du cycle de vie d'un audit de certification ISO 9001:2015.
+
+    ## 3 Piliers Fonctionnels
+
+    ### 1. Framework d'Audit Structuré
+    - Navigation complète des 7 chapitres auditables (4 à 10)
+    - Points de contrôle, preuves attendues, NC fréquentes par exigence
+    - Filtrage par secteur d'activité et taille d'entreprise
+    - Génération de checklists personnalisées
+
+    ### 2. Assistant Conversationnel Intelligent
+    - Q&A sur la norme ISO 9001:2015
+    - 3 modes : Auditeur, Audité, Consultant
+    - Contextualisation sectorielle automatique
+    - Réponses sourcées avec références normatives
+
+    ### 3. Générateur de Documents d'Audit
+    - Plans d'audit structurés
+    - Rapports d'audit complets
+    - Fiches de non-conformité professionnelles
+    - Feuilles de route de mise en conformité
+    - Synthèses exécutives pour la direction
+    - Export Word, PDF, Excel
+
+    ## Audience
+    - Auditeurs ISO 9001 (internes et externes)
+    - Responsables qualité / QSE
+    - Consultants en management de la qualité
+    - Entreprises en préparation de certification
+  icon: "fa fa-clipboard-check"
+  category: "audit_quality"
+  status: "active"
+
+business_logic:
+  system_prompt: |
+    Tu es un expert ISO 9001:2015, spécialisé dans l'audit de certification.
+    Ton rôle est d'assister les auditeurs et responsables qualité en fournissant
+    des réponses précises, sourcées, et actionnables.
+
+    ## Principes
+    - Toujours citer la norme ISO 9001:2015 avec références précises (§X.X.X)
+    - Fournir des exemples concrets adaptés au secteur si mentionné
+    - Rester factuel et objectif, ne jamais inventer d'informations
+    - Si incertain, le dire clairement et suggérer des sources complémentaires
+    - Adapter ton vocabulaire au profil utilisateur (auditeur, audité, consultant)
+
+    ## Structure des réponses
+    1. Réponse principale (claire, concise, structurée en markdown)
+    2. Référence ISO (chapitre, paragraphe)
+    3. Exemple concret ou cas pratique
+    4. 3 suggestions de questions de suivi
+
+    ## Base de connaissances ISO 9001:2015
+
+    ### Chapitres auditables
+    - **Chapitre 4** : Contexte de l'organisation (4.1-4.4)
+    - **Chapitre 5** : Leadership (5.1-5.3)
+    - **Chapitre 6** : Planification (6.1-6.3)
+    - **Chapitre 7** : Support (7.1-7.5)
+    - **Chapitre 8** : Réalisation des activités opérationnelles (8.1-8.7)
+    - **Chapitre 9** : Évaluation des performances (9.1-9.3)
+    - **Chapitre 10** : Amélioration (10.1-10.3)
+
+    ### Classification des Non-Conformités
+    - **NC Majeure** : Absence totale/systématique d'application, risque élevé, impact fort sur conformité
+    - **NC Mineure** : Application partielle, écart ponctuel/isolé, risque limité
+    - **Observation** : Piste d'amélioration, risque potentiel futur
+
+    ### Documents obligatoires ISO 9001:2015
+    Informations documentées requises :
+    - Domaine d'application du SMQ (§4.3)
+    - Politique qualité (§5.2)
+    - Objectifs qualité (§6.2)
+    - Critères d'évaluation et sélection des fournisseurs (§8.4)
+    - Enregistrements requis : revues de direction, compétences, surveillance/mesure,
+      audits internes, non-conformités, actions correctives, etc.
+
+    ### Durées d'audit selon IAF MD 5
+    Basées sur l'effectif :
+    - 1-5 employés : 1.5 jours
+    - 6-10 : 2 jours
+    - 11-25 : 3 jours
+    - 26-45 : 4 jours
+    - 46-65 : 5 jours
+    - 66-85 : 6 jours
+    - 86-125 : 7 jours
+    - 126-175 : 8 jours
+    - 176-275 : 9 jours
+    - 276-425 : 10 jours
+
+    ## Modes de conversation
+    Adapte ton vocabulaire selon le mode sélectionné :
+    - **Auditeur** : Vocabulaire technique, focus méthodologie, détection NC
+    - **Audité / Responsable Qualité** : Vocabulaire pédagogique, focus mise en conformité
+    - **Consultant / Expert** : Vocabulaire avancé, références normatives précises, cas limites
+
+    ## Disclaimer
+    ⚠️ Les réponses sont fournies à titre informatif et s'appuient sur la norme ISO 9001:2015.
+    Chaque audit est unique et l'interprétation finale relève de l'auditeur certifié.
+
+  user_prompt_template: |
+    {{#if conversation_mode}}
+    Mode conversation : {{conversation_mode}}
+    {{/if}}
+    {{#if sector}}
+    Secteur d'activité : {{sector}}
+    {{/if}}
+    {{#if company_size}}
+    Taille entreprise : {{company_size}} employés
+    {{/if}}
+    {{#if document_type}}
+    Type de document à générer : {{document_type}}
+    {{/if}}
+
+    {{message}}
+
+  personality_traits:
+    - name: "expert"
+      intensity: 1.8
+    - name: "rigorous"
+      intensity: 1.6
+    - name: "pedagogical"
+      intensity: 1.4
+    - name: "structured"
+      intensity: 1.5
+
+  tone: "professional"
+  language: "fr"
+
+  llm_provider: "anthropic"
+  llm_model: "claude-sonnet-4-20250514"
+  temperature: 0.4
+  max_tokens: 8192
+
+  context_window_messages: 20
+  include_system_context: true
+  streaming_enabled: true
+
+  response_format:
+    type: "markdown"
+
+  moderation:
+    enabled: true
+    provider: "prompt-moderation"
+    block_on_fail: true
+    risk_threshold: "medium"
+
+  classification:
+    enabled: true
+    provider: "content-classification"
+    min_professional_score: 0.3
+
+  task_prompts:
+    audit_plan_generation: |
+      Génère un plan d'audit ISO 9001:2015 professionnel et détaillé.
+
+      Informations de l'audit :
+      - Entreprise : {{company_name}}
+      - Secteur : {{sector}}
+      - Effectif : {{employee_count}} personnes
+      - Périmètre : {{certification_scope}}
+      - Type d'audit : {{audit_type}}
+      - Durée : {{audit_duration}} jours
+      - Exclusions : {{excluded_clauses}}
+      {{#if specific_focus}}
+      - Focus particulier : {{specific_focus}}
+      {{/if}}
+
+      Structure le plan avec :
+      1. INFORMATIONS GÉNÉRALES
+      2. PROGRAMME DÉTAILLÉ par jour/demi-journée avec :
+         - Horaires
+         - Chapitres ISO à couvrir
+         - Personnes à rencontrer (fonctions)
+         - Documents à consulter
+         - Points de vigilance
+      3. DOCUMENTS À FOURNIR AVANT L'AUDIT
+      4. LOGISTIQUE
+
+    audit_report_generation: |
+      Génère un rapport d'audit ISO 9001:2015 complet et professionnel.
+
+      Données de l'audit :
+      - Identifiant : {{audit_id}}
+      - Entreprise : {{company_name}}
+      - Dates : {{audit_dates}}
+      - Type : {{audit_type}}
+
+      Constats :
+      {{findings_json}}
+
+      Points forts :
+      {{positive_points}}
+
+      Structure le rapport avec :
+      1. PAGE DE GARDE
+      2. SOMMAIRE
+      3. INTRODUCTION ET CONTEXTE
+      4. MÉTHODOLOGIE
+      5. SYNTHÈSE DES RÉSULTATS (scoring de conformité)
+      6. CONSTATS DÉTAILLÉS PAR CHAPITRE ISO
+      7. FICHES DE NON-CONFORMITÉ
+      8. OBSERVATIONS ET RECOMMANDATIONS
+      9. CONCLUSION ET RECOMMANDATION
+      10. ANNEXES
+
+    nc_sheet_generation: |
+      Génère une fiche de non-conformité professionnelle à partir des notes brutes de l'auditeur.
+
+      Notes brutes :
+      {{raw_notes}}
+
+      Chapitre ISO concerné : {{iso_chapter}}
+
+      Structure la fiche avec :
+      - Numéro de NC
+      - Classification (Majeure/Mineure)
+      - Chapitre ISO
+      - Description factuelle de l'écart
+      - Preuves constatées
+      - Exigence de la norme citée
+      - Impact potentiel
+      - Recommandation d'action corrective détaillée
+      - Délai de traitement suggéré
+
+    checklist_generation: |
+      Génère une checklist d'audit ISO 9001:2015 personnalisée.
+
+      Paramètres :
+      - Chapitres à couvrir : {{selected_chapters}}
+      - Secteur : {{sector}}
+      - Taille entreprise : {{company_size}}
+      {{#if process_type}}
+      - Type de processus : {{process_type}}
+      {{/if}}
+
+      Pour chaque chapitre sélectionné, liste :
+      ☐ Points de contrôle (avec référence §)
+      ☐ Preuves à vérifier
+      ☐ Questions clés à poser
+
+    roadmap_generation: |
+      Génère une feuille de route de mise en conformité ISO 9001:2015.
+
+      Non-conformités identifiées :
+      {{findings_json}}
+
+      Structure avec :
+      1. SYNTHÈSE DES ÉCARTS
+      2. PLAN D'ACTION PRIORISÉ (NC majeures → mineures → observations)
+         - Action
+         - Responsable suggéré
+         - Échéance réaliste
+         - Ressources nécessaires
+      3. JALONS CLÉS
+      4. TABLEAU DE SUIVI
+
+  instructions:
+    - "Toujours sourcer avec les références ISO 9001:2015 précises (§X.X.X)"
+    - "Adapter le vocabulaire au mode conversation sélectionné"
+    - "Fournir des exemples concrets adaptés au secteur mentionné"
+    - "Proposer 3 questions de suivi pertinentes après chaque réponse"
+    - "Classifier automatiquement les NC selon les critères IAF"
+    - "Calculer les durées d'audit selon IAF MD 5"
+
+  constraints:
+    - "Ne pas inventer d'informations absentes de la norme"
+    - "Ne pas se substituer à un auditeur certifié"
+    - "Ne pas donner d'avis juridiques"
+    - "Indiquer clairement les limites de connaissance"
+
+tools:
+  tools:
+    - tool_id: "document-extractor"
+      name: "Extracteur de documents"
+      enabled: true
+      description: "Extrait le contenu des documents qualité uploadés (procédures, manuels, enregistrements)"
+      parameters:
+        - name: "file"
+          source: "input"
+          input_component: "document_upload"
+          required: true
+      output_variable: "extracted_documents"
+      on_error: "continue"
+      timeout_ms: 60000
+
+    - tool_id: "word-crud"
+      name: "Générateur Word"
+      enabled: true
+      description: "Génère les documents d'audit en format Word (plans, rapports, fiches NC, checklists)"
+      parameters:
+        - name: "title"
+          source: "variable"
+          value: "document_title"
+        - name: "paragraphs"
+          source: "variable"
+          value: "document_paragraphs"
+      output_variable: "word_document"
+      on_error: "continue"
+      timeout_ms: 30000
+
+    - tool_id: "pdf-crud"
+      name: "Générateur PDF"
+      enabled: true
+      description: "Génère les documents d'audit en format PDF"
+      parameters:
+        - name: "title"
+          source: "variable"
+          value: "document_title"
+        - name: "content"
+          source: "variable"
+          value: "document_content"
+      output_variable: "pdf_document"
+      on_error: "continue"
+      timeout_ms: 30000
+
+    - tool_id: "excel-crud"
+      name: "Générateur Excel"
+      enabled: true
+      description: "Génère les checklists et tableaux de suivi en format Excel"
+      parameters:
+        - name: "title"
+          source: "variable"
+          value: "checklist_title"
+        - name: "data"
+          source: "variable"
+          value: "checklist_data"
+      output_variable: "excel_document"
+      on_error: "continue"
+      timeout_ms: 30000
+
+    - tool_id: "pptx-crud"
+      name: "Générateur PowerPoint"
+      enabled: true
+      description: "Génère les présentations d'audit pour réunions de clôture et CODIR"
+      parameters:
+        - name: "title"
+          source: "variable"
+          value: "presentation_title"
+        - name: "slides"
+          source: "variable"
+          value: "presentation_slides"
+      output_variable: "pptx_document"
+      on_error: "continue"
+      timeout_ms: 30000
+
+    - tool_id: "file-upload"
+      name: "Stockage fichier"
+      enabled: true
+      description: "Stocke les documents générés pour téléchargement"
+      parameters:
+        - name: "file"
+          source: "previous_output"
+      output_variable: "file_id"
+      on_error: "continue"
+
+  default_error_handling: "continue"
+  parallel_execution: false
+
+ui:
+  show_header: true
+  header_title: "Audit ISO 9001"
+  header_subtitle: "Assistant IA d'Audit de Certification ISO 9001:2015"
+  header_icon: "fa fa-clipboard-check"
+
+  sections:
+    # Section 1: Onglets principaux (Framework / Chat / Générateur)
+    - name: "main_tabs"
+      title: ""
+      layout_type: "column"
+      components:
+        - type: "tabs"
+          name: "main_navigation"
+          tabs:
+            - id: "framework"
+              label: "Framework ISO 9001"
+              icon: "fa fa-sitemap"
+            - id: "assistant"
+              label: "Assistant IA"
+              icon: "fa fa-comments"
+            - id: "generator"
+              label: "Générateur de Documents"
+              icon: "fa fa-file-alt"
+
+    # Section Framework
+    - name: "framework_section"
+      title: "Framework d'Audit ISO 9001:2015"
+      layout_type: "column"
+      gap: "16px"
+      visible_when:
+        field: "active_tab"
+        operator: "equals"
+        value: "framework"
+      components:
+        - type: "select"
+          name: "framework_chapter"
+          label: "Chapitre ISO"
+          placeholder: "Sélectionnez un chapitre"
+          options:
+            - value: "4"
+              label: "Chapitre 4 - Contexte de l'organisation"
+            - value: "5"
+              label: "Chapitre 5 - Leadership"
+            - value: "6"
+              label: "Chapitre 6 - Planification"
+            - value: "7"
+              label: "Chapitre 7 - Support"
+            - value: "8"
+              label: "Chapitre 8 - Réalisation des activités opérationnelles"
+            - value: "9"
+              label: "Chapitre 9 - Évaluation des performances"
+            - value: "10"
+              label: "Chapitre 10 - Amélioration"
+
+        - type: "select"
+          name: "sector_filter"
+          label: "Secteur d'activité"
+          placeholder: "Tous secteurs"
+          options:
+            - value: ""
+              label: "Tous secteurs"
+            - value: "industrie"
+              label: "Industrie manufacturière"
+            - value: "automobile"
+              label: "Automobile (IATF 16949)"
+            - value: "aeronautique"
+              label: "Aéronautique (EN 9100)"
+            - value: "medical"
+              label: "Dispositifs médicaux (ISO 13485)"
+            - value: "it"
+              label: "Services IT / Logiciel"
+            - value: "services"
+              label: "Services"
+            - value: "sante"
+              label: "Santé (HAS)"
+            - value: "agroalimentaire"
+              label: "Agroalimentaire"
+            - value: "construction"
+              label: "Construction / BTP"
+            - value: "energie"
+              label: "Énergie"
+
+        - type: "select"
+          name: "company_size_filter"
+          label: "Taille de l'entreprise"
+          placeholder: "Toutes tailles"
+          options:
+            - value: ""
+              label: "Toutes tailles"
+            - value: "tpe"
+              label: "TPE (< 10 employés)"
+            - value: "pme"
+              label: "PME (10 - 250 employés)"
+            - value: "eti"
+              label: "ETI (250 - 5000 employés)"
+            - value: "ge"
+              label: "Grande Entreprise (> 5000 employés)"
+
+        - type: "markdown_viewer"
+          name: "framework_content"
+          label: "Contenu du chapitre"
+          auto_bind_output: true
+          style:
+            min_height: "500px"
+            border: "1px solid #e5e7eb"
+            border_radius: "8px"
+            padding: "20px"
+
+    # Section Assistant Conversationnel
+    - name: "assistant_section"
+      title: "Assistant Conversationnel ISO 9001"
+      layout_type: "column"
+      gap: "16px"
+      visible_when:
+        field: "active_tab"
+        operator: "equals"
+        value: "assistant"
+      components:
+        - type: "select"
+          name: "conversation_mode"
+          label: "Mode de conversation"
+          default_value: "auditeur"
+          options:
+            - value: "auditeur"
+              label: "Auditeur"
+              description: "Vocabulaire technique, focus méthodologie et détection NC"
+            - value: "audite"
+              label: "Audité / Responsable Qualité"
+              description: "Vocabulaire pédagogique, focus conformité et mise en œuvre"
+            - value: "consultant"
+              label: "Consultant / Expert"
+              description: "Vocabulaire avancé, références normatives, cas limites"
+
+        - type: "chat_interface"
+          name: "iso_chat"
+          label: "Chat ISO 9001"
+          auto_bind_output: true
+          placeholder: "Posez votre question sur la norme ISO 9001:2015..."
+          style:
+            min_height: "500px"
+
+        - type: "document_upload"
+          name: "document_upload"
+          label: "Documents qualité à analyser"
+          help_text: "Uploadez vos procédures, manuels qualité, enregistrements pour une analyse contextuelle"
+          accept: ".pdf,.doc,.docx,.xls,.xlsx,.txt"
+          multiple: true
+          max_size_mb: 25
+          required: false
+
+    # Section Générateur de Documents
+    - name: "generator_section"
+      title: "Générateur de Documents d'Audit"
+      layout_type: "column"
+      gap: "16px"
+      visible_when:
+        field: "active_tab"
+        operator: "equals"
+        value: "generator"
+      components:
+        - type: "select"
+          name: "document_type"
+          label: "Type de document"
+          placeholder: "Choisissez le document à générer"
+          required: true
+          options:
+            - value: "audit_plan"
+              label: "Plan d'audit"
+              description: "Programme détaillé jour par jour"
+            - value: "audit_report"
+              label: "Rapport d'audit complet"
+              description: "Rapport officiel avec constats, NC, recommandations"
+            - value: "nc_sheet"
+              label: "Fiche de non-conformité"
+              description: "Fiche NC professionnelle à partir de notes brutes"
+            - value: "checklist"
+              label: "Checklist d'audit personnalisée"
+              description: "Points de contrôle par chapitre"
+            - value: "roadmap"
+              label: "Feuille de route de mise en conformité"
+              description: "Plan d'action priorisé pour l'audité"
+            - value: "executive_summary"
+              label: "Synthèse exécutive"
+              description: "Résumé 2-3 pages pour la direction"
+
+        # Sous-section : Plan d'audit
+        - type: "card"
+          name: "audit_plan_card"
+          title: "Paramètres du plan d'audit"
+          visible_when:
+            field: "document_type"
+            operator: "equals"
+            value: "audit_plan"
+          components:
+            - type: "text_input"
+              name: "company_name"
+              label: "Nom de l'entreprise"
+              placeholder: "Ex: ABC Industries"
+              required: true
+            - type: "select"
+              name: "sector"
+              label: "Secteur d'activité"
+              options:
+                - value: "industrie"
+                  label: "Industrie manufacturière"
+                - value: "automobile"
+                  label: "Automobile"
+                - value: "aeronautique"
+                  label: "Aéronautique"
+                - value: "it"
+                  label: "Services IT / Logiciel"
+                - value: "services"
+                  label: "Services"
+                - value: "sante"
+                  label: "Santé"
+                - value: "agroalimentaire"
+                  label: "Agroalimentaire"
+                - value: "construction"
+                  label: "Construction / BTP"
+              required: true
+            - type: "number_input"
+              name: "employee_count"
+              label: "Effectif (nombre d'employés)"
+              placeholder: "150"
+              required: true
+            - type: "text_input"
+              name: "certification_scope"
+              label: "Périmètre de certification"
+              placeholder: "Ex: Conception et fabrication de pièces métalliques"
+              required: true
+            - type: "select"
+              name: "audit_type"
+              label: "Type d'audit"
+              options:
+                - value: "certification_initial"
+                  label: "Certification initiale"
+                - value: "surveillance"
+                  label: "Audit de surveillance"
+                - value: "renouvellement"
+                  label: "Audit de renouvellement"
+              required: true
+            - type: "number_input"
+              name: "audit_duration"
+              label: "Durée de l'audit (jours)"
+              placeholder: "2"
+              required: true
+            - type: "textarea"
+              name: "excluded_clauses"
+              label: "Exclusions de chapitres"
+              placeholder: "Ex: 8.3 (pas de conception)"
+              required: false
+            - type: "textarea"
+              name: "specific_focus"
+              label: "Focus particuliers"
+              placeholder: "Ex: Gestion fournisseurs, processus de conception"
+              required: false
+
+        # Sous-section : Fiche NC
+        - type: "card"
+          name: "nc_sheet_card"
+          title: "Saisie du constat"
+          visible_when:
+            field: "document_type"
+            operator: "equals"
+            value: "nc_sheet"
+          components:
+            - type: "select"
+              name: "iso_chapter"
+              label: "Chapitre ISO concerné"
+              options:
+                - value: "4.1"
+                  label: "4.1 - Contexte de l'organisation"
+                - value: "4.2"
+                  label: "4.2 - Parties intéressées"
+                - value: "4.3"
+                  label: "4.3 - Domaine d'application"
+                - value: "4.4"
+                  label: "4.4 - SMQ et processus"
+                - value: "5.1"
+                  label: "5.1 - Leadership et engagement"
+                - value: "5.2"
+                  label: "5.2 - Politique qualité"
+                - value: "5.3"
+                  label: "5.3 - Rôles et responsabilités"
+                - value: "6.1"
+                  label: "6.1 - Risques et opportunités"
+                - value: "6.2"
+                  label: "6.2 - Objectifs qualité"
+                - value: "6.3"
+                  label: "6.3 - Planification des modifications"
+                - value: "7.1"
+                  label: "7.1 - Ressources"
+                - value: "7.2"
+                  label: "7.2 - Compétences"
+                - value: "7.3"
+                  label: "7.3 - Sensibilisation"
+                - value: "7.4"
+                  label: "7.4 - Communication"
+                - value: "7.5"
+                  label: "7.5 - Informations documentées"
+                - value: "8.1"
+                  label: "8.1 - Planification opérationnelle"
+                - value: "8.2"
+                  label: "8.2 - Exigences produits/services"
+                - value: "8.3"
+                  label: "8.3 - Conception et développement"
+                - value: "8.4"
+                  label: "8.4 - Prestataires externes"
+                - value: "8.5"
+                  label: "8.5 - Production et prestation"
+                - value: "8.6"
+                  label: "8.6 - Libération produits"
+                - value: "8.7"
+                  label: "8.7 - Éléments non conformes"
+                - value: "9.1"
+                  label: "9.1 - Surveillance et mesure"
+                - value: "9.2"
+                  label: "9.2 - Audit interne"
+                - value: "9.3"
+                  label: "9.3 - Revue de direction"
+                - value: "10.1"
+                  label: "10.1 - Amélioration - Généralités"
+                - value: "10.2"
+                  label: "10.2 - Non-conformité et actions correctives"
+                - value: "10.3"
+                  label: "10.3 - Amélioration continue"
+              required: true
+            - type: "textarea"
+              name: "raw_notes"
+              label: "Notes brutes de l'auditeur"
+              placeholder: "Saisissez vos notes telles quelles. L'IA les reformulera en constat professionnel."
+              help_text: "Ex: Manque attestations formation pour 3 gars en soudage. Vus Martin, Durand, Petit - pas de certifs dans dossiers. RH dit en cours."
+              required: true
+              style:
+                min_height: "150px"
+
+        # Sous-section : Checklist
+        - type: "card"
+          name: "checklist_card"
+          title: "Paramètres de la checklist"
+          visible_when:
+            field: "document_type"
+            operator: "equals"
+            value: "checklist"
+          components:
+            - type: "multi_select"
+              name: "selected_chapters"
+              label: "Chapitres à inclure"
+              options:
+                - value: "4"
+                  label: "Chapitre 4 - Contexte"
+                - value: "5"
+                  label: "Chapitre 5 - Leadership"
+                - value: "6"
+                  label: "Chapitre 6 - Planification"
+                - value: "7"
+                  label: "Chapitre 7 - Support"
+                - value: "8"
+                  label: "Chapitre 8 - Réalisation"
+                - value: "9"
+                  label: "Chapitre 9 - Évaluation"
+                - value: "10"
+                  label: "Chapitre 10 - Amélioration"
+              required: true
+            - type: "select"
+              name: "checklist_sector"
+              label: "Secteur d'activité"
+              options:
+                - value: ""
+                  label: "Générique"
+                - value: "industrie"
+                  label: "Industrie"
+                - value: "automobile"
+                  label: "Automobile"
+                - value: "it"
+                  label: "IT / Logiciel"
+                - value: "services"
+                  label: "Services"
+                - value: "sante"
+                  label: "Santé"
+            - type: "select"
+              name: "checklist_company_size"
+              label: "Taille de l'entreprise"
+              options:
+                - value: "tpe"
+                  label: "TPE (< 10 employés)"
+                - value: "pme"
+                  label: "PME (10-250)"
+                - value: "eti"
+                  label: "ETI (250-5000)"
+                - value: "ge"
+                  label: "GE (> 5000)"
+
+        # Sous-section : Rapport d'audit
+        - type: "card"
+          name: "audit_report_card"
+          title: "Données du rapport d'audit"
+          visible_when:
+            field: "document_type"
+            operator: "equals"
+            value: "audit_report"
+          components:
+            - type: "text_input"
+              name: "report_company_name"
+              label: "Entreprise auditée"
+              required: true
+            - type: "text_input"
+              name: "audit_id"
+              label: "Identifiant de l'audit"
+              placeholder: "AUD-2026-001"
+              required: true
+            - type: "text_input"
+              name: "audit_dates"
+              label: "Dates de l'audit"
+              placeholder: "20-21 février 2026"
+              required: true
+            - type: "select"
+              name: "report_audit_type"
+              label: "Type d'audit"
+              options:
+                - value: "certification_initial"
+                  label: "Certification initiale"
+                - value: "surveillance"
+                  label: "Surveillance"
+                - value: "renouvellement"
+                  label: "Renouvellement"
+              required: true
+            - type: "textarea"
+              name: "findings_json"
+              label: "Constats (un par ligne)"
+              placeholder: "NC mineure §7.2 : Preuves de compétence manquantes pour 3 opérateurs soudage\nObservation §6.2 : Objectifs qualité pas tous SMART\nPoint fort : Culture qualité bien ancrée"
+              help_text: "Saisissez vos constats, l'IA les structurera automatiquement"
+              required: true
+              style:
+                min_height: "200px"
+            - type: "textarea"
+              name: "positive_points"
+              label: "Points forts"
+              placeholder: "Culture qualité, digitalisation, implication direction..."
+              required: false
+            - type: "select"
+              name: "recommendation"
+              label: "Recommandation"
+              options:
+                - value: "certification"
+                  label: "Certification / Maintien"
+                - value: "certification_conditional"
+                  label: "Certification sous réserve (NC majeures à traiter)"
+                - value: "refusal"
+                  label: "Refus / Non-maintien"
+              required: true
+
+        # Sous-section : Feuille de route
+        - type: "card"
+          name: "roadmap_card"
+          title: "Données pour la feuille de route"
+          visible_when:
+            field: "document_type"
+            operator: "equals"
+            value: "roadmap"
+          components:
+            - type: "textarea"
+              name: "roadmap_findings"
+              label: "Non-conformités et observations"
+              placeholder: "Listez les NC et observations issues de l'audit"
+              required: true
+              style:
+                min_height: "200px"
+
+        # Sous-section : Synthèse exécutive
+        - type: "card"
+          name: "executive_summary_card"
+          title: "Données pour la synthèse exécutive"
+          visible_when:
+            field: "document_type"
+            operator: "equals"
+            value: "executive_summary"
+          components:
+            - type: "text_input"
+              name: "summary_company"
+              label: "Entreprise"
+              required: true
+            - type: "textarea"
+              name: "summary_findings"
+              label: "Résumé des constats"
+              placeholder: "Résumé des résultats de l'audit"
+              required: true
+              style:
+                min_height: "150px"
+
+        # Zone de résultat
+        - type: "select"
+          name: "export_format"
+          label: "Format d'export"
+          default_value: "word"
+          options:
+            - value: "word"
+              label: "Word (.docx)"
+            - value: "pdf"
+              label: "PDF"
+            - value: "excel"
+              label: "Excel (.xlsx)"
+            - value: "markdown"
+              label: "Markdown"
+          visible_when:
+            field: "document_type"
+            operator: "is_not_empty"
+
+        - type: "progress_bar"
+          name: "generation_progress"
+          label: "Progression"
+          data_source: "generation_progress_value"
+
+        - type: "markdown_viewer"
+          name: "generated_document_preview"
+          label: "Aperçu du document"
+          auto_bind_output: true
+          style:
+            min_height: "400px"
+            border: "1px solid #e5e7eb"
+            border_radius: "8px"
+            padding: "20px"
+
+  show_sidebar: true
+  sidebar_sections:
+    - name: "quick_links"
+      title: "Accès rapide"
+      components:
+        - type: "button"
+          name: "btn_chapter4"
+          label: "Ch.4 - Contexte"
+          button_action: "custom"
+          custom_action: "navigateChapter4"
+          button_variant: "text"
+        - type: "button"
+          name: "btn_chapter5"
+          label: "Ch.5 - Leadership"
+          button_action: "custom"
+          custom_action: "navigateChapter5"
+          button_variant: "text"
+        - type: "button"
+          name: "btn_chapter6"
+          label: "Ch.6 - Planification"
+          button_action: "custom"
+          custom_action: "navigateChapter6"
+          button_variant: "text"
+        - type: "button"
+          name: "btn_chapter7"
+          label: "Ch.7 - Support"
+          button_action: "custom"
+          custom_action: "navigateChapter7"
+          button_variant: "text"
+        - type: "button"
+          name: "btn_chapter8"
+          label: "Ch.8 - Réalisation"
+          button_action: "custom"
+          custom_action: "navigateChapter8"
+          button_variant: "text"
+        - type: "button"
+          name: "btn_chapter9"
+          label: "Ch.9 - Évaluation"
+          button_action: "custom"
+          custom_action: "navigateChapter9"
+          button_variant: "text"
+        - type: "button"
+          name: "btn_chapter10"
+          label: "Ch.10 - Amélioration"
+          button_action: "custom"
+          custom_action: "navigateChapter10"
+          button_variant: "text"
+
+    - name: "audit_stats"
+      title: "Statistiques"
+      components:
+        - type: "text_display"
+          name: "messages_count"
+          label: "Messages échangés"
+          data_source: "total_messages"
+        - type: "text_display"
+          name: "documents_generated"
+          label: "Documents générés"
+          data_source: "total_documents"
+
+  show_footer: true
+  footer_content: "⚠️ Les réponses sont fournies à titre informatif. L'interprétation finale relève de l'auditeur certifié."
+
+  show_actions: true
+  actions:
+    - type: "button"
+      name: "reset_button"
+      label: "Réinitialiser"
+      button_action: "reset_form"
+      button_variant: "secondary"
+
+    - type: "button"
+      name: "generate_button"
+      label: "Générer le document"
+      button_action: "trigger_agent"
+      button_variant: "primary"
+      is_trigger_button: true
+      visible_when:
+        field: "active_tab"
+        operator: "equals"
+        value: "generator"
+
+  actions_position: "right"
+  theme: "auto"
+  primary_color: "#1E40AF"
+
+connectors:
+  default_connector: "anthropic-iso"
+  connectors:
+    - id: "anthropic-iso"
+      provider: "anthropic"
+      name: "Claude Sonnet"
+      description: "Optimisé pour l'analyse normative et la rédaction de documents longs"
+      model: "claude-sonnet-4-20250514"
+      default_temperature: 0.4
+      default_max_tokens: 8192
+      retry_on_error: true
+      max_retries: 3
+      timeout_ms: 120000
+      priority: 0
+
+    - id: "mistral-iso"
+      provider: "mistral"
+      name: "Mistral Large"
+      description: "Alternative Mistral pour documents en français"
+      model: "mistral-large-latest"
+      default_temperature: 0.4
+      default_max_tokens: 8192
+      retry_on_error: true
+      max_retries: 2
+      timeout_ms: 120000
+      priority: 1
+
+    - id: "openai-iso"
+      provider: "openai"
+      name: "GPT-4"
+      description: "Alternative OpenAI"
+      model: "gpt-4"
+      default_temperature: 0.4
+      default_max_tokens: 8192
+      retry_on_error: true
+      max_retries: 2
+      timeout_ms: 120000
+      priority: 2
+
+  enable_fallback: true
+  fallback_order:
+    - "anthropic-iso"
+    - "mistral-iso"
+    - "openai-iso"
+
+workflows:
+  workflows:
+    # Workflow 1: Chat conversationnel
+    - name: "ISO Chat Workflow"
+      description: "Conversation avec l'assistant ISO 9001"
+      trigger: "user_message"
+      enabled: true
+      steps:
+        - id: "check_documents"
+          name: "Vérifier documents uploadés"
+          type: "condition"
+          condition:
+            variable: "uploaded_documents"
+            operator: "is_not_empty"
+          on_true: "extract_docs"
+          on_false: "chat_response"
+
+        - id: "extract_docs"
+          name: "Extraire contenu documents"
+          type: "tool_call"
+          tool_config_id: "document-extractor"
+          output_variable: "extracted_content"
+          on_error: "continue"
+          next_step: "chat_response"
+
+        - id: "chat_response"
+          name: "Générer réponse ISO"
+          type: "llm_call"
+          prompt_template: |
+            {{system_prompt}}
+
+            Mode: {{conversation_mode}}
+            {{#if extracted_content}}
+            Documents analysés:
+            {{extracted_content}}
+            {{/if}}
+
+            Question: {{message}}
+          system_prompt: "{{system_prompt}}"
+          temperature: 0.4
+          max_tokens: 4096
+          output_variable: "response"
+
+      entry_step: "check_documents"
+      initial_variables:
+        conversation_mode: "auditeur"
+        extracted_content: null
+
+    # Workflow 2: Génération de documents
+    - name: "Document Generation Workflow"
+      description: "Génération de documents d'audit"
+      trigger: "button_click"
+      trigger_config:
+        button: "generate_button"
+      enabled: true
+      steps:
+        - id: "identify_doc_type"
+          name: "Identifier le type de document"
+          type: "condition"
+          condition:
+            variable: "document_type"
+            operator: "is_not_empty"
+          on_true: "generate_content"
+          on_false: "error_no_type"
+
+        - id: "generate_content"
+          name: "Générer le contenu avec IA"
+          type: "llm_call"
+          prompt_template: |
+            {{system_prompt}}
+
+            {{#if document_type == 'audit_plan'}}
+            {{task_prompts.audit_plan_generation}}
+            {{/if}}
+            {{#if document_type == 'audit_report'}}
+            {{task_prompts.audit_report_generation}}
+            {{/if}}
+            {{#if document_type == 'nc_sheet'}}
+            {{task_prompts.nc_sheet_generation}}
+            {{/if}}
+            {{#if document_type == 'checklist'}}
+            {{task_prompts.checklist_generation}}
+            {{/if}}
+            {{#if document_type == 'roadmap'}}
+            {{task_prompts.roadmap_generation}}
+            {{/if}}
+            {{#if document_type == 'executive_summary'}}
+            Génère une synthèse exécutive de 2-3 pages.
+            Entreprise: {{summary_company}}
+            Constats: {{summary_findings}}
+            {{/if}}
+          temperature: 0.3
+          max_tokens: 8192
+          output_variable: "generated_content"
+          next_step: "select_export"
+
+        - id: "select_export"
+          name: "Sélectionner format d'export"
+          type: "condition"
+          condition:
+            variable: "export_format"
+            operator: "equals"
+            value: "word"
+          on_true: "generate_word"
+          on_false: "check_excel"
+
+        - id: "check_excel"
+          name: "Vérifier si export Excel"
+          type: "condition"
+          condition:
+            variable: "export_format"
+            operator: "equals"
+            value: "excel"
+          on_true: "generate_excel"
+          on_false: "complete"
+
+        - id: "generate_word"
+          name: "Générer le document Word"
+          type: "tool_call"
+          tool_config_id: "word-crud"
+          output_variable: "word_bytes"
+          on_error: "continue"
+          next_step: "upload_file"
+
+        - id: "generate_excel"
+          name: "Générer le fichier Excel"
+          type: "tool_call"
+          tool_config_id: "excel-crud"
+          output_variable: "excel_bytes"
+          on_error: "continue"
+          next_step: "upload_file"
+
+        - id: "upload_file"
+          name: "Sauvegarder le fichier"
+          type: "tool_call"
+          tool_config_id: "file-upload"
+          output_variable: "generated_file_id"
+          on_error: "continue"
+          next_step: "complete"
+
+        - id: "complete"
+          name: "Terminer la génération"
+          type: "set_variable"
+          variable_name: "generation_complete"
+          variable_value: true
+
+        - id: "error_no_type"
+          name: "Erreur: pas de type sélectionné"
+          type: "set_variable"
+          variable_name: "error_message"
+          variable_value: "Veuillez sélectionner un type de document à générer."
+
+      entry_step: "identify_doc_type"
+      initial_variables:
+        generated_content: null
+        generated_file_id: null
+        generation_complete: false
+        generation_progress_value: 0
+      timeout_ms: 300000
+
+    # Workflow 3: Framework navigation
+    - name: "Framework Navigation Workflow"
+      description: "Navigation dans le framework ISO 9001"
+      trigger: "form_submit"
+      enabled: true
+      steps:
+        - id: "load_chapter"
+          name: "Charger le chapitre"
+          type: "llm_call"
+          prompt_template: |
+            {{system_prompt}}
+
+            Présente de manière exhaustive et structurée le chapitre {{framework_chapter}} de la norme ISO 9001:2015.
+
+            {{#if sector_filter}}
+            Adapte les particularités sectorielles au secteur : {{sector_filter}}
+            {{/if}}
+            {{#if company_size_filter}}
+            Adapte les exemples à une entreprise de taille : {{company_size_filter}}
+            {{/if}}
+
+            Structure ta réponse avec :
+            ## Sous-chapitres et exigences
+            Pour chaque sous-chapitre :
+            ### X.X - Titre
+            **Exigences normatives** : texte et interprétation
+            **Points de contrôle** : ✅ liste
+            **Preuves attendues** : 📄 liste
+            **Documents associés** : liste
+            **NC fréquentes** : tableau (Type | Description | Fréquence | Gravité)
+            **Questions d'audit suggérées** : liste par rôle
+            {{#if sector_filter}}
+            **Particularités sectorielles ({{sector_filter}})** : spécificités
+            {{/if}}
+          temperature: 0.3
+          max_tokens: 8192
+          output_variable: "framework_content"
+
+      entry_step: "load_chapter"
+      initial_variables:
+        framework_content: null
+
+  default_workflow: "iso-chat"
+
+security:
+  requires_auth: false
+  rate_limit_enabled: true
+  requests_per_minute: 20
+  requests_per_hour: 300
+  sanitize_inputs: true
+  max_input_length: 100000
+  audit_logging: true
+
+deployment:
+  auto_route: true
+  environment: "production"
+  min_instances: 1
+  max_instances: 5
+  health_check_enabled: true

@@ -1,0 +1,665 @@
+<div class="token-consumption-container">
+  <!-- En-tête -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>{{ 'token_consumption.title' | translate }}</h1>
+      <p class="subtitle">{{ 'token_consumption.subtitle' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="exportToCSV()">
+        <mat-icon>download</mat-icon>
+        {{ 'common.export' | translate }}
+      </button>
+      <button mat-stroked-button (click)="loadData()">
+        <mat-icon>refresh</mat-icon>
+        {{ 'common.refresh' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Onglets principaux -->
+  <mat-tab-group animationDuration="200ms">
+    <!-- Onglet Visualisation -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>analytics</mat-icon>
+        <span>{{ 'token_consumption.tabs.visualization' | translate }}</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <!-- Filtres -->
+        <mat-card class="filters-card">
+          <mat-card-content>
+            <div class="filters-row">
+              <div class="filter-group">
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ 'token_consumption.start_date' | translate }}</mat-label>
+                  <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (dateChange)="applyFilters()">
+                  <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #startPicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ 'token_consumption.end_date' | translate }}</mat-label>
+                  <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (dateChange)="applyFilters()">
+                  <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #endPicker></mat-datepicker>
+                </mat-form-field>
+              </div>
+
+              <div class="quick-filters">
+                <button mat-stroked-button (click)="setDateRange('today')">{{ 'token_consumption.today' | translate }}</button>
+                <button mat-stroked-button (click)="setDateRange('week')">{{ 'token_consumption.last_week' | translate }}</button>
+                <button mat-stroked-button (click)="setDateRange('month')">{{ 'token_consumption.last_month' | translate }}</button>
+                <button mat-stroked-button (click)="setDateRange('year')">{{ 'token_consumption.last_year' | translate }}</button>
+              </div>
+
+              <div class="filter-group">
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ 'token_consumption.filter_users' | translate }}</mat-label>
+                  <mat-select [(ngModel)]="selectedUsers" multiple (selectionChange)="applyFilters()">
+                    @for (user of availableUsers(); track user.id) {
+                      <mat-option [value]="user.id">{{ user.name }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ 'token_consumption.filter_agents' | translate }}</mat-label>
+                  <mat-select [(ngModel)]="selectedAgents" multiple (selectionChange)="applyFilters()">
+                    @for (agent of availableAgents(); track agent.id) {
+                      <mat-option [value]="agent.id">{{ agent.name }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ 'token_consumption.filter_providers' | translate }}</mat-label>
+                  <mat-select [(ngModel)]="selectedProviders" multiple (selectionChange)="applyFilters()">
+                    @for (provider of availableProviders; track provider.id) {
+                      <mat-option [value]="provider.id">
+                        <mat-icon>{{ provider.icon }}</mat-icon>
+                        {{ provider.name }}
+                      </mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <button mat-icon-button (click)="resetFilters()" matTooltip="{{ 'token_consumption.reset_filters' | translate }}">
+                <mat-icon>filter_alt_off</mat-icon>
+              </button>
+            </div>
+
+            <!-- Toggle Token/Cost + Charts toggle -->
+            <div class="view-mode-toggle">
+              <mat-chip-listbox [(ngModel)]="viewMode" (change)="onViewModeChange()">
+                <mat-chip-option value="tokens">
+                  <mat-icon>token</mat-icon>
+                  {{ 'token_consumption.view_tokens' | translate }}
+                </mat-chip-option>
+                <mat-chip-option value="cost">
+                  <mat-icon>euro</mat-icon>
+                  {{ 'token_consumption.view_cost' | translate }}
+                </mat-chip-option>
+              </mat-chip-listbox>
+
+              <div class="view-toggle-right">
+                <mat-form-field appearance="outline" class="groupby-select">
+                  <mat-label>{{ 'token_consumption.group_by' | translate }}</mat-label>
+                  <mat-select [(ngModel)]="groupBy" (selectionChange)="onGroupByChange()">
+                    <mat-option value="day">{{ 'token_consumption.by_day' | translate }}</mat-option>
+                    <mat-option value="week">{{ 'token_consumption.by_week' | translate }}</mat-option>
+                    <mat-option value="month">{{ 'token_consumption.by_month' | translate }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <button mat-stroked-button (click)="toggleChartsView()">
+                  <mat-icon>{{ showCharts() ? 'bar_chart' : 'list' }}</mat-icon>
+                  {{ showCharts() ? ('token_consumption.show_list' | translate) : ('token_consumption.show_charts' | translate) }}
+                </button>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Stats globales -->
+        <div class="stats-grid">
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-icon">
+                <mat-icon>token</mat-icon>
+              </div>
+              <div class="stat-info">
+                <span class="stat-value">{{ getTotalTokensDisplay() }}</span>
+                <span class="stat-label">{{ 'token_consumption.total_tokens' | translate }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-icon cost">
+                <mat-icon>euro</mat-icon>
+              </div>
+              <div class="stat-info">
+                <span class="stat-value">{{ getTotalCostDisplay() }}</span>
+                <span class="stat-label">{{ 'token_consumption.total_cost' | translate }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-icon requests">
+                <mat-icon>send</mat-icon>
+              </div>
+              <div class="stat-info">
+                <span class="stat-value">{{ globalStats()?.requestCount || 0 }}</span>
+                <span class="stat-label">{{ 'token_consumption.total_requests' | translate }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-icon avg">
+                <mat-icon>speed</mat-icon>
+              </div>
+              <div class="stat-info">
+                <span class="stat-value">{{ formatDuration(globalStats()?.avgDurationMs || 0) }}</span>
+                <span class="stat-label">{{ 'token_consumption.avg_duration' | translate }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Vue graphique (Charts) -->
+        @if (showCharts()) {
+          <!-- Timeline chart -->
+          <mat-card class="chart-card timeline-chart-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar>timeline</mat-icon>
+              <mat-card-title>{{ 'token_consumption.consumption_over_time' | translate }}</mat-card-title>
+              <div class="chart-type-selector">
+                <mat-button-toggle-group [value]="chartTypeTimeline()" (change)="onChartTypeTimelineChange($event.value)" appearance="standard">
+                  <mat-button-toggle value="bar" matTooltip="Bar chart">
+                    <mat-icon>bar_chart</mat-icon>
+                  </mat-button-toggle>
+                  <mat-button-toggle value="line" matTooltip="Line chart">
+                    <mat-icon>show_chart</mat-icon>
+                  </mat-button-toggle>
+                  <mat-button-toggle value="doughnut" matTooltip="Doughnut">
+                    <mat-icon>donut_large</mat-icon>
+                  </mat-button-toggle>
+                  <mat-button-toggle value="pie" matTooltip="Pie chart">
+                    <mat-icon>pie_chart</mat-icon>
+                  </mat-button-toggle>
+                  <mat-button-toggle value="polarArea" matTooltip="Polar Area">
+                    <mat-icon>radar</mat-icon>
+                  </mat-button-toggle>
+                </mat-button-toggle-group>
+              </div>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="chart-container chart-container-large">
+                <canvas #chartTimeline></canvas>
+              </div>
+              @if (statsByPeriod().length === 0) {
+                <p class="no-data">{{ 'token_consumption.no_data' | translate }}</p>
+              }
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Entity charts (by user, agent, provider) -->
+          <div class="chart-type-header">
+            <h3>{{ 'token_consumption.breakdown' | translate }}</h3>
+            <mat-button-toggle-group [value]="chartTypeEntity()" (change)="onChartTypeEntityChange($event.value)" appearance="standard">
+              <mat-button-toggle value="doughnut" matTooltip="Doughnut">
+                <mat-icon>donut_large</mat-icon>
+              </mat-button-toggle>
+              <mat-button-toggle value="pie" matTooltip="Pie chart">
+                <mat-icon>pie_chart</mat-icon>
+              </mat-button-toggle>
+              <mat-button-toggle value="bar" matTooltip="Bar chart">
+                <mat-icon>bar_chart</mat-icon>
+              </mat-button-toggle>
+              <mat-button-toggle value="line" matTooltip="Line chart">
+                <mat-icon>show_chart</mat-icon>
+              </mat-button-toggle>
+              <mat-button-toggle value="polarArea" matTooltip="Polar Area">
+                <mat-icon>radar</mat-icon>
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+
+          <div class="charts-row">
+            <!-- Par utilisateur -->
+            <mat-card class="chart-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>people</mat-icon>
+                <mat-card-title>{{ 'token_consumption.by_user' | translate }}</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                @if (statsByUser().length === 0) {
+                  <p class="no-data">{{ 'token_consumption.no_data' | translate }}</p>
+                } @else {
+                  <div class="chart-container">
+                    <canvas #chartByUser></canvas>
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Par agent -->
+            <mat-card class="chart-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>smart_toy</mat-icon>
+                <mat-card-title>{{ 'token_consumption.by_agent' | translate }}</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                @if (statsByAgent().length === 0) {
+                  <p class="no-data">{{ 'token_consumption.no_data' | translate }}</p>
+                } @else {
+                  <div class="chart-container">
+                    <canvas #chartByAgent></canvas>
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Par provider -->
+            <mat-card class="chart-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>hub</mat-icon>
+                <mat-card-title>{{ 'token_consumption.by_provider' | translate }}</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                @if (statsByProvider().length === 0) {
+                  <p class="no-data">{{ 'token_consumption.no_data' | translate }}</p>
+                } @else {
+                  <div class="chart-container">
+                    <canvas #chartByProvider></canvas>
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+          </div>
+        }
+
+        <!-- Vue liste (fallback / toggle) -->
+        @if (!showCharts()) {
+          <div class="charts-row">
+            <!-- Par utilisateur -->
+            <mat-card class="chart-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>people</mat-icon>
+                <mat-card-title>{{ 'token_consumption.by_user' | translate }}</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                @if (statsByUser().length === 0) {
+                  <p class="no-data">{{ 'token_consumption.no_data' | translate }}</p>
+                } @else {
+                  <div class="entity-list">
+                    @for (item of statsByUser(); track item.entityId) {
+                      <div class="entity-item">
+                        <div class="entity-name">
+                          <mat-icon>person</mat-icon>
+                          {{ item.entityName }}
+                        </div>
+                        <div class="entity-stats">
+                          @if (viewMode() === 'tokens') {
+                            <span class="value">{{ formatTokens(item.stats.totalTokens) }}</span>
+                          } @else {
+                            <span class="value">{{ formatCost(item.stats.totalCost) }}</span>
+                          }
+                          <span class="requests">({{ item.stats.requestCount }} req.)</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Par agent -->
+            <mat-card class="chart-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>smart_toy</mat-icon>
+                <mat-card-title>{{ 'token_consumption.by_agent' | translate }}</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                @if (statsByAgent().length === 0) {
+                  <p class="no-data">{{ 'token_consumption.no_data' | translate }}</p>
+                } @else {
+                  <div class="entity-list">
+                    @for (item of statsByAgent(); track item.entityId) {
+                      <div class="entity-item">
+                        <div class="entity-name">
+                          <mat-icon>smart_toy</mat-icon>
+                          {{ item.entityName }}
+                        </div>
+                        <div class="entity-stats">
+                          @if (viewMode() === 'tokens') {
+                            <span class="value">{{ formatTokens(item.stats.totalTokens) }}</span>
+                          } @else {
+                            <span class="value">{{ formatCost(item.stats.totalCost) }}</span>
+                          }
+                          <span class="requests">({{ item.stats.requestCount }} req.)</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Par provider -->
+            <mat-card class="chart-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>hub</mat-icon>
+                <mat-card-title>{{ 'token_consumption.by_provider' | translate }}</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                @if (statsByProvider().length === 0) {
+                  <p class="no-data">{{ 'token_consumption.no_data' | translate }}</p>
+                } @else {
+                  <div class="entity-list">
+                    @for (item of statsByProvider(); track item.entityId) {
+                      <div class="entity-item">
+                        <div class="entity-name">
+                          <mat-icon>{{ getProviderIcon(item.entityId) }}</mat-icon>
+                          {{ getProviderName(item.entityId) }}
+                        </div>
+                        <div class="entity-stats">
+                          @if (viewMode() === 'tokens') {
+                            <span class="value">{{ formatTokens(item.stats.totalTokens) }}</span>
+                          } @else {
+                            <span class="value">{{ formatCost(item.stats.totalCost) }}</span>
+                          }
+                          <span class="requests">({{ item.stats.requestCount }} req.)</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+          </div>
+        }
+
+        <!-- Tableau des consommations récentes -->
+        <mat-card class="records-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>history</mat-icon>
+            <mat-card-title>{{ 'token_consumption.recent_records' | translate }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <table mat-table [dataSource]="recentRecords()" class="records-table">
+              <ng-container matColumnDef="timestamp">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.date' | translate }}</th>
+                <td mat-cell *matCellDef="let record">{{ formatDate(record.timestamp) }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="username">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.user' | translate }}</th>
+                <td mat-cell *matCellDef="let record">{{ record.username }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="agentName">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.agent' | translate }}</th>
+                <td mat-cell *matCellDef="let record">{{ record.agentName }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="provider">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.provider' | translate }}</th>
+                <td mat-cell *matCellDef="let record">
+                  <mat-icon class="provider-icon">{{ getProviderIcon(record.provider) }}</mat-icon>
+                  {{ record.provider }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="model">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.model' | translate }}</th>
+                <td mat-cell *matCellDef="let record">{{ record.model }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="tokens">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.tokens' | translate }}</th>
+                <td mat-cell *matCellDef="let record">
+                  <span matTooltip="Prompt: {{ record.promptTokens }} | Completion: {{ record.completionTokens }}">
+                    {{ formatTokens(record.totalTokens) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="cost">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.cost' | translate }}</th>
+                <td mat-cell *matCellDef="let record">{{ formatCost(record.totalCost || 0) }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="duration">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.duration' | translate }}</th>
+                <td mat-cell *matCellDef="let record">{{ formatDuration(record.durationMs) }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="recordColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: recordColumns;"></tr>
+            </table>
+
+            @if (recentRecords().length === 0) {
+              <p class="no-data">{{ 'token_consumption.no_records' | translate }}</p>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Onglet Quotas -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>speed</mat-icon>
+        <span>{{ 'token_consumption.tabs.quotas' | translate }}</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="section-header">
+          <h2>{{ 'token_consumption.quota_management' | translate }}</h2>
+          <button mat-raised-button color="primary" (click)="openQuotaDialog()">
+            <mat-icon>add</mat-icon>
+            {{ 'token_consumption.add_quota' | translate }}
+          </button>
+        </div>
+
+        <!-- Alertes quotas -->
+        @if (hasQuotaAlerts()) {
+          <mat-card class="alerts-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar color="warn">warning</mat-icon>
+              <mat-card-title>{{ 'token_consumption.quota_alerts' | translate }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              @for (item of quotaUsages(); track item.quota.id) {
+                @if (item.usage.isAlertTriggered || item.usage.isExceeded) {
+                  <div class="alert-item" [class.exceeded]="item.usage.isExceeded">
+                    <mat-icon>{{ item.usage.isExceeded ? 'error' : 'warning' }}</mat-icon>
+                    <span>
+                      {{ formatQuotaType(item.quota.type) }}
+                      @if (item.quota.targetName) { - {{ item.quota.targetName }} }
+                      : {{ item.usage.percentUsed | number:'1.0-1' }}% {{ 'token_consumption.used' | translate }}
+                    </span>
+                  </div>
+                }
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Liste des quotas -->
+        <mat-card>
+          <mat-card-content>
+            <table mat-table [dataSource]="quotaUsages()" class="quotas-table">
+              <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.quota_type' | translate }}</th>
+                <td mat-cell *matCellDef="let item">
+                  <div class="quota-type">
+                    <mat-icon>{{ getQuotaTypeIcon(item.quota.type) }}</mat-icon>
+                    {{ formatQuotaType(item.quota.type) }}
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="target">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.quota_target' | translate }}</th>
+                <td mat-cell *matCellDef="let item">
+                  {{ item.quota.targetName || '-' }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="provider">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.provider' | translate }}</th>
+                <td mat-cell *matCellDef="let item">
+                  @if (item.quota.provider === 'all') {
+                    <span>{{ 'token_consumption.all_providers' | translate }}</span>
+                  } @else {
+                    <mat-icon>{{ getProviderIcon(item.quota.provider) }}</mat-icon>
+                    {{ getProviderName(item.quota.provider) }}
+                  }
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="period">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.period' | translate }}</th>
+                <td mat-cell *matCellDef="let item">{{ formatPeriod(item.quota.period) }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="limit">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.limit' | translate }}</th>
+                <td mat-cell *matCellDef="let item">{{ formatTokens(item.quota.maxTokens) }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="usage">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.usage' | translate }}</th>
+                <td mat-cell *matCellDef="let item">
+                  <div class="usage-cell">
+                    <mat-progress-bar
+                      [mode]="'determinate'"
+                      [value]="item.usage.percentUsed"
+                      [color]="getProgressColor(item.usage.percentUsed)">
+                    </mat-progress-bar>
+                    <span class="usage-text">
+                      {{ formatTokens(item.usage.currentTokens) }} / {{ formatTokens(item.quota.maxTokens) }}
+                      ({{ item.usage.percentUsed | number:'1.0-1' }}%)
+                    </span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>{{ 'token_consumption.status' | translate }}</th>
+                <td mat-cell *matCellDef="let item">
+                  <mat-slide-toggle
+                    [checked]="item.quota.isEnabled"
+                    (change)="toggleQuota(item.quota)">
+                  </mat-slide-toggle>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</th>
+                <td mat-cell *matCellDef="let item">
+                  <button mat-icon-button (click)="openQuotaDialog(item.quota)" matTooltip="{{ 'common.edit' | translate }}">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="deleteQuota(item.quota)" matTooltip="{{ 'common.delete' | translate }}">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="quotaColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: quotaColumns;"></tr>
+            </table>
+
+            @if (quotaUsages().length === 0) {
+              <div class="empty-state">
+                <mat-icon>speed</mat-icon>
+                <p>{{ 'token_consumption.no_quotas' | translate }}</p>
+                <button mat-stroked-button (click)="openQuotaDialog()">
+                  <mat-icon>add</mat-icon>
+                  {{ 'token_consumption.add_first_quota' | translate }}
+                </button>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Onglet Configuration des coûts -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>euro</mat-icon>
+        <span>{{ 'token_consumption.tabs.costs' | translate }}</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="section-header">
+          <h2>{{ 'token_consumption.cost_configuration' | translate }}</h2>
+          <div class="header-actions">
+            <button mat-stroked-button (click)="resetCostsToDefault()">
+              <mat-icon>restore</mat-icon>
+              {{ 'token_consumption.reset_defaults' | translate }}
+            </button>
+            <button mat-raised-button color="primary" (click)="openCostDialog()">
+              <mat-icon>add</mat-icon>
+              {{ 'token_consumption.add_cost_config' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <p class="section-description">
+          {{ 'token_consumption.cost_description' | translate }}
+        </p>
+
+        <!-- Liste des configurations de coûts par provider -->
+        @for (provider of availableProviders; track provider.id) {
+          <mat-card class="provider-costs-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar>{{ provider.icon }}</mat-icon>
+              <mat-card-title>{{ provider.name }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <table class="costs-table">
+                <thead>
+                  <tr>
+                    <th>{{ 'token_consumption.model' | translate }}</th>
+                    <th>{{ 'token_consumption.input_cost' | translate }}</th>
+                    <th>{{ 'token_consumption.output_cost' | translate }}</th>
+                    <th>{{ 'common.actions' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (cost of providerCosts(); track cost.model) {
+                    @if (cost.provider === provider.id) {
+                      <tr>
+                        <td>{{ cost.model }}</td>
+                        <td>{{ cost.inputCostPer1M | number:'1.2-2' }} {{ cost.currency }}/1M</td>
+                        <td>{{ cost.outputCostPer1M | number:'1.2-2' }} {{ cost.currency }}/1M</td>
+                        <td>
+                          <button mat-icon-button (click)="openCostDialog(cost)" matTooltip="{{ 'common.edit' | translate }}">
+                            <mat-icon>edit</mat-icon>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

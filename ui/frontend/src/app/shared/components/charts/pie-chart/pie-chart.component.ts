@@ -1,0 +1,150 @@
+import { Component, Input, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ChartService, ChartData, ChartOptions } from '../../../services/chart.service';
+
+/**
+ * Composant de graphique en camembert (Pie Chart)
+ *
+ * @example
+ * ```html
+ * <app-pie-chart
+ *   [data]="chartData"
+ *   [options]="chartOptions"
+ *   [height]="400"
+ *   [showLegend]="true"
+ *   [legendPosition]="'right'">
+ * </app-pie-chart>
+ * ```
+ *
+ * @example
+ * ```typescript
+ * chartData: ChartData = {
+ *   labels: ['Chrome', 'Firefox', 'Safari', 'Edge', 'Autres'],
+ *   datasets: [{
+ *     label: 'Parts de marché',
+ *     data: [65, 15, 10, 7, 3],
+ *     backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+ *   }]
+ * };
+ * ```
+ */
+@Component({
+  selector: 'app-pie-chart',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './pie-chart.component.html',
+  styleUrls: ['./pie-chart.component.scss']
+})
+export class PieChartComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
+
+  @Input() data!: ChartData;
+  @Input() options?: ChartOptions;
+  @Input() height: number = 400;
+  @Input() showLegend: boolean = true;
+  @Input() legendPosition: 'top' | 'bottom' | 'left' | 'right' = 'right';
+  @Input() animate: boolean = true;
+  @Input() showPercentage: boolean = true;
+
+  private chartInstance: any;
+
+  constructor(private chartService: ChartService) {}
+
+  ngOnInit(): void {
+    if (!this.options) {
+      this.options = this.chartService.getDefaultPieChartOptions();
+    }
+
+    // Appliquer les préférences d'affichage
+    if (this.options.plugins) {
+      if (this.options.plugins.legend) {
+        this.options.plugins.legend.display = this.showLegend;
+        this.options.plugins.legend.position = this.legendPosition;
+      }
+    }
+  }
+
+  ngAfterViewInit(): void {
+    this.renderChart();
+  }
+
+  ngOnDestroy(): void {
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+    }
+  }
+
+  private async renderChart(): Promise<void> {
+    try {
+      const Chart = (await import('chart.js/auto')).default;
+
+      const ctx = this.chartCanvas.nativeElement.getContext('2d');
+      if (!ctx) return;
+
+      // Préparer les datasets avec les couleurs par défaut si nécessaire
+      const processedData = { ...this.data };
+      processedData.datasets = processedData.datasets.map((dataset) => {
+        if (!dataset.backgroundColor) {
+          const colors = this.chartService.generateColors(
+            Array.isArray(dataset.data) ? dataset.data.length : 1
+          );
+          dataset.backgroundColor = colors;
+        }
+        if (!dataset.borderColor) {
+          dataset.borderColor = '#ffffff';
+        }
+        if (dataset.borderWidth === undefined) {
+          dataset.borderWidth = 2;
+        }
+        return dataset;
+      });
+
+      // Options avec pourcentages
+      const chartOptions = { ...this.options };
+      if (this.showPercentage && chartOptions.plugins && chartOptions.plugins.tooltip) {
+        chartOptions.plugins.tooltip = {
+          ...chartOptions.plugins.tooltip,
+          callbacks: {
+            label: function(context: any) {
+              const label = context.label || '';
+              const value = context.parsed || 0;
+              const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+              const percentage = ((value / total) * 100).toFixed(1);
+              return `${label}: ${value} (${percentage}%)`;
+            }
+          }
+        } as any;
+      }
+
+      this.chartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: processedData,
+        options: {
+          ...chartOptions,
+          animation: this.animate ? {} : false
+        } as any
+      });
+    } catch (error) {
+      console.error('Erreur lors du chargement de Chart.js:', error);
+    }
+  }
+
+  /**
+   * Met à jour les données du graphique
+   */
+  updateChart(newData: ChartData): void {
+    if (this.chartInstance) {
+      this.chartInstance.data = newData;
+      this.chartInstance.update();
+    }
+  }
+
+  /**
+   * Rafraîchit le graphique
+   */
+  refresh(): void {
+    if (this.chartInstance) {
+      this.chartInstance.update();
+    }
+  }
+}

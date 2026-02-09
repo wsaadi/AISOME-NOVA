@@ -1,0 +1,26 @@
+<div class="markdown-viewer">
+  @if (title) {
+    <div class="markdown-viewer__header">
+      <h3 class="markdown-viewer__title">{{ title }}</h3>
+    </div>
+  }
+
+  <div
+    class="markdown-viewer__content"
+    [style.max-height]="maxHeight"
+    [class.markdown-viewer__content--with-numbers]="showLineNumbers">
+
+    @if (showLineNumbers) {
+      <div class="markdown-viewer__lines">
+        @for (line of contentLines; track $index) {
+          <div class="markdown-viewer__line">
+            <span class="markdown-viewer__line-number">{{ $index + 1 }}</span>
+            <span class="markdown-viewer__line-content">{{ line }}</span>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="markdown-viewer__formatted" [innerHTML]="formattedContent"></div>
+    }
+  </div>
+</div>

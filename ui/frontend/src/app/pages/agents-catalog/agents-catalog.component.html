@@ -1,0 +1,129 @@
+<div class="agents-catalog">
+  <div class="agents-catalog__header">
+    <div class="agents-catalog__header-text">
+      <h1 class="agents-catalog__title">{{ 'catalog.title' | translate }}</h1>
+      <p class="agents-catalog__subtitle">
+        {{ 'catalog.subtitle' | translate }}
+      </p>
+    </div>
+    <div class="agents-catalog__header-actions">
+      <button
+        class="agents-catalog__manage-btn"
+        (click)="openCatalogManagement()"
+        [title]="'catalog.manage_catalog' | translate">
+        <i class="fa fa-cogs"></i>
+        {{ 'catalog.manage_catalog' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <div class="agents-catalog__filters">
+    <div class="agents-catalog__search">
+      <i class="fa fa-search"></i>
+      <input
+        type="text"
+        [placeholder]="'catalog.search_placeholder' | translate"
+        (input)="onSearch($event)"
+        class="agents-catalog__search-input">
+    </div>
+
+    <div class="agents-catalog__categories">
+      @for (categoryKey of categoryKeys; track categoryKey) {
+        <button
+          class="agents-catalog__category-btn"
+          [class.agents-catalog__category-btn--active]="(categoryKey === 'catalog.categories.all' && selectedCategory === 'all') || selectedCategory === categoryKey"
+          (click)="onCategoryChange(categoryKey)">
+          {{ categoryKey | translate }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="agents-catalog__grid">
+    @for (agent of filteredAgents; track agent.id) {
+      <div
+        class="agent-card"
+        [class.agent-card--disabled]="agent.status === 'coming-soon'"
+        (click)="openAgent(agent)">
+
+        <div class="agent-card__header">
+          <div class="agent-card__icon">
+            <i [class]="agent.icon"></i>
+          </div>
+
+          <div class="agent-card__header-actions">
+            @if (isAdmin && agent.status === 'active' && agent.hasConfig) {
+              <button
+                class="agent-card__shield-btn"
+                (click)="openModerationSettings(agent, $event)"
+                [title]="'moderation.title' | translate">
+                <i class="fa fa-shield-alt"></i>
+              </button>
+              <button
+                class="agent-card__config-btn"
+                (click)="openConfigDialog(agent, $event)"
+                [title]="'catalog.configure' | translate">
+                <i class="fa fa-cog"></i>
+              </button>
+            }
+            <span
+              class="agent-card__status"
+              [class]="getStatusClass(agent.status)">
+              {{ getStatusLabel(agent.status) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="agent-card__body">
+          <h3 class="agent-card__name">{{ agent.isDynamic ? agent.nameKey : (agent.nameKey | translate) }}</h3>
+          <p class="agent-card__description">{{ agent.isDynamic ? agent.descriptionKey : (agent.descriptionKey | translate) }}</p>
+          <div class="agent-card__category">
+            <i class="fa fa-tag"></i>
+            {{ agent.isDynamic ? agent.categoryKey : (agent.categoryKey | translate) }}
+          </div>
+          @if (agent.isDynamic) {
+            <div class="agent-card__badge agent-card__badge--custom">
+              <i class="fa fa-magic"></i>
+              {{ 'catalog.custom_agent' | translate }}
+            </div>
+          }
+        </div>
+
+        <div class="agent-card__footer">
+          @if (agent.status === 'active' && agent.route) {
+            <app-custom-button
+              [label]="'catalog.open' | translate"
+              variant="primary"
+              size="small"
+              icon="fa fa-arrow-right"
+              iconPosition="right"
+              [fullWidth]="true">
+            </app-custom-button>
+          } @else if (agent.status === 'beta') {
+            <app-custom-button
+              [label]="'catalog.status.beta' | translate"
+              variant="warning"
+              size="small"
+              icon="fa fa-flask"
+              [fullWidth]="true"
+              [disabled]="true">
+            </app-custom-button>
+          } @else {
+            <app-custom-button
+              [label]="'catalog.status.coming_soon' | translate"
+              variant="secondary"
+              size="small"
+              [fullWidth]="true"
+              [disabled]="true">
+            </app-custom-button>
+          }
+        </div>
+      </div>
+    } @empty {
+      <div class="agents-catalog__empty">
+        <i class="fa fa-search"></i>
+        <p>{{ 'catalog.no_results' | translate }}</p>
+      </div>
+    }
+  </div>
+</div>

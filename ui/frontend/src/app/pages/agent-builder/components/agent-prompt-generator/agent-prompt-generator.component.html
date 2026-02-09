@@ -1,0 +1,319 @@
+<div class="generator-dialog">
+  <!-- Header -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">auto_awesome</mat-icon>
+      <div class="header-text">
+        <h2>{{ 'agent_builder.generator.title' | translate }}</h2>
+        <p>{{ 'agent_builder.generator.subtitle' | translate }}</p>
+      </div>
+    </div>
+    <button mat-icon-button (click)="cancel()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="dialog-content">
+    <mat-tab-group [(selectedIndex)]="selectedTabIndex" class="generator-tabs">
+      <!-- Tab 1: Prompt Input -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>edit</mat-icon>
+          <span>{{ 'agent_builder.generator.tabs.prompt' | translate }}</span>
+        </ng-template>
+
+        <div class="tab-content prompt-tab">
+          <!-- Examples Section -->
+          @if (examples.length > 0) {
+            <div class="examples-section">
+              <h3>
+                <mat-icon>lightbulb</mat-icon>
+                {{ 'agent_builder.generator.examples_title' | translate }}
+              </h3>
+              <div class="examples-grid">
+                @for (example of examples; track example.title) {
+                  <div class="example-card" (click)="useExample(example)">
+                    <div class="example-title">{{ example.title }}</div>
+                    <div class="example-description">{{ example.description }}</div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Prompt Form -->
+          <form [formGroup]="promptForm" class="prompt-form">
+            <mat-form-field appearance="outline" class="prompt-field">
+              <mat-label>{{ 'agent_builder.generator.prompt_label' | translate }}</mat-label>
+              <textarea
+                matInput
+                formControlName="prompt"
+                rows="6"
+                placeholder="{{ 'agent_builder.generator.prompt_placeholder' | translate }}"
+              ></textarea>
+              <mat-hint>{{ 'agent_builder.generator.prompt_hint' | translate }}</mat-hint>
+              @if (promptForm.get('prompt')?.hasError('required')) {
+                <mat-error>{{ 'agent_builder.generator.errors.prompt_required' | translate }}</mat-error>
+              }
+              @if (promptForm.get('prompt')?.hasError('minlength')) {
+                <mat-error>{{ 'agent_builder.generator.errors.prompt_too_short' | translate }}</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Advanced Options -->
+            <mat-expansion-panel class="options-panel">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>settings</mat-icon>
+                  {{ 'agent_builder.generator.options_title' | translate }}
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="options-content">
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ 'agent_builder.generator.provider_label' | translate }}</mat-label>
+                  <mat-select formControlName="provider">
+                    @for (provider of providers; track provider.value) {
+                      <mat-option [value]="provider.value">{{ provider.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ 'agent_builder.generator.model_label' | translate }}</mat-label>
+                  <mat-select formControlName="model">
+                    @for (model of availableModels; track model.value) {
+                      <mat-option [value]="model.value">{{ model.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </mat-expansion-panel>
+
+            <!-- Generate Button -->
+            <div class="generate-actions">
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="generateAgent()"
+                [disabled]="promptForm.invalid || isGenerating"
+                class="generate-button"
+              >
+                @if (isGenerating) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                  {{ 'agent_builder.generator.generating' | translate }}
+                } @else {
+                  <ng-container>
+                    <mat-icon>auto_awesome</mat-icon>
+                    {{ 'agent_builder.generator.generate_button' | translate }}
+                  </ng-container>
+                }
+              </button>
+            </div>
+          </form>
+
+          <!-- Capabilities Info -->
+          @if (capabilities) {
+            <mat-expansion-panel class="capabilities-panel">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>info</mat-icon>
+                  {{ 'agent_builder.generator.capabilities_title' | translate }}
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="capabilities-content">
+                <div class="capability-section">
+                  <h4>{{ 'agent_builder.generator.available_tools' | translate }}</h4>
+                  <div class="chips-container">
+                    @for (tool of capabilities.tools | keyvalue; track tool.key) {
+                      <mat-chip matTooltip="{{ tool.value.description }}">
+                        <mat-icon>build</mat-icon>
+                        {{ tool.value.name }}
+                      </mat-chip>
+                    }
+                  </div>
+                </div>
+
+                <div class="capability-section">
+                  <h4>{{ 'agent_builder.generator.available_ui' | translate }}</h4>
+                  <div class="chips-container">
+                    @for (component of capabilities.ui_components.slice(0, 15); track component) {
+                      <mat-chip>{{ component }}</mat-chip>
+                    }
+                    @if (capabilities.ui_components.length > 15) {
+                      <mat-chip>+{{ capabilities.ui_components.length - 15 }} autres</mat-chip>
+                    }
+                  </div>
+                </div>
+              </div>
+            </mat-expansion-panel>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- Tab 2: Result -->
+      <mat-tab [disabled]="!generatedYaml">
+        <ng-template mat-tab-label>
+          <mat-icon>code</mat-icon>
+          <span>{{ 'agent_builder.generator.tabs.result' | translate }}</span>
+          @if (generatedYaml) {
+            <mat-icon class="tab-check">check_circle</mat-icon>
+          }
+        </ng-template>
+
+        <div class="tab-content result-tab">
+          @if (generatedYaml) {
+            <!-- Status Messages -->
+            @if (hasMissingComponents) {
+              <div class="status-banner warning">
+                <mat-icon>warning</mat-icon>
+                <div class="status-content">
+                  <strong>{{ 'agent_builder.generator.missing_components_title' | translate }}</strong>
+                  <p>{{ 'agent_builder.generator.missing_components_message' | translate }}</p>
+                </div>
+              </div>
+
+              <div class="missing-components">
+                @for (mc of lastResult?.missing_components; track mc.name) {
+                  <div class="missing-component-card">
+                    <mat-icon [class]="'type-' + mc.type">{{ getMissingComponentIcon(mc.type) }}</mat-icon>
+                    <div class="mc-content">
+                      <div class="mc-header">
+                        <span class="mc-type">{{ getMissingComponentTypeLabel(mc.type) }}</span>
+                        <span class="mc-name">{{ mc.name }}</span>
+                      </div>
+                      <p class="mc-description">{{ mc.description }}</p>
+                      @if (mc.suggestion) {
+                        <p class="mc-suggestion">
+                          <mat-icon>tips_and_updates</mat-icon>
+                          {{ mc.suggestion }}
+                        </p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="admin-contact-banner">
+                <mat-icon>contact_support</mat-icon>
+                <span>{{ 'agent_builder.generator.contact_admin' | translate }}</span>
+              </div>
+            }
+
+            @if (hasWarnings && !hasMissingComponents) {
+              <div class="status-banner info">
+                <mat-icon>info</mat-icon>
+                <div class="status-content">
+                  <strong>{{ 'agent_builder.generator.warnings_title' | translate }}</strong>
+                  <ul>
+                    @for (warning of lastResult?.warnings; track warning) {
+                      <li>{{ warning }}</li>
+                    }
+                  </ul>
+                </div>
+              </div>
+            }
+
+            @if (hasErrors) {
+              <div class="status-banner error">
+                <mat-icon>error</mat-icon>
+                <div class="status-content">
+                  <strong>{{ 'agent_builder.generator.errors_title' | translate }}</strong>
+                  <ul>
+                    @for (error of lastResult?.errors; track error) {
+                      <li>{{ error }}</li>
+                    }
+                  </ul>
+                </div>
+              </div>
+            }
+
+            <!-- YAML Preview/Editor -->
+            <div class="yaml-section">
+              <div class="yaml-header">
+                <h3>
+                  <mat-icon>code</mat-icon>
+                  {{ 'agent_builder.generator.yaml_title' | translate }}
+                </h3>
+                <button mat-button (click)="toggleYamlEditor()">
+                  <mat-icon>{{ showYamlEditor ? 'visibility' : 'edit' }}</mat-icon>
+                  {{ showYamlEditor ? ('agent_builder.generator.view_mode' | translate) : ('agent_builder.generator.edit_mode' | translate) }}
+                </button>
+              </div>
+
+              <div class="yaml-content-wrapper">
+                @if (showYamlEditor) {
+                  <textarea
+                    class="yaml-editor"
+                    [value]="generatedYaml"
+                    (input)="onYamlChange($event)"
+                    spellcheck="false"
+                  ></textarea>
+                } @else {
+                  <pre class="yaml-preview"><code>{{ generatedYaml }}</code></pre>
+                }
+              </div>
+            </div>
+
+            <!-- Refine Section -->
+            <div class="refine-section">
+              <h3>
+                <mat-icon>auto_fix_high</mat-icon>
+                {{ 'agent_builder.generator.refine_title' | translate }}
+              </h3>
+              <form [formGroup]="refineForm" class="refine-form">
+                <mat-form-field appearance="outline" class="refine-field">
+                  <mat-label>{{ 'agent_builder.generator.refine_label' | translate }}</mat-label>
+                  <textarea
+                    matInput
+                    formControlName="refinementPrompt"
+                    rows="2"
+                    placeholder="{{ 'agent_builder.generator.refine_placeholder' | translate }}"
+                  ></textarea>
+                </mat-form-field>
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  (click)="refineAgent()"
+                  [disabled]="refineForm.invalid || isGenerating"
+                >
+                  @if (isGenerating) {
+                    <mat-spinner diameter="18"></mat-spinner>
+                  } @else {
+                    <mat-icon>refresh</mat-icon>
+                  }
+                  {{ 'agent_builder.generator.refine_button' | translate }}
+                </button>
+              </form>
+            </div>
+          } @else {
+            <div class="empty-result">
+              <mat-icon>code_off</mat-icon>
+              <p>{{ 'agent_builder.generator.no_result' | translate }}</p>
+            </div>
+          }
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <!-- Footer Actions -->
+  <div class="dialog-actions">
+    <button mat-button (click)="cancel()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <div class="spacer"></div>
+    @if (generatedYaml && !hasMissingComponents) {
+      <button mat-stroked-button color="primary" (click)="editInBuilder()">
+        <mat-icon>edit</mat-icon>
+        {{ 'agent_builder.generator.edit_in_builder' | translate }}
+      </button>
+      <button mat-raised-button color="primary" (click)="createAgent()" [disabled]="hasErrors">
+        <mat-icon>add</mat-icon>
+        {{ 'agent_builder.generator.create_agent' | translate }}
+      </button>
+    }
+  </div>
+</div>

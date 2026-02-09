@@ -1,0 +1,215 @@
+<div class="catalog-management-page">
+  <header class="page-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">inventory_2</mat-icon>
+      <div class="header-text">
+        <h1>{{ 'catalog_management.title' | translate }}</h1>
+        <p class="subtitle">
+          {{ isAdmin ? ('catalog_management.subtitle_admin' | translate) : ('catalog_management.subtitle_user' | translate) }}
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filtres -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>{{ 'catalog_management.search' | translate }}</mat-label>
+          <input matInput
+                 [(ngModel)]="searchTerm"
+                 (input)="onSearch()"
+                 [placeholder]="'catalog_management.search_placeholder' | translate">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>{{ 'catalog_management.status_filter' | translate }}</mat-label>
+          <mat-select [(ngModel)]="statusFilter" (selectionChange)="onStatusFilterChange()">
+            <mat-option *ngFor="let option of statusOptions" [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>{{ 'catalog_management.ownership_filter' | translate }}</mat-label>
+          <mat-select [(ngModel)]="ownershipFilter" (selectionChange)="onOwnershipFilterChange()">
+            <mat-option *ngFor="let option of ownershipOptions" [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tableau des agents -->
+  <mat-card class="agents-card">
+    <mat-card-content>
+      <div class="table-container">
+        <table mat-table [dataSource]="getPagedAgents()" class="agents-table">
+          <!-- Colonne Icon -->
+          <ng-container matColumnDef="icon">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let agent">
+              <div class="agent-icon">
+                <i [class]="agent.icon || 'fa fa-robot'"></i>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Nom -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>{{ 'catalog_management.columns.name' | translate }}</th>
+            <td mat-cell *matCellDef="let agent">
+              <div class="agent-name">
+                <strong>{{ agent.name }}</strong>
+                <span class="agent-description">{{ agent.description }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Catégorie -->
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef>{{ 'catalog_management.columns.category' | translate }}</th>
+            <td mat-cell *matCellDef="let agent">
+              <mat-chip>{{ agent.category || 'custom' }}</mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Statut -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>{{ 'catalog_management.columns.status' | translate }}</th>
+            <td mat-cell *matCellDef="let agent">
+              <mat-chip [ngClass]="getStatusClass(agent.status)">
+                {{ getStatusLabel(agent.status) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Créé par -->
+          <ng-container matColumnDef="createdBy">
+            <th mat-header-cell *matHeaderCellDef>{{ 'catalog_management.columns.created_by' | translate }}</th>
+            <td mat-cell *matCellDef="let agent">
+              <span [class.owner-badge]="agent.isOwner">
+                {{ getOwnerName(agent) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Date de modification -->
+          <ng-container matColumnDef="updatedAt">
+            <th mat-header-cell *matHeaderCellDef>{{ 'catalog_management.columns.updated_at' | translate }}</th>
+            <td mat-cell *matCellDef="let agent">
+              {{ formatDate(agent.metadata?.updated_at) }}
+            </td>
+          </ng-container>
+
+          <!-- Colonne Actions -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>{{ 'catalog_management.columns.actions' | translate }}</th>
+            <td mat-cell *matCellDef="let agent">
+              <div class="actions-cell">
+                <!-- Boutons d'action rapide -->
+                <button mat-icon-button
+                        [matTooltip]="'catalog_management.actions.view' | translate"
+                        (click)="viewAgent(agent)"
+                        [disabled]="agent.status !== 'active'">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+
+                <button mat-icon-button
+                        [matTooltip]="'catalog_management.actions.edit' | translate"
+                        (click)="editAgent(agent)"
+                        [disabled]="!agent.canManage">
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <!-- Menu d'actions supplémentaires -->
+                <button mat-icon-button [matMenuTriggerFor]="agentMenu"
+                        [matTooltip]="'catalog_management.actions.more' | translate">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #agentMenu="matMenu">
+                  <!-- Publier -->
+                  <button mat-menu-item
+                          (click)="publishAgent(agent)"
+                          [disabled]="!agent.canManage || agent.status === 'active'">
+                    <mat-icon color="primary">publish</mat-icon>
+                    <span>{{ 'catalog_management.actions.publish' | translate }}</span>
+                  </button>
+
+                  <!-- Masquer -->
+                  <button mat-menu-item
+                          (click)="hideAgent(agent)"
+                          [disabled]="!agent.canManage || agent.status === 'disabled'">
+                    <mat-icon>visibility_off</mat-icon>
+                    <span>{{ 'catalog_management.actions.hide' | translate }}</span>
+                  </button>
+
+                  <mat-divider></mat-divider>
+
+                  <!-- Dupliquer -->
+                  <button mat-menu-item (click)="duplicateAgent(agent)">
+                    <mat-icon>content_copy</mat-icon>
+                    <span>{{ 'catalog_management.actions.duplicate' | translate }}</span>
+                  </button>
+
+                  <mat-divider *ngIf="isAdmin"></mat-divider>
+
+                  <!-- Supprimer (admin uniquement) -->
+                  <button mat-menu-item
+                          *ngIf="isAdmin"
+                          (click)="deleteAgent(agent)"
+                          class="delete-action">
+                    <mat-icon color="warn">delete</mat-icon>
+                    <span>{{ 'catalog_management.actions.delete' | translate }}</span>
+                  </button>
+                </mat-menu>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+              [class.disabled-row]="!row.canManage"></tr>
+        </table>
+
+        <!-- Message si aucun agent -->
+        <div *ngIf="filteredAgents.length === 0" class="no-agents">
+          <mat-icon>inventory_2</mat-icon>
+          <p>{{ 'catalog_management.no_agents' | translate }}</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <mat-paginator
+        [length]="totalAgents"
+        [pageSize]="pageSize"
+        [pageIndex]="pageIndex"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons>
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Légende des permissions -->
+  <mat-card class="legend-card">
+    <mat-card-content>
+      <div class="legend">
+        <div class="legend-item">
+          <mat-icon class="legend-icon admin">admin_panel_settings</mat-icon>
+          <span *ngIf="isAdmin">{{ 'catalog_management.legend.admin' | translate }}</span>
+          <span *ngIf="!isAdmin">{{ 'catalog_management.legend.user' | translate }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="owner-badge">{{ 'catalog_management.you' | translate }}</span>
+          <span>{{ 'catalog_management.legend.owner' | translate }}</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

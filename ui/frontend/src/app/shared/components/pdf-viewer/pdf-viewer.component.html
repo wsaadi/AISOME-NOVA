@@ -1,0 +1,116 @@
+<div class="pdf-viewer">
+  @if (isLoading) {
+    <div class="pdf-viewer__loading">
+      <div class="pdf-viewer__spinner"></div>
+      <p>Chargement du PDF...</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="pdf-viewer__error">
+      <i class="fa fa-exclamation-triangle"></i>
+      <p>{{ error }}</p>
+    </div>
+  }
+
+  @if (!isLoading && !error) {
+    <!-- Toolbar -->
+    @if (config.showToolbar) {
+      <div class="pdf-viewer__toolbar">
+        <!-- Navigation -->
+        @if (config.showNavigation) {
+          <div class="pdf-viewer__nav">
+            <button
+              class="pdf-viewer__button"
+              [disabled]="currentPage === 1"
+              (click)="previousPage()"
+              title="Page précédente">
+              <i class="fa fa-chevron-left"></i>
+            </button>
+
+            <span class="pdf-viewer__page-info">
+              Page <input
+                type="number"
+                class="pdf-viewer__page-input"
+                [(ngModel)]="currentPage"
+                [min]="1"
+                [max]="totalPages || 999"
+                (change)="goToPage(currentPage)">
+              @if (totalPages > 0) {
+                <span> / {{ totalPages }}</span>
+              }
+            </span>
+
+            <button
+              class="pdf-viewer__button"
+              [disabled]="totalPages > 0 && currentPage === totalPages"
+              (click)="nextPage()"
+              title="Page suivante">
+              <i class="fa fa-chevron-right"></i>
+            </button>
+          </div>
+        }
+
+        <!-- Zoom -->
+        @if (config.showZoom) {
+          <div class="pdf-viewer__zoom">
+            <button
+              class="pdf-viewer__button"
+              (click)="zoomOut()"
+              [disabled]="zoom <= (config.minZoom || 0.5)"
+              title="Zoom arrière">
+              <i class="fa fa-search-minus"></i>
+            </button>
+
+            <span class="pdf-viewer__zoom-level">{{ zoomPercentage }}%</span>
+
+            <button
+              class="pdf-viewer__button"
+              (click)="zoomIn()"
+              [disabled]="zoom >= (config.maxZoom || 3.0)"
+              title="Zoom avant">
+              <i class="fa fa-search-plus"></i>
+            </button>
+
+            <button
+              class="pdf-viewer__button"
+              (click)="resetZoom()"
+              title="Réinitialiser le zoom">
+              <i class="fa fa-refresh"></i>
+            </button>
+          </div>
+        }
+
+        <!-- Actions -->
+        <div class="pdf-viewer__actions">
+          @if (config.showDownload) {
+            <button
+              class="pdf-viewer__button"
+              (click)="downloadPDF()"
+              title="Télécharger">
+              <i class="fa fa-download"></i>
+            </button>
+          }
+
+          @if (config.showPrint) {
+            <button
+              class="pdf-viewer__button"
+              (click)="printPDF()"
+              title="Imprimer">
+              <i class="fa fa-print"></i>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- PDF Content -->
+    <div class="pdf-viewer__content" [style.transform]="'scale(' + zoom + ')'">
+      <iframe
+        [src]="pdfSrc"
+        class="pdf-viewer__iframe"
+        frameborder="0">
+      </iframe>
+    </div>
+  }
+</div>

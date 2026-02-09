@@ -1,0 +1,84 @@
+<div class="file-upload">
+  <!-- Zone de drop -->
+  <div
+    class="file-upload__dropzone"
+    [class.file-upload__dropzone--dragging]="isDragging"
+    [class.file-upload__dropzone--disabled]="disabled"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+    (click)="fileInput.click()">
+
+    <div class="file-upload__icon">
+      <i class="fa fa-cloud-upload-alt"></i>
+    </div>
+
+    <div class="file-upload__label">{{ label }}</div>
+    <div class="file-upload__hint">{{ hint }}</div>
+
+    @if (accept) {
+      <div class="file-upload__accept">{{ accept }}</div>
+    }
+
+    <input
+      #fileInput
+      type="file"
+      class="file-upload__input"
+      [accept]="accept"
+      [multiple]="multiple"
+      [disabled]="disabled"
+      (change)="onFileSelected($event)">
+  </div>
+
+  <!-- Liste des fichiers uploadés -->
+  @if (showPreview && uploadedFiles.length > 0) {
+    <div class="file-upload__files">
+      <div class="file-upload__files-header">
+        <span class="file-upload__files-count">
+          {{ uploadedFiles.length }} fichier{{ uploadedFiles.length > 1 ? 's' : '' }}
+        </span>
+
+        @if (uploadedFiles.length > 0) {
+          <button
+            type="button"
+            class="file-upload__clear-btn"
+            (click)="clearAll()">
+            <i class="fa fa-trash"></i>
+            Tout supprimer
+          </button>
+        }
+      </div>
+
+      <div class="file-upload__files-list">
+        @for (file of uploadedFiles; track file.id) {
+          <div class="file-upload__file">
+            @if (file.preview) {
+              <img [src]="file.preview" alt="Preview" class="file-upload__file-preview">
+            } @else {
+              <div class="file-upload__file-icon">
+                <i [class]="getFileIcon(file.type)"></i>
+              </div>
+            }
+
+            <div class="file-upload__file-info">
+              <div class="file-upload__file-name" [title]="file.name">
+                {{ file.name }}
+              </div>
+              <div class="file-upload__file-size">
+                {{ formatFileSize(file.size) }}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="file-upload__file-remove"
+              (click)="removeFile(file.id)"
+              title="Supprimer">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

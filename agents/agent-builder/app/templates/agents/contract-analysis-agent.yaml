@@ -1,0 +1,330 @@
+# Agent Descriptor Language (ADL) v1.0.0
+# Contract Analysis Agent - Legal document analysis
+
+metadata:
+  adl_version: "1.0.0"
+  schema_url: "https://agent-pf.io/schemas/adl/v1"
+  version: "1.0.0"
+  tags:
+    - contract
+    - legal
+    - analysis
+    - risk
+    - compliance
+  changelog:
+    - "1.0.0: Initial ADL conversion"
+
+identity:
+  name: "Contract Analysis Agent"
+  slug: "contract-analysis-agent"
+  description: "Analyse de contrats et documents juridiques"
+  long_description: |
+    Agent spécialisé dans l'analyse de contrats et documents juridiques.
+
+    ## Fonctionnalités
+    - Identification des clauses clés
+    - Analyse des risques contractuels
+    - Extraction des obligations
+    - Détection des anomalies
+
+    ## Types de documents
+    - Contrats commerciaux
+    - CGV / CGU
+    - Accords de confidentialité (NDA)
+    - Contrats de travail
+    - Baux et contrats de location
+  icon: "fa fa-gavel"
+  category: "document_analysis"
+  status: "active"
+
+business_logic:
+  system_prompt: |
+    Tu es un expert en analyse de contrats et documents juridiques.
+
+    Ta mission est d'analyser le contrat fourni et d'identifier:
+    1. Les parties prenantes et leurs rôles
+    2. Les clauses clés et leur portée
+    3. Les obligations de chaque partie
+    4. Les risques et points d'attention
+    5. Les conditions de résiliation
+    6. Les pénalités et garanties
+
+    Format de réponse structuré:
+
+    ## Synthèse du contrat
+    Résumé exécutif en 3-5 lignes
+
+    ## Parties prenantes
+    - Partie A: [identification et rôle]
+    - Partie B: [identification et rôle]
+
+    ## Clauses clés
+    | Clause | Description | Risque |
+    |--------|-------------|--------|
+
+    ## Obligations
+    ### Obligations Partie A
+    ### Obligations Partie B
+
+    ## Points d'attention
+    - Risques identifiés
+    - Clauses inhabituelles
+    - Recommandations
+
+    ## Dates importantes
+    - Durée du contrat
+    - Échéances
+    - Renouvellement
+
+  user_prompt_template: |
+    Analyse le contrat suivant:
+
+    {{contract_content}}
+
+    {{#if specific_focus}}
+    Points spécifiques à analyser: {{specific_focus}}
+    {{/if}}
+
+  personality_traits:
+    - name: "rigorous"
+      intensity: 1.8
+    - name: "cautious"
+      intensity: 1.5
+    - name: "detailed"
+      intensity: 1.6
+
+  tone: "professional"
+  language: "fr"
+
+  llm_provider: "mistral"
+  llm_model: "mistral-large-latest"
+  temperature: 0.2
+  max_tokens: 8000
+
+  context_window_messages: 3
+  include_system_context: true
+  streaming_enabled: false
+
+  response_format:
+    type: "markdown"
+
+  moderation:
+    enabled: false
+
+  classification:
+    enabled: false
+
+  instructions:
+    - "Identifier tous les risques juridiques"
+    - "Ne pas fournir de conseils juridiques"
+    - "Recommander une consultation juridique si nécessaire"
+    - "Être exhaustif dans l'analyse des clauses"
+
+  constraints:
+    - "Ne jamais donner de conseils juridiques définitifs"
+    - "Toujours recommander une validation par un juriste"
+    - "Ne pas interpréter le droit applicable"
+
+tools:
+  tools:
+    - tool_id: "document-extractor"
+      name: "Extracteur de contrats"
+      enabled: true
+      description: "Extrait le texte du contrat"
+      parameters:
+        - name: "file"
+          source: "input"
+          input_component: "contract_upload"
+          required: true
+      output_variable: "contract_content"
+      on_error: "stop"
+      timeout_ms: 60000
+
+    - tool_id: "word-crud"
+      name: "Générateur de rapport"
+      enabled: true
+      description: "Génère le rapport d'analyse en Word"
+      parameters:
+        - name: "title"
+          source: "constant"
+          value: "Rapport d'Analyse Contractuelle"
+        - name: "paragraphs"
+          source: "variable"
+          value: "report_content"
+      output_variable: "report_word"
+      on_error: "continue"
+
+  default_error_handling: "continue"
+  parallel_execution: false
+
+ui:
+  show_header: true
+  header_title: "Analyse de Contrats"
+  header_subtitle: "Analyse juridique assistée par IA"
+  header_icon: "fa fa-gavel"
+
+  sections:
+    - name: "upload_section"
+      title: "Document à analyser"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "document_upload"
+          name: "contract_upload"
+          label: "Déposez votre contrat"
+          help_text: "Formats: PDF, Word, TXT"
+          accept: ".pdf,.doc,.docx,.txt"
+          multiple: false
+          max_size_mb: 20
+          required: true
+
+        - type: "select"
+          name: "contract_type"
+          label: "Type de contrat"
+          default_value: "commercial"
+          options:
+            - value: "commercial"
+              label: "Contrat commercial"
+            - value: "employment"
+              label: "Contrat de travail"
+            - value: "nda"
+              label: "NDA / Confidentialité"
+            - value: "lease"
+              label: "Bail / Location"
+            - value: "service"
+              label: "Prestation de services"
+            - value: "other"
+              label: "Autre"
+
+        - type: "textarea"
+          name: "specific_focus"
+          label: "Points spécifiques à analyser"
+          placeholder: "Ex: Clauses de non-concurrence, pénalités de retard..."
+          required: false
+
+    - name: "analysis_section"
+      title: "Rapport d'analyse"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "markdown_viewer"
+          name: "analysis_result"
+          label: "Analyse"
+          auto_bind_output: true
+          style:
+            min_height: "500px"
+            border: "1px solid #e5e7eb"
+            border_radius: "8px"
+            padding: "20px"
+
+        - type: "text_display"
+          name: "disclaimer"
+          default_value: "⚠️ Cette analyse est fournie à titre informatif uniquement et ne constitue pas un avis juridique. Consultez un professionnel du droit pour une validation."
+          style:
+            background_color: "#FEF3C7"
+            padding: "12px"
+            border_radius: "8px"
+            text_color: "#92400E"
+
+  show_sidebar: false
+  show_footer: false
+
+  show_actions: true
+  actions:
+    - type: "button"
+      name: "reset_button"
+      label: "Nouveau contrat"
+      button_action: "reset_form"
+      button_variant: "secondary"
+
+    - type: "button"
+      name: "analyze_button"
+      label: "Analyser le contrat"
+      button_action: "trigger_agent"
+      button_variant: "primary"
+      is_trigger_button: true
+
+  actions_position: "right"
+  theme: "auto"
+  primary_color: "#DC2626"
+
+connectors:
+  default_connector: "mistral-legal"
+  connectors:
+    - id: "mistral-legal"
+      provider: "mistral"
+      name: "Mistral Large"
+      description: "Analyse juridique approfondie"
+      model: "mistral-large-latest"
+      default_temperature: 0.2
+      default_max_tokens: 8000
+      retry_on_error: true
+      max_retries: 2
+      timeout_ms: 120000
+      priority: 0
+
+  enable_fallback: false
+
+workflows:
+  workflows:
+    - name: "Contract Analysis Flow"
+      description: "Analyse de contrat"
+      trigger: "button_click"
+      trigger_config:
+        button: "analyze_button"
+      enabled: true
+      steps:
+        - id: "extract"
+          name: "Extraire le contrat"
+          type: "tool_call"
+          tool_config_id: "document-extractor"
+          output_variable: "contract_content"
+          on_error: "stop"
+          next_step: "analyze"
+
+        - id: "analyze"
+          name: "Analyser le contrat"
+          type: "llm_call"
+          prompt_template: |
+            {{system_prompt}}
+
+            Type de contrat: {{contract_type}}
+
+            Contrat:
+            {{contract_content}}
+
+            {{#if specific_focus}}
+            Points spécifiques: {{specific_focus}}
+            {{/if}}
+          output_variable: "analysis"
+
+      entry_step: "extract"
+      initial_variables:
+        contract_content: null
+        analysis: null
+
+      timeout_ms: 180000
+
+  default_workflow: "contract-analysis"
+
+security:
+  requires_auth: true
+  allowed_roles:
+    - "admin"
+    - "legal"
+    - "manager"
+  rate_limit_enabled: true
+  requests_per_minute: 5
+  requests_per_hour: 30
+  sanitize_inputs: true
+  max_input_length: 200000
+  audit_logging: true
+  log_inputs: false
+  log_outputs: false
+
+deployment:
+  auto_route: true
+  environment: "production"
+  min_instances: 1
+  max_instances: 2
+  health_check_enabled: true

@@ -1,0 +1,718 @@
+<div class="agent-runner">
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Loading agent...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error) {
+    <div class="error-container">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <h2>Agent not found</h2>
+      <p>{{ error }}</p>
+      <button mat-raised-button color="primary" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Catalog
+      </button>
+    </div>
+  }
+
+  <!-- Agent Content -->
+  @if (agent && !loading && !error) {
+    <!-- Header -->
+    <div class="agent-header">
+      <div class="header-left">
+        <button mat-icon-button (click)="goBack()" class="back-button">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="header-info">
+          @if (agent.icon) {
+            <i [class]="agent.icon" class="agent-icon"></i>
+          }
+          <div class="header-text">
+            <h1>{{ agent.name }}</h1>
+            <p>{{ agent.description }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button mat-icon-button (click)="openConfigDialog()" matTooltip="Configure AI">
+          <mat-icon>settings</mat-icon>
+        </button>
+        <button mat-icon-button (click)="editAgent()" matTooltip="Edit Agent">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="agent-content">
+      <!-- Dashboard Mode: Grid Layout -->
+      @if (agent.ui_layout.layout_mode === 'dashboard' && agent.ui_layout.widgets?.length) {
+        <div class="dashboard-grid" [ngStyle]="getDashboardGridStyle()">
+          @for (widget of agent.ui_layout.widgets; track widget.id) {
+            <div class="widget-cell" [ngStyle]="getWidgetGridStyle(widget)">
+              <ng-container *ngTemplateOutlet="componentTemplate; context: { component: widget }"></ng-container>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Sections Mode: Classic Layout -->
+      @else if (agent.ui_layout.sections.length > 0) {
+        <div class="ui-sections">
+          @for (section of agent.ui_layout.sections; track section.id) {
+            <mat-card class="section-card">
+              @if (section.title) {
+                <mat-card-header [class.collapsible-header]="section.collapsible" (click)="section.collapsible ? toggleSectionCollapse(section.name) : null">
+                  <mat-card-title>
+                    {{ section.title }}
+                    @if (section.collapsible) {
+                      <mat-icon class="collapse-icon" [class.collapsed]="collapsedSections[section.name]">
+                        {{ collapsedSections[section.name] ? 'expand_more' : 'expand_less' }}
+                      </mat-icon>
+                    }
+                  </mat-card-title>
+                  @if (section.description && !collapsedSections[section.name]) {
+                    <mat-card-subtitle>{{ section.description }}</mat-card-subtitle>
+                  }
+                </mat-card-header>
+              }
+              <mat-card-content [class.section-collapsed]="collapsedSections[section.name]">
+                <div class="section-content" [ngStyle]="getSectionStyle(section)">
+                  @for (component of section.components; track component.id) {
+                    <div class="component-wrapper">
+                      <!-- Input Components -->
+                      @if (isInputComponent(component.type)) {
+                        @switch (component.type) {
+                          @case ('text_input') {
+                            <mat-form-field appearance="outline" class="full-width">
+                              <mat-label>{{ component.label }}</mat-label>
+                              <input
+                                matInput
+                                [type]="getInputType(component.type)"
+                                [placeholder]="component.placeholder || ''"
+                                [(ngModel)]="formData[component.name]"
+                                [required]="!!component.required"
+                              />
+                              @if (component.help_text) {
+                                <mat-hint>{{ component.help_text }}</mat-hint>
+                              }
+                            </mat-form-field>
+                          }
+                          @case ('textarea') {
+                            <mat-form-field appearance="outline" class="full-width">
+                              <mat-label>{{ component.label }}</mat-label>
+                              <textarea
+                                matInput
+                                [placeholder]="component.placeholder || ''"
+                                [(ngModel)]="formData[component.name]"
+                                [required]="!!component.required"
+                                rows="4"
+                              ></textarea>
+                              @if (component.help_text) {
+                                <mat-hint>{{ component.help_text }}</mat-hint>
+                              }
+                            </mat-form-field>
+                          }
+                          @case ('number_input') {
+                            <mat-form-field appearance="outline" class="full-width">
+                              <mat-label>{{ component.label }}</mat-label>
+                              <input
+                                matInput
+                                type="number"
+                                [(ngModel)]="formData[component.name]"
+                                [required]="!!component.required"
+                              />
+                              @if (component.help_text) {
+                                <mat-hint>{{ component.help_text }}</mat-hint>
+                              }
+                            </mat-form-field>
+                          }
+                          @case ('email_input') {
+                            <mat-form-field appearance="outline" class="full-width">
+                              <mat-label>{{ component.label }}</mat-label>
+                              <input
+                                matInput
+                                type="email"
+                                [(ngModel)]="formData[component.name]"
+                                [required]="!!component.required"
+                              />
+                            </mat-form-field>
+                          }
+                          @case ('date_picker') {
+                            <mat-form-field appearance="outline" class="full-width">
+                              <mat-label>{{ component.label }}</mat-label>
+                              <input
+                                matInput
+                                type="date"
+                                [(ngModel)]="formData[component.name]"
+                                [required]="!!component.required"
+                              />
+                            </mat-form-field>
+                          }
+                          @case ('select') {
+                            <mat-form-field appearance="outline" class="full-width">
+                              <mat-label>{{ component.label }}</mat-label>
+                              <mat-select
+                                [(ngModel)]="formData[component.name]"
+                                [required]="!!component.required"
+                              >
+                                @for (option of component.options || []; track option.value) {
+                                  <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                                }
+                              </mat-select>
+                              @if (component.help_text) {
+                                <mat-hint>{{ component.help_text }}</mat-hint>
+                              }
+                            </mat-form-field>
+                          }
+                          @case ('checkbox') {
+                            <mat-checkbox [(ngModel)]="formData[component.name]">
+                              {{ component.label }}
+                            </mat-checkbox>
+                          }
+                          @case ('slider') {
+                            <div class="slider-wrapper">
+                              <label>{{ component.label }}</label>
+                              <mat-slider min="0" max="100">
+                                <input matSliderThumb [(ngModel)]="formData[component.name]" />
+                              </mat-slider>
+                            </div>
+                          }
+                          @default {
+                            <mat-form-field appearance="outline" class="full-width">
+                              <mat-label>{{ component.label }}</mat-label>
+                              <input
+                                matInput
+                                [type]="getInputType(component.type)"
+                                [(ngModel)]="formData[component.name]"
+                                [required]="!!component.required"
+                              />
+                            </mat-form-field>
+                          }
+                        }
+                      }
+
+                      <!-- File Components -->
+                      @if (isFileComponent(component.type)) {
+                        <div class="file-upload-wrapper">
+                          <label>{{ component.label }}</label>
+                          <div class="upload-zone">
+                            <mat-icon>cloud_upload</mat-icon>
+                            <span>Drag files here or click to browse</span>
+                            <input
+                              type="file"
+                              [accept]="component.accept || '*/*'"
+                              [multiple]="component.multiple"
+                              (change)="onFileSelect($event, component.name)"
+                              class="file-input"
+                            />
+                            <button mat-stroked-button type="button">Browse</button>
+                          </div>
+                          @if (getUploadedFileNames(component.name).length > 0) {
+                            <div class="uploaded-files">
+                              @for (fileName of getUploadedFileNames(component.name); track fileName; let i = $index) {
+                                <div class="uploaded-file">
+                                  <mat-icon>insert_drive_file</mat-icon>
+                                  <span>{{ fileName }}</span>
+                                  <button mat-icon-button (click)="removeFile(component.name, i)">
+                                    <mat-icon>close</mat-icon>
+                                  </button>
+                                </div>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+
+                      <!-- Display Components -->
+                      @if (isDisplayComponent(component.type)) {
+                        <div class="display-wrapper">
+                          @if (component.type === 'text_display') {
+                            <p class="text-display">{{ component.default_value || getComponentOutput(component) || 'Output will appear here...' }}</p>
+                          }
+                          @if (component.type === 'markdown_viewer') {
+                            <div class="markdown-display">
+                              @if (getComponentOutput(component); as content) {
+                                <app-markdown-viewer [content]="content"></app-markdown-viewer>
+                              } @else {
+                                <p class="placeholder"></p>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+
+                      <!-- Chart Components -->
+                      @if (isChartComponent(component.type)) {
+                        <div class="chart-wrapper">
+                          @if (getChartData(component); as chartData) {
+                            @switch (component.type) {
+                              @case ('line_chart') {
+                                <app-line-chart [data]="chartData" [height]="320"></app-line-chart>
+                              }
+                              @case ('bar_chart') {
+                                <app-bar-chart [data]="chartData" [height]="320"></app-bar-chart>
+                              }
+                              @case ('pie_chart') {
+                                <app-pie-chart [data]="chartData" [height]="320"></app-pie-chart>
+                              }
+                              @case ('donut_chart') {
+                                <app-donut-chart [data]="chartData" [height]="320"></app-donut-chart>
+                              }
+                            }
+                          } @else {
+                            <div class="chart-placeholder">
+                              <mat-icon>{{ component.type === 'bar_chart' ? 'bar_chart' : component.type === 'line_chart' ? 'show_chart' : 'pie_chart' }}</mat-icon>
+                              <span>{{ component.label || 'Chart' }}</span>
+                              <small>No chart data yet</small>
+                            </div>
+                          }
+                        </div>
+                      }
+
+                      <!-- Interactive Components -->
+                      @if (isInteractiveComponent(component.type)) {
+                        @if (component.type === 'chat_interface') {
+                          <div class="chat-interface full-height">
+                            <div class="chat-messages" #messagesContainer>
+                              @for (msg of chatMessages; track $index) {
+                                <div class="chat-message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'" [class.error]="msg.isError">
+                                  <div class="message-avatar">
+                                    <mat-icon>{{ msg.role === 'user' ? 'person' : 'smart_toy' }}</mat-icon>
+                                  </div>
+                                  <div class="message-content">
+                                    @if (msg.role === 'assistant' && !msg.isError) {
+                                      <app-markdown-viewer [content]="msg.content"></app-markdown-viewer>
+                                    } @else {
+                                      <p>{{ msg.content }}</p>
+                                    }
+                                  </div>
+                                </div>
+                              }
+                              @if (isSending) {
+                                <div class="chat-message assistant">
+                                  <div class="message-avatar">
+                                    <mat-icon>smart_toy</mat-icon>
+                                  </div>
+                                  <div class="message-content typing">
+                                    <span class="dot"></span>
+                                    <span class="dot"></span>
+                                    <span class="dot"></span>
+                                  </div>
+                                </div>
+                              }
+                            </div>
+
+                            <!-- Export bar -->
+                            @if (canExport()) {
+                              <div class="export-bar">
+                                <button mat-stroked-button color="primary" (click)="exportToWord()" matTooltip="Exporter en Word">
+                                  <mat-icon>description</mat-icon>
+                                  Exporter en Word
+                                </button>
+                              </div>
+                            }
+
+                            <!-- Uploaded files display -->
+                            @if (getUploadedFileNames('chat_files').length > 0) {
+                              <div class="uploaded-files-bar">
+                                @for (fileName of getUploadedFileNames('chat_files'); track fileName; let i = $index) {
+                                  <div class="uploaded-file-chip">
+                                    <mat-icon>insert_drive_file</mat-icon>
+                                    <span>{{ fileName }}</span>
+                                    <button mat-icon-button (click)="removeFile('chat_files', i)">
+                                      <mat-icon>close</mat-icon>
+                                    </button>
+                                  </div>
+                                }
+                              </div>
+                            }
+
+                            <div class="chat-input-with-upload">
+                              <!-- File upload button -->
+                              <input
+                                type="file"
+                                #sectionFileInput
+                                multiple
+                                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                                (change)="onFileSelect($event, 'chat_files')"
+                                style="display: none"
+                              />
+                              <button mat-icon-button (click)="sectionFileInput.click()" matTooltip="Joindre un fichier" class="attach-button">
+                                <mat-icon>attach_file</mat-icon>
+                              </button>
+
+                              <mat-form-field appearance="outline" class="full-width">
+                                <input
+                                  matInput
+                                  [(ngModel)]="chatInput"
+                                  [placeholder]="getUploadedFileNames('chat_files').length > 0 ? 'Tapez go pour analyser ou ajoutez un message...' : 'Tapez un message...'"
+                                  (keyup.enter)="sendChatMessage()"
+                                  [disabled]="isSending"
+                                />
+                                <button mat-icon-button matSuffix (click)="sendChatMessage()" [disabled]="isSending || (!chatInput.trim() && getUploadedFileNames('chat_files').length === 0)">
+                                  <mat-icon>send</mat-icon>
+                                </button>
+                              </mat-form-field>
+                            </div>
+                          </div>
+                        }
+                        @if (component.type === 'button') {
+                          <button
+                            mat-raised-button
+                            [color]="component.button_variant === 'primary' ? 'primary' : component.button_variant === 'danger' ? 'warn' : 'accent'"
+                            (click)="onButtonClick(component)"
+                            [disabled]="isExecuting || (component.button_action === 'download' && !executionResult)"
+                          >
+                            @if (isExecuting && component.is_trigger_button) {
+                              <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+                            }
+                            {{ component.label || 'Button' }}
+                          </button>
+                        }
+                        @if (component.type === 'progress_bar') {
+                          @if (isExecuting || executionProgress > 0) {
+                            <div class="progress-wrapper" [class.completed]="executionProgress >= 100">
+                              <div class="progress-label">
+                                @if (progressLabel) {
+                                  <span class="progress-step">{{ progressLabel }}</span>
+                                } @else {
+                                  <span>{{ component.label }}</span>
+                                }
+                                <span class="progress-percent">{{ executionProgress }}%</span>
+                              </div>
+                              <mat-progress-bar
+                                [mode]="isExecuting && executionProgress < 5 ? 'indeterminate' : 'determinate'"
+                                [value]="executionProgress"
+                                [color]="executionProgress >= 100 ? 'accent' : 'primary'">
+                              </mat-progress-bar>
+                            </div>
+                          }
+                        }
+                      }
+                    </div>
+                  }
+                </div>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      } @else {
+        <!-- Default Chat Interface if no UI sections defined -->
+        <mat-card class="chat-card">
+          <mat-card-content>
+            <div class="chat-interface full-height">
+              <div class="chat-messages" #messagesContainer>
+                @for (msg of chatMessages; track $index) {
+                  <div class="chat-message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'" [class.error]="msg.isError">
+                    <div class="message-avatar">
+                      <mat-icon>{{ msg.role === 'user' ? 'person' : 'smart_toy' }}</mat-icon>
+                    </div>
+                    <div class="message-content">
+                      @if (msg.role === 'assistant' && !msg.isError) {
+                        <app-markdown-viewer [content]="msg.content"></app-markdown-viewer>
+                      } @else {
+                        <p>{{ msg.content }}</p>
+                      }
+                    </div>
+                  </div>
+                }
+                @if (isSending) {
+                  <div class="chat-message assistant">
+                    <div class="message-avatar">
+                      <mat-icon>smart_toy</mat-icon>
+                    </div>
+                    <div class="message-content typing">
+                      <span class="dot"></span>
+                      <span class="dot"></span>
+                      <span class="dot"></span>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Uploaded files display -->
+              @if (getUploadedFileNames('chat_files').length > 0) {
+                <div class="uploaded-files-bar">
+                  @for (fileName of getUploadedFileNames('chat_files'); track fileName; let i = $index) {
+                    <div class="uploaded-file-chip">
+                      <mat-icon>insert_drive_file</mat-icon>
+                      <span>{{ fileName }}</span>
+                      <button mat-icon-button (click)="removeFile('chat_files', i)">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="chat-input-with-upload">
+                <!-- File upload button -->
+                <input
+                  type="file"
+                  #fileInput
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                  (change)="onFileSelect($event, 'chat_files')"
+                  style="display: none"
+                />
+                <button mat-icon-button (click)="fileInput.click()" matTooltip="Joindre un fichier" class="attach-button">
+                  <mat-icon>attach_file</mat-icon>
+                </button>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <input
+                    matInput
+                    [(ngModel)]="chatInput"
+                    [placeholder]="getUploadedFileNames('chat_files').length > 0 ? 'Tapez go pour analyser ou ajoutez un message...' : 'Tapez un message...'"
+                    (keyup.enter)="sendChatMessage()"
+                    [disabled]="isSending"
+                  />
+                  <button mat-icon-button matSuffix (click)="sendChatMessage()" [disabled]="isSending || (!chatInput.trim() && getUploadedFileNames('chat_files').length === 0)">
+                    <mat-icon>send</mat-icon>
+                  </button>
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- Actions Bar -->
+      @if (agent.ui_layout.show_actions && agent.ui_layout.actions?.length) {
+        <div class="actions-bar">
+          @for (action of agent.ui_layout.actions; track action.id) {
+            <button
+              mat-raised-button
+              [color]="action.button_variant === 'primary' ? 'primary' : action.button_variant === 'danger' ? 'warn' : (action.button_variant === 'success' ? 'accent' : 'accent')"
+              (click)="onButtonClick(action)"
+              [disabled]="isExecuting || (isExportWordAction(action) && !executionResult)"
+            >
+              @if (isExecuting && action.is_trigger_button) {
+                <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+              }
+              {{ action.label || 'Action' }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Component Template (reusable for both modes) -->
+<ng-template #componentTemplate let-component="component">
+  <div class="component-wrapper">
+    <!-- Input Components -->
+    @if (isInputComponent(component.type)) {
+      @switch (component.type) {
+        @case ('text_input') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ component.label }}</mat-label>
+            <input
+              matInput
+              [type]="getInputType(component.type)"
+              [placeholder]="component.placeholder || ''"
+              [(ngModel)]="formData[component.name]"
+              [required]="!!component.required"
+            />
+            @if (component.help_text) {
+              <mat-hint>{{ component.help_text }}</mat-hint>
+            }
+          </mat-form-field>
+        }
+        @case ('textarea') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ component.label }}</mat-label>
+            <textarea
+              matInput
+              [placeholder]="component.placeholder || ''"
+              [(ngModel)]="formData[component.name]"
+              [required]="!!component.required"
+              rows="4"
+            ></textarea>
+            @if (component.help_text) {
+              <mat-hint>{{ component.help_text }}</mat-hint>
+            }
+          </mat-form-field>
+        }
+        @case ('number_input') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ component.label }}</mat-label>
+            <input
+              matInput
+              type="number"
+              [(ngModel)]="formData[component.name]"
+              [required]="!!component.required"
+            />
+            @if (component.help_text) {
+              <mat-hint>{{ component.help_text }}</mat-hint>
+            }
+          </mat-form-field>
+        }
+        @case ('select') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ component.label }}</mat-label>
+            <mat-select
+              [(ngModel)]="formData[component.name]"
+              [required]="!!component.required"
+            >
+              @for (option of component.options || []; track option.value) {
+                <mat-option [value]="option.value">{{ option.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+        @case ('checkbox') {
+          <mat-checkbox [(ngModel)]="formData[component.name]">
+            {{ component.label }}
+          </mat-checkbox>
+        }
+        @case ('date_picker') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ component.label }}</mat-label>
+            <input matInput type="date" [(ngModel)]="formData[component.name]" [required]="!!component.required" />
+          </mat-form-field>
+        }
+        @default {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ component.label }}</mat-label>
+            <input matInput [(ngModel)]="formData[component.name]" [required]="!!component.required" />
+          </mat-form-field>
+        }
+      }
+    }
+
+    <!-- File Components -->
+    @if (isFileComponent(component.type)) {
+      <div class="file-upload-wrapper">
+        <label>{{ component.label }}</label>
+        <div class="upload-zone">
+          <mat-icon>cloud_upload</mat-icon>
+          <span>Drag files here or click to browse</span>
+          <input
+            type="file"
+            [accept]="component.accept || '*/*'"
+            [multiple]="component.multiple"
+            (change)="onFileSelect($event, component.name)"
+            class="file-input"
+          />
+          <button mat-stroked-button type="button">Browse</button>
+        </div>
+        @if (getUploadedFileNames(component.name).length > 0) {
+          <div class="uploaded-files">
+            @for (fileName of getUploadedFileNames(component.name); track fileName; let i = $index) {
+              <div class="uploaded-file">
+                <mat-icon>insert_drive_file</mat-icon>
+                <span>{{ fileName }}</span>
+                <button mat-icon-button (click)="removeFile(component.name, i)">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Display Components -->
+    @if (isDisplayComponent(component.type)) {
+      <div class="display-wrapper">
+        @if (component.type === 'text_display') {
+          <p class="text-display">{{ component.default_value || getComponentOutput(component) || 'Output will appear here...' }}</p>
+        }
+        @if (component.type === 'markdown_viewer') {
+          <div class="markdown-display">
+            @if (getComponentOutput(component); as content) {
+              <app-markdown-viewer [content]="content"></app-markdown-viewer>
+            } @else {
+              <p class="placeholder"></p>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Chart Components -->
+    @if (isChartComponent(component.type)) {
+      <div class="chart-wrapper">
+        @if (component.label) {
+          <h4 class="chart-title">{{ component.label }}</h4>
+        }
+        @if (getChartData(component); as chartData) {
+          @switch (component.type) {
+            @case ('line_chart') {
+              <app-line-chart [data]="chartData" [height]="240"></app-line-chart>
+            }
+            @case ('bar_chart') {
+              <app-bar-chart [data]="chartData" [height]="240"></app-bar-chart>
+            }
+            @case ('pie_chart') {
+              <app-pie-chart [data]="chartData" [height]="240"></app-pie-chart>
+            }
+            @case ('donut_chart') {
+              <app-donut-chart [data]="chartData" [height]="240"></app-donut-chart>
+            }
+          }
+        } @else {
+          <div class="chart-placeholder">
+            <mat-icon>{{ component.type === 'bar_chart' ? 'bar_chart' : component.type === 'line_chart' ? 'show_chart' : 'pie_chart' }}</mat-icon>
+            <span>{{ component.label || 'Chart' }}</span>
+            <small>No data available</small>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Interactive Components -->
+    @if (isInteractiveComponent(component.type)) {
+      @if (component.type === 'button') {
+        <button
+          mat-raised-button
+          [color]="component.button_variant === 'primary' ? 'primary' : component.button_variant === 'danger' ? 'warn' : 'accent'"
+          (click)="onButtonClick(component)"
+          [disabled]="isExecuting || (component.button_action === 'download' && !executionResult)"
+          class="full-width"
+        >
+          @if (isExecuting && component.is_trigger_button) {
+            <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+          }
+          {{ component.label || 'Execute' }}
+        </button>
+      }
+      @if (component.type === 'chat_interface') {
+        <div class="chat-interface embedded">
+          <div class="chat-messages" #messagesContainer>
+            @for (msg of chatMessages; track $index) {
+              <div class="chat-message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+                <div class="message-avatar">
+                  <mat-icon>{{ msg.role === 'user' ? 'person' : 'smart_toy' }}</mat-icon>
+                </div>
+                <div class="message-content">
+                  @if (msg.role === 'assistant') {
+                    <app-markdown-viewer [content]="msg.content"></app-markdown-viewer>
+                  } @else {
+                    <p>{{ msg.content }}</p>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+          <div class="chat-input">
+            <mat-form-field appearance="outline" class="full-width">
+              <input matInput [(ngModel)]="chatInput" placeholder="Type a message..." (keyup.enter)="sendChatMessage()" [disabled]="isSending" />
+              <button mat-icon-button matSuffix (click)="sendChatMessage()" [disabled]="isSending || !chatInput.trim()">
+                <mat-icon>send</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</ng-template>

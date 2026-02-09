@@ -1,0 +1,34 @@
+<div class="radio-container">
+  <label *ngIf="label" class="radio-container-label" [class.radio-container-label--required]="required">
+    {{ label }}
+    <span *ngIf="required" class="required-asterisk">*</span>
+  </label>
+
+  <div [ngClass]="containerClasses">
+    <label
+      *ngFor="let option of options; let i = index"
+      class="radio-option"
+      [class.radio-option--disabled]="disabled || option.disabled">
+
+      <input
+        type="radio"
+        [name]="name"
+        [value]="option.value"
+        [checked]="isChecked(option.value)"
+        [disabled]="disabled || option.disabled"
+        (change)="handleChange(option.value)"
+        class="radio-input">
+
+      <span class="radio-custom"></span>
+
+      <div class="radio-content">
+        <span class="radio-label">{{ option.label }}</span>
+        <span *ngIf="option.description" class="radio-description">
+          {{ option.description }}
+        </span>
+      </div>
+    </label>
+  </div>
+
+  <p *ngIf="error" class="radio-error">{{ error }}</p>
+</div>

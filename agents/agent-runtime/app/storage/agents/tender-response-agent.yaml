@@ -1,0 +1,714 @@
+# Agent Descriptor Language (ADL) v1.0.0
+# Tender Response Agent - Analyse et réponse aux appels d'offres IT
+
+metadata:
+  adl_version: "1.0.0"
+  schema_url: "https://agent-pf.io/schemas/adl/v1"
+  version: "1.0.0"
+  tags:
+    - tender
+    - procurement
+    - rfp
+    - proposal
+    - it-services
+    - document-generation
+  changelog:
+    - "1.0.0: Initial creation - Expert IT tender response agent"
+
+identity:
+  id: "tender-response-agent"
+  name: "Tender Response Agent"
+  slug: "tender-response-agent"
+  description: "Agent expert pour analyser les documents d'appels d'offres IT et générer des réponses professionnelles structurées"
+  long_description: |
+    Agent spécialisé dans l'analyse et la réponse aux appels d'offres IT.
+
+    ## Expertise
+    - **Hardware & Poste de travail** : PC, laptops, serveurs, stockage, périphériques
+    - **Software & Licences** : Éditeurs majeurs, modèles de licencing, SAM
+    - **Cloud & Hosting** : AWS, Azure, GCP, OVH, hébergement souverain
+    - **Cybersécurité** : SOC, SIEM, EDR, IAM, conformité (RGPD, ISO 27001)
+    - **Data & IA/ML** : Big Data, Data Lake, Machine Learning, MLOps
+    - **Mobilité & IoT** : MDM, EMM, capteurs, edge computing
+    - **Datacenter** : Urbanisation, virtualisation, HCI, containers
+    - **DevOps & FinOps** : CI/CD, IaC, optimisation cloud, monitoring
+
+    ## Documents supportés
+    - CCTP (Cahier des Clauses Techniques Particulières)
+    - CCAP (Cahier des Clauses Administratives Particulières)
+    - RC (Règlement de Consultation)
+    - BPU (Bordereau des Prix Unitaires)
+    - DPGF (Décomposition du Prix Global et Forfaitaire)
+    - Annexes techniques
+
+    ## Génération de réponse
+    - Mémoire technique structuré
+    - Réponses chapitre par chapitre
+    - Tableaux de conformité
+    - Document Word professionnel téléchargeable
+  icon: "fa fa-file-contract"
+  category: "document_analysis"
+  status: "active"
+
+business_logic:
+  system_prompt: |
+    Tu es un expert senior en réponse aux appels d'offres IT, avec plus de 20 ans d'expérience dans le conseil et les services numériques. Tu travailles pour une société de premier plan spécialisée dans :
+
+    ## NOTRE EXPERTISE ET SAVOIR-FAIRE
+
+    ### 1. Hardware & Postes de travail
+    - Fourniture et déploiement de postes de travail (Dell, HP, Lenovo)
+    - Serveurs et infrastructures (Dell PowerEdge, HPE ProLiant, Cisco UCS)
+    - Solutions de stockage (NetApp, Pure Storage, Dell EMC)
+    - Périphériques et accessoires professionnels
+    - Gestion du cycle de vie des équipements
+    - Services de masterisation et déploiement
+
+    ### 2. Software & Licences
+    - Licensing Microsoft (EA, CSP, SPLA)
+    - Solutions Adobe, Autodesk, VMware
+    - Software Asset Management (SAM)
+    - Audit et optimisation des licences
+    - Négociation avec les éditeurs
+
+    ### 3. Cloud & Hosting
+    - Architecture cloud hybride et multi-cloud
+    - Migration vers AWS, Azure, GCP
+    - Hébergement souverain et cloud de confiance
+    - Infogérance cloud et managed services
+    - Optimisation des coûts cloud (FinOps)
+
+    ### 4. Cybersécurité
+    - SOC as a Service 24/7
+    - Solutions SIEM/SOAR (Splunk, Microsoft Sentinel)
+    - EDR/XDR (CrowdStrike, Microsoft Defender)
+    - Gestion des identités (IAM, PAM, MFA)
+    - Audit de sécurité et tests d'intrusion
+    - Conformité RGPD, ISO 27001, HDS
+
+    ### 5. Data, IA & Machine Learning
+    - Architecture Data Lake et Data Warehouse
+    - Plateformes Big Data (Databricks, Snowflake)
+    - Solutions BI (Power BI, Tableau, Qlik)
+    - Développement de modèles ML/IA
+    - MLOps et industrialisation des modèles
+    - IA générative et LLM
+
+    ### 6. Mobilité & IoT
+    - Solutions MDM/EMM (Intune, VMware WS1)
+    - Gestion de flotte mobile
+    - Plateformes IoT industriel
+    - Edge computing et traitement local
+    - Connectivité M2M
+
+    ### 7. Urbanisation Datacenter
+    - Audit et schéma directeur datacenter
+    - Virtualisation (VMware, Nutanix, Hyper-V)
+    - Hyperconvergence (HCI)
+    - Containerisation (Kubernetes, OpenShift)
+    - Réseaux datacenter (Cisco ACI, NSX)
+
+    ### 8. DevOps & FinOps
+    - CI/CD (GitLab, Azure DevOps, GitHub Actions)
+    - Infrastructure as Code (Terraform, Ansible)
+    - Observabilité (Prometheus, Grafana, Datadog)
+    - FinOps et optimisation des coûts
+    - Accompagnement DevSecOps
+
+    ## MÉTHODOLOGIE D'ANALYSE
+
+    Quand tu reçois des documents d'appel d'offres, tu dois :
+
+    1. **IDENTIFIER** le contexte :
+       - Type de marché (fournitures, services, travaux)
+       - Acheteur public/privé
+       - Montant estimé et durée
+       - Allotissement éventuel
+
+    2. **EXTRAIRE** les informations clés :
+       - Objet précis du marché
+       - Date limite de réponse
+       - Modalités de remise des offres
+       - Critères de jugement et pondération
+       - Exigences techniques obligatoires
+       - Niveaux de service attendus (SLA)
+
+    3. **ANALYSER** les exigences :
+       - Identifier les points de conformité
+       - Repérer les zones de risques
+       - Noter les éléments différenciants possibles
+       - Évaluer les clauses de pénalités
+
+    4. **RÉDIGER** une réponse structurée :
+       - Reprendre EXACTEMENT la structure du CCTP
+       - Répondre point par point à chaque exigence
+       - Détailler les solutions techniques proposées
+       - Mettre en avant nos atouts et références
+       - Proposer des variantes si autorisées
+
+    ## FORMAT DE RÉPONSE OBLIGATOIRE
+
+    Structure ta réponse avec les chapitres suivants (adapter selon le CCTP) :
+
+    # MÉMOIRE TECHNIQUE
+
+    ## 1. Présentation de la société
+    - Historique et chiffres clés
+    - Certifications et agréments
+    - Références clients similaires
+    - Moyens humains et techniques
+
+    ## 2. Compréhension du besoin
+    - Analyse du contexte client
+    - Enjeux identifiés
+    - Objectifs du marché
+    - Points d'attention
+
+    ## 3. Solution technique proposée
+    (Reprendre la structure exacte du CCTP)
+    - Description détaillée de chaque composante
+    - Spécifications techniques
+    - Architecture proposée
+    - Dimensionnement
+
+    ## 4. Organisation et gouvernance
+    - Équipe projet dédiée
+    - Rôles et responsabilités
+    - Comitologie proposée
+    - Reporting et indicateurs
+
+    ## 5. Méthodologie de mise en œuvre
+    - Planning de déploiement
+    - Phases du projet
+    - Livrables par phase
+    - Gestion des risques
+
+    ## 6. Engagements de service
+    - SLA proposés
+    - GTI/GTR
+    - Astreintes et support
+    - Procédures d'escalade
+
+    ## 7. Valeur ajoutée et différenciateurs
+    - Innovations proposées
+    - Optimisations suggérées
+    - Retours d'expérience similaires
+    - Engagements RSE
+
+    ## 8. Annexes
+    - CV des intervenants
+    - Fiches techniques
+    - Certifications
+    - Références détaillées
+
+    ## CONSIGNES DE RÉDACTION
+
+    - Utilise un ton professionnel et institutionnel
+    - Sois précis et factuel, évite les généralités
+    - Cite des technologies et produits spécifiques
+    - Propose des chiffres concrets (délais, volumes, SLA)
+    - Mets en avant l'expérience sur des projets similaires
+    - Utilise des tableaux pour les comparatifs et conformités
+    - Chaque chapitre doit faire au minimum 2-3 pages
+    - Réponds EXHAUSTIVEMENT à chaque exigence du CCTP
+
+    ## TABLEAUX À INCLURE
+
+    Intègre systématiquement :
+    - Tableau de conformité technique (exigence / réponse / commentaire)
+    - Matrice de responsabilité (RACI)
+    - Planning de déploiement (phases / dates / livrables)
+    - Tableau des SLA (indicateur / cible / pénalités)
+    - Liste des livrables documentaires
+
+  user_prompt_template: |
+    Analyse les documents d'appel d'offres suivants et génère une réponse complète et professionnelle :
+
+    {{documents_content}}
+
+    {{#if company_name}}
+    Nom de notre société : {{company_name}}
+    {{/if}}
+
+    {{#if instructions}}
+    Instructions spécifiques : {{instructions}}
+    {{/if}}
+
+    {{#if lot_number}}
+    Lot concerné : {{lot_number}}
+    {{/if}}
+
+    Génère un mémoire technique complet, structuré, professionnel et détaillé.
+    Chaque chapitre doit être riche en contenu (plusieurs pages).
+    Utilise des tableaux markdown pour les matrices de conformité.
+
+  personality_traits:
+    - name: "expert"
+      intensity: 2.0
+    - name: "professional"
+      intensity: 1.8
+    - name: "detail-oriented"
+      intensity: 1.5
+    - name: "persuasive"
+      intensity: 1.3
+
+  tone: "professional"
+  language: "fr"
+
+  llm_provider: "mistral"
+  llm_model: "mistral-large-latest"
+  temperature: 0.4
+  max_tokens: 16384
+
+  context_window_messages: 10
+  include_system_context: true
+  streaming_enabled: true
+
+  response_format:
+    type: "markdown"
+
+  moderation:
+    enabled: false
+
+  classification:
+    enabled: false
+
+  instructions:
+    - "Toujours reprendre la structure exacte du CCTP dans la réponse"
+    - "Chaque exigence doit avoir une réponse détaillée"
+    - "Utiliser des tableaux pour les conformités et SLA"
+    - "Proposer des solutions concrètes avec technologies spécifiques"
+    - "Mettre en avant l'expérience et les références pertinentes"
+    - "Minimum 2-3 pages par chapitre majeur"
+
+  constraints:
+    - "Ne pas inventer de références clients fictives"
+    - "Rester cohérent avec les capacités d'une ESN majeure"
+    - "Proposer des prix et délais réalistes"
+    - "Respecter le cadre du marché public si applicable"
+
+tools:
+  tools:
+    - tool_id: "document-extractor"
+      name: "Extracteur de documents"
+      enabled: true
+      description: "Extrait le contenu textuel des documents d'appel d'offres"
+      parameters:
+        - name: "file"
+          source: "input"
+          input_component: "document_upload"
+          required: true
+      output_variable: "extracted_documents"
+      on_error: "stop"
+      timeout_ms: 120000
+
+    - tool_id: "word-crud"
+      name: "Générateur Word Professionnel"
+      enabled: true
+      description: "Génère le document Word de réponse avec mise en forme professionnelle"
+      parameters:
+        - name: "content"
+          source: "variable"
+          value: "response_content"
+        - name: "title"
+          source: "input"
+          input_component: "document_title"
+          default: "Mémoire Technique"
+        - name: "company_name"
+          source: "input"
+          input_component: "company_name"
+        - name: "include_cover_page"
+          source: "constant"
+          value: true
+        - name: "include_toc"
+          source: "constant"
+          value: true
+        - name: "include_header"
+          source: "constant"
+          value: true
+        - name: "include_footer"
+          source: "constant"
+          value: true
+      output_variable: "word_document"
+      on_error: "continue"
+      timeout_ms: 60000
+
+  default_error_handling: "continue"
+  parallel_execution: false
+
+ui:
+  show_header: true
+  header_title: "Réponse aux Appels d'Offres IT"
+  header_subtitle: "Analysez vos documents et générez une réponse professionnelle structurée"
+  header_icon: "fa fa-file-contract"
+
+  sections:
+    - name: "documents_section"
+      title: "Documents de l'appel d'offres"
+      layout_type: "column"
+      gap: "20px"
+      components:
+        - type: "document_upload"
+          name: "document_upload"
+          label: "Déposez vos documents d'appel d'offres"
+          help_text: "Formats acceptés: PDF, Word, Excel. Glissez-déposez ou cliquez pour parcourir. CCTP, CCAP, RC, BPU, annexes..."
+          accept: ".pdf,.doc,.docx,.xls,.xlsx,.txt"
+          multiple: true
+          max_size_mb: 50
+          required: true
+          style:
+            min_height: "250px"
+            border: "2px dashed #3B82F6"
+            border_radius: "12px"
+            background: "linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)"
+
+    - name: "company_section"
+      title: "Informations de votre société"
+      layout_type: "row"
+      gap: "16px"
+      components:
+        - type: "text_input"
+          name: "company_name"
+          label: "Nom de la société"
+          placeholder: "Ex: ACME Technologies"
+          help_text: "Nom qui apparaîtra sur la page de garde"
+          required: false
+          style:
+            flex: 1
+
+        - type: "text_input"
+          name: "document_title"
+          label: "Titre du document"
+          placeholder: "Ex: Mémoire Technique - Lot 1"
+          default_value: "Mémoire Technique"
+          required: false
+          style:
+            flex: 1
+
+    - name: "output_section"
+      title: "Réponse générée"
+      layout_type: "column"
+      gap: "20px"
+      components:
+        - type: "progress_bar"
+          name: "progress"
+          label: "Génération en cours..."
+          data_source: "progress_value"
+          style:
+            height: "8px"
+            border_radius: "4px"
+            background: "linear-gradient(90deg, #3B82F6 0%, #8B5CF6 50%, #EC4899 100%)"
+            animation: "pulse 2s ease-in-out infinite"
+            box_shadow: "0 0 20px rgba(59, 130, 246, 0.5)"
+
+        - type: "markdown_viewer"
+          name: "response_preview"
+          label: "Mémoire Technique"
+          auto_bind_output: true
+          style:
+            min_height: "calc(100vh - 400px)"
+            max_height: "none"
+            border: "1px solid #E5E7EB"
+            border_radius: "12px"
+            padding: "32px"
+            background: "#FFFFFF"
+            overflow: "auto"
+            box_shadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+            font_size: "15px"
+            line_height: "1.7"
+
+  show_sidebar: false
+  show_footer: false
+
+  show_actions: true
+  actions:
+    - type: "button"
+      name: "reset_button"
+      label: "Réinitialiser"
+      button_action: "reset_form"
+      button_variant: "secondary"
+      icon: "fa fa-refresh"
+
+    - type: "button"
+      name: "download_word_button"
+      label: "Télécharger Word"
+      button_action: "export_word"
+      button_variant: "success"
+      icon: "fa fa-file-word-o"
+      visible_when:
+        field: "response_ready"
+        operator: "equals"
+        value: true
+
+    - type: "button"
+      name: "generate_button"
+      label: "Générer la réponse"
+      button_action: "trigger_agent"
+      button_variant: "primary"
+      is_trigger_button: true
+      icon: "fa fa-magic"
+
+  actions_position: "right"
+  theme: "auto"
+  primary_color: "#1E40AF"
+
+connectors:
+  default_connector: "mistral-tender"
+  connectors:
+    - id: "mistral-tender"
+      provider: "mistral"
+      name: "Mistral Large"
+      description: "Optimisé pour la rédaction de mémoires techniques en français"
+      model: "mistral-large-latest"
+      default_temperature: 0.4
+      default_max_tokens: 16384
+      retry_on_error: true
+      max_retries: 3
+      timeout_ms: 300000
+      priority: 0
+
+    - id: "openai-tender"
+      provider: "openai"
+      name: "GPT-4 Turbo"
+      description: "Alternative OpenAI pour les documents complexes"
+      model: "gpt-4-turbo"
+      default_temperature: 0.4
+      default_max_tokens: 16384
+      retry_on_error: true
+      max_retries: 2
+      timeout_ms: 300000
+      priority: 1
+
+    - id: "anthropic-tender"
+      provider: "anthropic"
+      name: "Claude 3.5 Sonnet"
+      description: "Excellent pour la rédaction structurée"
+      model: "claude-3-5-sonnet-20241022"
+      default_temperature: 0.4
+      default_max_tokens: 16384
+      retry_on_error: true
+      max_retries: 2
+      timeout_ms: 300000
+      priority: 2
+
+  enable_fallback: true
+  fallback_order:
+    - "mistral-tender"
+    - "openai-tender"
+    - "anthropic-tender"
+
+workflows:
+  workflows:
+    - name: "Tender Response Generation"
+      description: "Génération itérative du mémoire technique en plusieurs étapes"
+      trigger: "button_click"
+      trigger_config:
+        button: "generate_button"
+      enabled: true
+      steps:
+        - id: "extract"
+          name: "Extraction des documents"
+          type: "tool_call"
+          tool_config_id: "document-extractor"
+          output_variable: "extracted_documents"
+          on_error: "stop"
+          next_step: "check_extraction"
+
+        - id: "check_extraction"
+          name: "Vérification de l'extraction"
+          type: "condition"
+          condition:
+            variable: "extracted_documents"
+            operator: "is_not_empty"
+          on_true: "step1_intro"
+          on_false: "extraction_error"
+
+        - id: "step1_intro"
+          name: "Génération - Introduction et Présentation"
+          type: "llm_call"
+          provider: "mistral"
+          model: "mistral-large-latest"
+          max_tokens: 8000
+          prompt_template: |
+            Tu es un expert en réponse aux appels d'offres IT. Tu dois générer la PARTIE 1 d'un mémoire technique.
+
+            DOCUMENTS DE L'APPEL D'OFFRES :
+            {{extracted_documents}}
+
+            {{#if company_name}}Société : {{company_name}}{{/if}}
+
+            Génère UNIQUEMENT les chapitres suivants de manière TRÈS DÉTAILLÉE (minimum 3 pages par chapitre) :
+
+            # MÉMOIRE TECHNIQUE
+
+            ## 1. PRÉSENTATION DE LA SOCIÉTÉ
+            (Historique complet, chiffres clés détaillés, organigramme, implantations, certifications ISO/ITIL/etc., agréments, politique RSE, références clients majeures avec descriptions, moyens humains par pôle, moyens techniques et infrastructures)
+
+            ## 2. COMPRÉHENSION DU BESOIN
+            (Analyse approfondie du contexte client, enjeux stratégiques et opérationnels, objectifs du marché, périmètre détaillé, contraintes identifiées, points d'attention majeurs, opportunités d'amélioration)
+
+            Sois exhaustif, professionnel, et utilise des tableaux markdown.
+          output_variable: "part1_content"
+          next_step: "step2_solution"
+
+        - id: "step2_solution"
+          name: "Génération - Solution Technique"
+          type: "llm_call"
+          provider: "mistral"
+          model: "mistral-large-latest"
+          max_tokens: 12000
+          prompt_template: |
+            Tu es un expert IT. Voici le contexte de l'appel d'offres :
+            {{extracted_documents}}
+
+            {{#if company_name}}Société : {{company_name}}{{/if}}
+
+            Génère la PARTIE 2 du mémoire - SOLUTION TECHNIQUE - de manière TRÈS DÉTAILLÉE :
+
+            ## 3. SOLUTION TECHNIQUE PROPOSÉE
+
+            ### 3.1 Architecture globale
+            (Schéma d'architecture, composants, flux de données, intégrations)
+
+            ### 3.2 Description détaillée par lot/composante
+            (Pour chaque exigence du CCTP : solution proposée, spécifications, dimensionnement)
+
+            ### 3.3 Infrastructure et environnements
+            (Production, pré-production, développement, DR/PRA)
+
+            ### 3.4 Sécurité
+            (Mesures de sécurité, conformité RGPD, chiffrement, IAM, audit)
+
+            ### 3.5 Performances et scalabilité
+            (Objectifs de performance, tests de charge, capacity planning)
+
+            Utilise des tableaux de conformité technique. Sois très précis et technique.
+          output_variable: "part2_content"
+          next_step: "step3_orga"
+
+        - id: "step3_orga"
+          name: "Génération - Organisation et Méthodologie"
+          type: "llm_call"
+          provider: "mistral"
+          model: "mistral-large-latest"
+          max_tokens: 10000
+          prompt_template: |
+            Tu es un expert en gestion de projet IT. Contexte :
+            {{extracted_documents}}
+
+            {{#if company_name}}Société : {{company_name}}{{/if}}
+
+            Génère la PARTIE 3 du mémoire - ORGANISATION ET MÉTHODOLOGIE :
+
+            ## 4. ORGANISATION ET GOUVERNANCE
+            (Équipe projet nominative avec CV synthétiques, rôles RACI, comitologie détaillée, instances de pilotage, reporting KPIs)
+
+            ## 5. MÉTHODOLOGIE DE MISE EN ŒUVRE
+            (Phases détaillées, planning Gantt, jalons, livrables par phase, critères de passage, gestion des risques avec matrice, plan de communication)
+
+            ## 6. ENGAGEMENTS DE SERVICE (SLA)
+            (Tableau complet des SLA : indicateur, définition, cible, mesure, pénalités)
+            (GTI/GTR par criticité, procédures d'escalade, astreintes, support N1/N2/N3)
+
+            Utilise des tableaux pour la matrice RACI et les SLA.
+          output_variable: "part3_content"
+          next_step: "step4_valeur"
+
+        - id: "step4_valeur"
+          name: "Génération - Valeur ajoutée et Annexes"
+          type: "llm_call"
+          provider: "mistral"
+          model: "mistral-large-latest"
+          max_tokens: 8000
+          prompt_template: |
+            Tu es un expert en avant-vente IT. Contexte :
+            {{extracted_documents}}
+
+            {{#if company_name}}Société : {{company_name}}{{/if}}
+
+            Génère la PARTIE 4 FINALE du mémoire - VALEUR AJOUTÉE ET ANNEXES :
+
+            ## 7. VALEUR AJOUTÉE ET DIFFÉRENCIATEURS
+            (Innovations proposées, optimisations techniques et financières, retours d'expérience sur projets similaires, engagements RSE et développement durable, accompagnement au changement, transfert de compétences)
+
+            ## 8. ANNEXES
+
+            ### 8.1 Fiches de références détaillées
+            (3-5 références pertinentes avec contexte, périmètre, résultats, contact)
+
+            ### 8.2 CV des intervenants clés
+            (Chef de projet, architecte, experts techniques - format synthétique)
+
+            ### 8.3 Certifications et agréments
+            (Liste des certifications éditeurs, ISO, qualifications)
+
+            ### 8.4 Matrice de conformité globale
+            (Tableau : Exigence CCTP | Notre réponse | Conformité | Commentaire)
+
+            Termine par une conclusion engageante.
+          output_variable: "part4_content"
+          next_step: "combine"
+
+        - id: "combine"
+          name: "Assemblage du document final"
+          type: "combine_variables"
+          variables:
+            - "part1_content"
+            - "part2_content"
+            - "part3_content"
+            - "part4_content"
+          separator: "\n\n---\n\n"
+          output_variable: "response_content"
+          next_step: "set_ready"
+
+        - id: "set_ready"
+          name: "Préparation de l'affichage"
+          type: "set_variable"
+          variable_name: "response_ready"
+          variable_value: true
+          next_step: "complete"
+
+        - id: "complete"
+          name: "Terminé"
+          type: "set_variable"
+          variable_name: "analysis_complete"
+          variable_value: true
+
+        - id: "extraction_error"
+          name: "Erreur d'extraction"
+          type: "set_variable"
+          variable_name: "error_message"
+          variable_value: "Impossible d'extraire le contenu des documents. Vérifiez que les fichiers ne sont pas protégés ou corrompus."
+
+      entry_step: "extract"
+      initial_variables:
+        extracted_documents: []
+        part1_content: ""
+        part2_content: ""
+        part3_content: ""
+        part4_content: ""
+        response_content: null
+        response_ready: false
+        analysis_complete: false
+        progress_value: 0
+        error_message: null
+
+      timeout_ms: 900000
+
+  default_workflow: "tender-response"
+
+security:
+  requires_auth: false
+  rate_limit_enabled: true
+  requests_per_minute: 5
+  requests_per_hour: 50
+  sanitize_inputs: true
+  max_input_length: 1000000
+  audit_logging: true
+
+deployment:
+  auto_route: true
+  environment: "production"
+  min_instances: 1
+  max_instances: 3
+  health_check_enabled: true

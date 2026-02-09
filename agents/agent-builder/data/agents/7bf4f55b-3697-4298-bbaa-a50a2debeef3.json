@@ -1,0 +1,146 @@
+{
+  "id": "7bf4f55b-3697-4298-bbaa-a50a2debeef3",
+  "name": "Extracteur de Donn\u00e9es JSON",
+  "description": "Analyse vos PDF et Excel pour extraire les donn\u00e9es structur\u00e9es en JSON t\u00e9l\u00e9chargeable",
+  "long_description": "Cet agent sp\u00e9cialis\u00e9 analyse vos documents PDF et fichiers Excel pour en extraire les donn\u00e9es cl\u00e9s et les structurer en format JSON. Il g\u00e8re les tableaux, les champs textuels et les m\u00e9tadonn\u00e9es, avec possibilit\u00e9 de personnaliser la structure de sortie.",
+  "icon": "fa fa-file-code",
+  "category": "analyse",
+  "status": "active",
+  "metadata": {
+    "created_at": "2026-01-28 10:43:32.986515",
+    "updated_at": "2026-01-28 10:43:32.986905",
+    "created_by": "anonymous",
+    "version": "1.0.0",
+    "tags": [
+      "extraction",
+      "analyse",
+      "json",
+      "pdf",
+      "excel"
+    ]
+  },
+  "tools": [
+    {
+      "id": "184c39cc-53ac-4185-b6b0-104d322b2d65",
+      "tool_id": "document-extractor",
+      "tool_name": "Document Extractor",
+      "enabled": true,
+      "parameters": [],
+      "output_variable": null,
+      "output_transform": null,
+      "on_error": "continue",
+      "retry_count": 0,
+      "fallback_value": null
+    }
+  ],
+  "ui_layout": {
+    "layout_mode": "sections",
+    "show_header": true,
+    "header_title": "Extracteur de Donn\u00e9es JSON",
+    "header_subtitle": "Analyse vos PDF et Excel pour extraire les donn\u00e9es structur\u00e9es en JSON t\u00e9l\u00e9chargeable",
+    "header_icon": "fa fa-file-code",
+    "dashboard_config": {
+      "columns": 12,
+      "rowHeight": 80,
+      "gap": 12
+    },
+    "widgets": [],
+    "sections": [
+      {
+        "id": "97a82f4a-f99a-4486-9df8-9152ad2ddcb4",
+        "name": "chat_section",
+        "title": null,
+        "description": null,
+        "layout_type": "column",
+        "grid_columns": null,
+        "gap": "16px",
+        "components": [
+          {
+            "id": "08c14bd8-d4cf-4aef-9ad9-a5c7e81caab4",
+            "type": "chat_interface",
+            "name": "main_chat",
+            "label": "Conversation",
+            "placeholder": null,
+            "help_text": null,
+            "default_value": null,
+            "required": false,
+            "validation_rules": [],
+            "options": [],
+            "accept": null,
+            "max_size_mb": null,
+            "multiple": false,
+            "grid_column": null,
+            "grid_row": null,
+            "order": 0,
+            "style": {
+              "width": null,
+              "height": "calc(100vh - 200px)",
+              "margin": null,
+              "padding": null,
+              "background_color": null,
+              "text_color": null,
+              "border_radius": null,
+              "custom_css": null
+            },
+            "visible_when": null,
+            "children": [],
+            "data_source": null,
+            "auto_bind_output": true,
+            "output_key": null,
+            "on_change_action": null,
+            "button_action": null,
+            "button_variant": null,
+            "is_trigger_button": false,
+            "gridPosition": null,
+            "chart_config": null
+          }
+        ],
+        "visible_when": null,
+        "style": {
+          "width": null,
+          "height": null,
+          "margin": null,
+          "padding": null,
+          "background_color": null,
+          "text_color": null,
+          "border_radius": null,
+          "custom_css": null
+        }
+      }
+    ],
+    "show_sidebar": false,
+    "sidebar_sections": [],
+    "sidebar_position": "left",
+    "sidebar_width": "300px",
+    "show_footer": false,
+    "footer_content": null,
+    "show_actions": false,
+    "actions": [],
+    "primary_color": null,
+    "secondary_color": null,
+    "custom_css": null
+  },
+  "ai_behavior": {
+    "system_prompt": "Tu es un expert en extraction et structuration de donn\u00e9es. Ton r\u00f4le est d'analyser minutieusement les documents PDF et fichiers Excel fournis par l'utilisateur pour en extraire les donn\u00e9es structur\u00e9es et les restituer en format JSON.\n\nR\u00c8GLES STRICTES :\n1. Pour les PDF :\n   - Identifie tous les tableaux et extrais leur contenu en conservant la structure\n   - Rep\u00e8re les champs cl\u00e9s (noms, dates, montants, etc.) dans le texte\n   - G\u00e8re les documents multi-pages\n   - Signale toute ambigu\u00eft\u00e9 ou donn\u00e9e manquante\n\n2. Pour les Excel :\n   - Analyse toutes les feuilles du classeur\n   - Conserve les relations entre donn\u00e9es (formules, r\u00e9f\u00e9rences)\n   - Identifie les en-t\u00eates de colonnes\n   - G\u00e8re les formats de donn\u00e9es (dates, monnaies, etc.)\n\n3. Format JSON :\n   - Structure les donn\u00e9es de mani\u00e8re logique et coh\u00e9rente\n   - Utilise des noms de champs explicites\n   - Inclus des m\u00e9tadonn\u00e9es sur le document source\n   - Propose une structure par d\u00e9faut si non sp\u00e9cifi\u00e9e\n\n4. Qualit\u00e9 :\n   - V\u00e9rifie la coh\u00e9rence des donn\u00e9es extraites\n   - Signale les anomalies ou incoh\u00e9rences\n   - Propose des corrections si possible\n\nFORMAT DE R\u00c9PONSE :\n1. Commence par une synth\u00e8se des donn\u00e9es extraites\n2. Pr\u00e9sente le JSON structur\u00e9 avec indentation\n3. Propose le t\u00e9l\u00e9chargement du fichier JSON\n4. Signale toute limitation ou remarque importante\n\nEXEMPLE DE STRUCTURE JSON :\n```json\n{\n  \"metadonnees\": {\n    \"type_document\": \"PDF/Excel\",\n    \"nom_fichier\": \"document.pdf\",\n    \"date_analyse\": \"2023-11-15\",\n    \"nombre_pages\": 5\n  },\n  \"donnees_extraites\": {\n    \"tableaux\": [\n      {\n        \"nom\": \"Tableau 1\",\n        \"en_tetes\": [\"Nom\", \"Date\", \"Montant\"],\n        \"lignes\": [\n          [\"Dupont\", \"2023-01-15\", 1500.50],\n          [\"Martin\", \"2023-02-20\", 2300.75]\n        ]\n      }\n    ],\n    \"champs_textuels\": {\n      \"client\": \"Entreprise XYZ\",\n      \"date_contrat\": \"2023-01-10\",\n      \"objet\": \"Contrat de prestation\"\n    }\n  }\n}\n```",
+    "user_prompt": "Analyse ce document {{type_document}} et extrais-en les donn\u00e9es structur\u00e9es. Voici mes instructions sp\u00e9cifiques :\n\n1. Donn\u00e9es \u00e0 extraire prioritairement : {{donnees_prioritaires}}\n2. Structure JSON souhait\u00e9e : {{structure_json}}\n3. Remarques particuli\u00e8res : {{remarques}}\n\n[Joindre ici le document PDF ou Excel \u00e0 analyser]",
+    "personality_traits": [],
+    "tone": "professional",
+    "default_provider": "mistral",
+    "default_model": null,
+    "temperature": 0.7,
+    "max_tokens": 4096,
+    "response_format": null,
+    "include_sources": false,
+    "include_confidence": false,
+    "context_window": 10,
+    "include_system_context": true,
+    "enable_moderation": true,
+    "enable_classification": true,
+    "content_filters": [],
+    "task_prompts": {}
+  },
+  "workflows": [],
+  "route": "/custom-agent/extracteur-de-donnes-json-7bf4f55b",
+  "requires_auth": false,
+  "allowed_roles": []
+}

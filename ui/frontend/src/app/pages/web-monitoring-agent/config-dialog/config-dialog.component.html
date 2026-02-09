@@ -1,0 +1,95 @@
+<div class="config-dialog">
+  <h2 mat-dialog-title>
+    <i class="fa fa-cog"></i>
+    Configuration de l'agent de veille
+  </h2>
+
+  <mat-dialog-content>
+    <div class="form-group">
+      <label for="provider">Fournisseur IA *</label>
+      <select
+        id="provider"
+        [(ngModel)]="config.provider"
+        (change)="onProviderChange()"
+        class="form-control">
+        <option value="mistral">Mistral AI</option>
+        <option value="openai">OpenAI</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="model">Modèle</label>
+      <select
+        id="model"
+        [(ngModel)]="config.model"
+        class="form-control">
+        <option *ngFor="let model of getAvailableModels()" [value]="model.value">
+          {{ model.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group" *ngIf="config.provider === 'mistral'">
+      <label for="mistralApiKey">Clé API Mistral *</label>
+      <input
+        type="password"
+        id="mistralApiKey"
+        [(ngModel)]="config.mistralApiKey"
+        placeholder="Entrez votre clé API Mistral"
+        class="form-control">
+      <small class="form-hint">
+        Obtenez votre clé API sur <a href="https://console.mistral.ai/" target="_blank">console.mistral.ai</a>
+      </small>
+    </div>
+
+    <div class="form-group" *ngIf="config.provider === 'openai'">
+      <label for="openaiApiKey">Clé API OpenAI *</label>
+      <input
+        type="password"
+        id="openaiApiKey"
+        [(ngModel)]="config.openaiApiKey"
+        placeholder="Entrez votre clé API OpenAI"
+        class="form-control">
+      <small class="form-hint">
+        Obtenez votre clé API sur <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="maxSources">Nombre maximum de sources (5-50)</label>
+      <input
+        type="number"
+        id="maxSources"
+        [(ngModel)]="config.maxSources"
+        min="5"
+        max="50"
+        class="form-control">
+      <small class="form-hint">
+        Plus de sources = analyse plus complète mais temps de traitement plus long
+      </small>
+    </div>
+
+    <div class="info-box">
+      <i class="fa fa-info-circle"></i>
+      <div>
+        <strong>Note :</strong> Vos clés API sont stockées localement dans votre navigateur et ne sont jamais envoyées à nos serveurs.
+        Elles sont uniquement utilisées pour communiquer avec les services IA.
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <app-custom-button
+      label="Annuler"
+      variant="secondary"
+      (click)="cancel()">
+    </app-custom-button>
+    <app-custom-button
+      label="Enregistrer"
+      icon="fa fa-save"
+      variant="primary"
+      [disabled]="!isValid()"
+      (click)="save()">
+    </app-custom-button>
+  </mat-dialog-actions>
+</div>

@@ -1,0 +1,352 @@
+<div class="nemo-guardrails-settings">
+  <header class="page-header">
+    <div class="header-content">
+      <h1>
+        <i class="fa fa-shield-alt"></i>
+        NeMo Guardrails
+      </h1>
+      <p class="description">
+        Configurez les guardrails NVIDIA NeMo pour proteger vos agents IA.
+        Filtrage de topics, moderation de contenu et detection de jailbreak via les modeles safety NVIDIA.
+      </p>
+    </div>
+    <div class="header-actions">
+      <app-custom-button
+        [disabled]="isLoading"
+        (click)="resetToDefaults()"
+        variant="danger"
+        label="Reinitialiser"
+      ></app-custom-button>
+      <app-custom-button
+        [disabled]="isSaving || !settings"
+        (click)="saveSettings()"
+        variant="primary"
+        [label]="isSaving ? 'Sauvegarde...' : 'Sauvegarder'"
+      ></app-custom-button>
+    </div>
+  </header>
+
+  <!-- Messages -->
+  <div *ngIf="errorMessage" class="message error">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="message success">{{ successMessage }}</div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading">Chargement des parametres NeMo Guardrails...</div>
+
+  <!-- Content -->
+  <div *ngIf="settings && !isLoading" class="settings-content">
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button [class.active]="activeTab === 'general'" (click)="setActiveTab('general')">
+        <i class="fa fa-cog"></i> General
+      </button>
+      <button [class.active]="activeTab === 'topics'" (click)="setActiveTab('topics')">
+        <i class="fa fa-tags"></i> Topics
+      </button>
+      <button [class.active]="activeTab === 'content'" (click)="setActiveTab('content')">
+        <i class="fa fa-filter"></i> Contenu
+      </button>
+      <button [class.active]="activeTab === 'jailbreak'" (click)="setActiveTab('jailbreak')">
+        <i class="fa fa-lock"></i> Jailbreak
+      </button>
+      <button [class.active]="activeTab === 'models'" (click)="setActiveTab('models')">
+        <i class="fa fa-microchip"></i> Modeles
+      </button>
+      <button [class.active]="activeTab === 'test'" (click)="setActiveTab('test')">
+        <i class="fa fa-flask"></i> Tester
+      </button>
+    </nav>
+
+    <div class="tab-content">
+      <!-- ===== GENERAL ===== -->
+      <div *ngIf="activeTab === 'general'" class="panel">
+        <h2>Configuration generale</h2>
+        <p class="panel-description">
+          Activez ou desactivez les differents types de verification NeMo Guardrails.
+        </p>
+
+        <div class="form-group">
+          <label class="toggle-label">
+            <input type="checkbox" [(ngModel)]="settings.enabled" />
+            <span class="toggle-text"><strong>Activer NeMo Guardrails</strong></span>
+          </label>
+          <p class="hint">Active le systeme de guardrails NVIDIA pour tous les agents.</p>
+        </div>
+
+        <div class="guardrails-toggles" [class.disabled]="!settings.enabled">
+          <div class="form-group">
+            <label class="toggle-label">
+              <input type="checkbox" [(ngModel)]="settings.config.topic_check_enabled" [disabled]="!settings.enabled" />
+              <span class="toggle-text">Verification de topic</span>
+            </label>
+            <p class="hint">Verifie que le sujet du message est dans les topics autorises.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <input type="checkbox" [(ngModel)]="settings.config.content_check_enabled" [disabled]="!settings.enabled" />
+              <span class="toggle-text">Moderation de contenu</span>
+            </label>
+            <p class="hint">Detecte le contenu inapproprie (violence, haine, etc.).</p>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <input type="checkbox" [(ngModel)]="settings.config.jailbreak_check_enabled" [disabled]="!settings.enabled" />
+              <span class="toggle-text">Detection de jailbreak</span>
+            </label>
+            <p class="hint">Detecte les tentatives de contournement des regles de securite.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TOPICS ===== -->
+      <div *ngIf="activeTab === 'topics'" class="panel">
+        <h2>Filtrage par topic</h2>
+        <p class="panel-description">
+          Definissez les sujets autorises et bloques. Le modele NeMoGuard classifie chaque message.
+        </p>
+
+        <div class="two-columns">
+          <!-- Allowed Topics -->
+          <div class="column">
+            <h3 class="column-title allowed">
+              <i class="fa fa-check-circle"></i> Topics autorises
+            </h3>
+            <div class="tags-list">
+              <span *ngFor="let topic of settings.config.allowed_topics; let i = index" class="tag allowed">
+                {{ topic }}
+                <button class="tag-remove" (click)="removeAllowedTopic(i)">&times;</button>
+              </span>
+            </div>
+            <div class="add-tag">
+              <input
+                [(ngModel)]="newAllowedTopic"
+                placeholder="Nouveau topic autorise..."
+                (keydown.enter)="addAllowedTopic()"
+              />
+              <app-custom-button
+                [disabled]="!newAllowedTopic.trim()"
+                (click)="addAllowedTopic()"
+                variant="primary"
+                label="+"
+              ></app-custom-button>
+            </div>
+          </div>
+
+          <!-- Blocked Topics -->
+          <div class="column">
+            <h3 class="column-title blocked">
+              <i class="fa fa-ban"></i> Topics bloques
+            </h3>
+            <div class="tags-list">
+              <span *ngFor="let topic of settings.config.blocked_topics; let i = index" class="tag blocked">
+                {{ topic }}
+                <button class="tag-remove" (click)="removeBlockedTopic(i)">&times;</button>
+              </span>
+            </div>
+            <div class="add-tag">
+              <input
+                [(ngModel)]="newBlockedTopic"
+                placeholder="Nouveau topic bloque..."
+                (keydown.enter)="addBlockedTopic()"
+              />
+              <app-custom-button
+                [disabled]="!newBlockedTopic.trim()"
+                (click)="addBlockedTopic()"
+                variant="danger"
+                label="+"
+              ></app-custom-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CONTENT RULES ===== -->
+      <div *ngIf="activeTab === 'content'" class="panel">
+        <h2>Regles de moderation de contenu</h2>
+        <p class="panel-description">
+          Configurez les categories de contenu a bloquer et les seuils de detection.
+        </p>
+
+        <div class="content-rules">
+          <div *ngFor="let rule of settings.config.content_rules; let i = index" class="content-rule-item">
+            <div class="rule-info">
+              <label class="toggle-label">
+                <input type="checkbox" [(ngModel)]="rule.blocked" />
+                <span class="toggle-text category-name">{{ rule.category }}</span>
+              </label>
+            </div>
+            <div class="rule-threshold">
+              <label>Seuil: {{ formatThreshold(rule.threshold) }}</label>
+              <input
+                type="range"
+                min="0" max="1" step="0.05"
+                [(ngModel)]="rule.threshold"
+              />
+            </div>
+            <button class="remove-btn" (click)="removeContentRule(i)" title="Supprimer">&times;</button>
+          </div>
+        </div>
+
+        <div *ngIf="settings.config.content_rules.length === 0" class="empty-state">
+          Aucune regle de contenu configuree.
+        </div>
+
+        <!-- Add content rule -->
+        <div class="add-rule-inline">
+          <select [(ngModel)]="newContentCategory">
+            <option value="">-- Ajouter une categorie --</option>
+            <option *ngFor="let cat of getAvailableCategories()" [value]="cat">{{ cat }}</option>
+          </select>
+          <app-custom-button
+            [disabled]="!newContentCategory"
+            (click)="addContentRule()"
+            variant="primary"
+            label="Ajouter"
+          ></app-custom-button>
+        </div>
+      </div>
+
+      <!-- ===== JAILBREAK ===== -->
+      <div *ngIf="activeTab === 'jailbreak'" class="panel">
+        <h2>Detection de jailbreak</h2>
+        <p class="panel-description">
+          Configurez la sensibilite de la detection des tentatives de jailbreak et d'injection de prompt.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">
+            Seuil de detection: {{ formatThreshold(settings.config.jailbreak_threshold) }}
+          </label>
+          <input
+            type="range"
+            min="0" max="1" step="0.05"
+            [(ngModel)]="settings.config.jailbreak_threshold"
+            class="full-width-slider"
+          />
+          <p class="hint">
+            Un seuil plus bas detectera plus de tentatives (plus de faux positifs).
+            Un seuil plus haut ne detectera que les tentatives les plus evidentes.
+          </p>
+        </div>
+
+        <div class="jailbreak-info">
+          <h3>Techniques detectees</h3>
+          <ul>
+            <li><strong>Injection de prompt</strong> - Tentatives d'ajouter des instructions cachees</li>
+            <li><strong>Role-playing</strong> - Jeux de role pour contourner les restrictions</li>
+            <li><strong>Encodage</strong> - Utilisation de base64, ROT13, etc. pour cacher du contenu</li>
+            <li><strong>Ingenierie sociale</strong> - Tentatives d'extraction du system prompt</li>
+            <li><strong>Attaques DAN</strong> - "Do Anything Now" et variantes</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ===== MODELS ===== -->
+      <div *ngIf="activeTab === 'models'" class="panel">
+        <h2>Modeles NVIDIA Safety</h2>
+        <p class="panel-description">
+          Selectionnez les modeles NVIDIA a utiliser pour chaque type de verification.
+          Les modeles par defaut sont recommandes.
+        </p>
+
+        <div class="model-config">
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fa fa-tags"></i> Modele de classification de topic
+            </label>
+            <select [(ngModel)]="settings.config.topic_model" class="full-width">
+              <option [ngValue]="null">Par defaut (nvidia/llama-3.1-nemoguard-8b-topic)</option>
+              <option *ngFor="let model of getSafetyModels('topic')" [value]="model.id">
+                {{ model.label }} ({{ model.id }})
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fa fa-filter"></i> Modele de moderation de contenu
+            </label>
+            <select [(ngModel)]="settings.config.content_model" class="full-width">
+              <option [ngValue]="null">Par defaut (nvidia/llama-3.1-nemoguard-8b-content)</option>
+              <option *ngFor="let model of getSafetyModels('content')" [value]="model.id">
+                {{ model.label }} ({{ model.id }})
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fa fa-lock"></i> Modele de detection de jailbreak
+            </label>
+            <select [(ngModel)]="settings.config.jailbreak_model" class="full-width">
+              <option [ngValue]="null">Par defaut (nvidia/nemoguard-jailbreak-detect)</option>
+              <option *ngFor="let model of getSafetyModels('jailbreak')" [value]="model.id">
+                {{ model.label }} ({{ model.id }})
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TEST ===== -->
+      <div *ngIf="activeTab === 'test'" class="panel">
+        <h2>Tester les guardrails</h2>
+        <p class="panel-description">
+          Testez vos regles NeMo Guardrails en simulant un message utilisateur.
+        </p>
+
+        <div class="form-group">
+          <label for="testContent">Message a tester</label>
+          <textarea
+            id="testContent"
+            [(ngModel)]="testContent"
+            rows="4"
+            placeholder="Entrez un message a tester contre les guardrails NeMo..."
+          ></textarea>
+        </div>
+
+        <app-custom-button
+          [disabled]="isTesting || !testContent.trim()"
+          (click)="testGuardrails()"
+          variant="primary"
+          [label]="isTesting ? 'Analyse en cours...' : 'Tester les guardrails'"
+        ></app-custom-button>
+
+        <div *ngIf="testResult" class="test-result" [class.blocked]="!testResult.approved">
+          <div class="result-header">
+            <span class="result-status" [class.blocked]="!testResult.approved">
+              {{ testResult.approved ? 'APPROUVE' : 'BLOQUE' }}
+            </span>
+            <span class="risk-score">
+              Score de risque: {{ (testResult.risk_score * 100).toFixed(0) }}%
+            </span>
+            <span *ngIf="testResult.processing_time_ms" class="processing-time">
+              ({{ testResult.processing_time_ms.toFixed(0) }}ms)
+            </span>
+          </div>
+
+          <div *ngIf="testResult.blocked_reason" class="result-reason">
+            <strong>Raison:</strong> {{ testResult.blocked_reason }}
+          </div>
+
+          <div class="result-checks">
+            <h4>Verifications effectuees:</h4>
+            <div *ngFor="let check of testResult.checks" class="check-item" [class.failed]="!check.passed">
+              <span class="check-icon">{{ check.passed ? '&#10003;' : '&#10007;' }}</span>
+              <span class="check-type">{{ check.check_type }}</span>
+              <span *ngIf="check.score !== null" class="check-score">
+                ({{ (check.score * 100).toFixed(0) }}%)
+              </span>
+              <span class="check-details">{{ check.details }}</span>
+              <span *ngIf="check.matched_category" class="check-category">
+                [{{ check.matched_category }}]
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

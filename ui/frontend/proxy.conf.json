@@ -1,0 +1,38 @@
+{
+  "/api/v1/agent-builder": {
+    "target": "http://localhost:8021",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/v1/simple-builder": {
+    "target": "http://localhost:8021",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/v1/dsl": {
+    "target": "http://localhost:8021",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/v1/chat": {
+    "target": "http://localhost:8025",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/v1/agents": {
+    "target": "http://localhost:8025",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api": {
+    "target": "http://localhost:8025",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

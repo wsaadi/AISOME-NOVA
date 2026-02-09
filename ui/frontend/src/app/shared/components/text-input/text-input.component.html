@@ -1,0 +1,33 @@
+<div class="text-input-container">
+  <label *ngIf="label" class="text-input-label" [class.text-input-label--required]="required">
+    {{ label }}
+    <span *ngIf="required" class="required-asterisk">*</span>
+  </label>
+
+  <div class="text-input-wrapper">
+    <i *ngIf="icon && iconPosition === 'left'" [class]="icon" class="text-input-icon text-input-icon--left"></i>
+
+    <input
+      [type]="type"
+      [ngClass]="inputClasses"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [required]="required"
+      [attr.maxlength]="maxLength"
+      [attr.minlength]="minLength"
+      [pattern]="pattern"
+      [autocomplete]="autocomplete"
+      [value]="value"
+      (input)="handleInput($event)"
+      (blur)="handleBlur()"
+      (focus)="handleFocus()">
+
+    <i *ngIf="icon && iconPosition === 'right'" [class]="icon" class="text-input-icon text-input-icon--right"></i>
+  </div>
+
+  <div class="text-input-footer" *ngIf="error || helpText || showCharacterCount">
+    <p *ngIf="error" class="text-input-error">{{ error }}</p>
+    <p *ngIf="helpText && !error" class="text-input-help">{{ helpText }}</p>
+    <span *ngIf="showCharacterCount" class="text-input-count">{{ characterCount }}</span>
+  </div>
+</div>

@@ -1,0 +1,238 @@
+<div class="user-management">
+  <header class="page-header">
+    <div class="header-content">
+      <h1>{{ 'user_management.title' | translate }}</h1>
+      <p class="description">{{ 'user_management.description' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      @if (activeTab() === 'users') {
+        <app-custom-button
+          variant="primary"
+          [label]="'user_management.actions.create_user' | translate"
+          (click)="openCreateUserDialog()"
+        ></app-custom-button>
+      } @else {
+        <app-custom-button
+          variant="primary"
+          [label]="'user_management.actions.create_role' | translate"
+          (click)="openCreateRoleDialog()"
+        ></app-custom-button>
+      }
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="tabs">
+    <button
+      [class.active]="activeTab() === 'users'"
+      (click)="setActiveTab('users')"
+    >
+      <mat-icon>people</mat-icon>
+      {{ 'user_management.tabs.users' | translate }}
+      <span class="badge">{{ users().length }}</span>
+    </button>
+    <button
+      [class.active]="activeTab() === 'roles'"
+      (click)="setActiveTab('roles')"
+    >
+      <mat-icon>shield</mat-icon>
+      {{ 'user_management.tabs.roles' | translate }}
+      <span class="badge">{{ roles().length }}</span>
+    </button>
+  </nav>
+
+  <!-- Content -->
+  <div class="tab-content">
+    <!-- Users Tab -->
+    @if (activeTab() === 'users') {
+      <div class="panel users-panel">
+        <!-- Filters -->
+        <div class="filters">
+          <div class="search-box">
+            <mat-icon>search</mat-icon>
+            <input
+              type="text"
+              [placeholder]="'user_management.search_placeholder' | translate"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+            />
+          </div>
+
+          <div class="filter-group">
+            <label>{{ 'user_management.filter.status' | translate }}</label>
+            <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+              <option value="all">{{ 'user_management.filter.all' | translate }}</option>
+              <option value="active">{{ 'user_management.filter.active' | translate }}</option>
+              <option value="inactive">{{ 'user_management.filter.inactive' | translate }}</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>{{ 'user_management.filter.role' | translate }}</label>
+            <select [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)">
+              <option value="all">{{ 'user_management.filter.all_roles' | translate }}</option>
+              @for (role of roles(); track role.id) {
+                <option [value]="role.id">{{ role.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="table-container">
+          @if (isLoading()) {
+            <div class="loading">{{ 'common.loading' | translate }}</div>
+          } @else if (filteredUsers().length === 0) {
+            <div class="empty-state">
+              <mat-icon>person_off</mat-icon>
+              <p>{{ 'user_management.no_users_found' | translate }}</p>
+            </div>
+          } @else {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>{{ 'user_management.table.user' | translate }}</th>
+                  <th>{{ 'user_management.table.email' | translate }}</th>
+                  <th>{{ 'user_management.table.roles' | translate }}</th>
+                  <th>{{ 'user_management.table.status' | translate }}</th>
+                  <th>{{ 'user_management.table.last_login' | translate }}</th>
+                  <th>{{ 'common.actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (user of filteredUsers(); track user.id) {
+                  <tr [class.inactive]="!user.isActive">
+                    <td class="user-cell">
+                      <div class="user-avatar">
+                        {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+                      </div>
+                      <div class="user-info">
+                        <span class="username">{{ user.username }}</span>
+                        <span class="fullname">{{ user.firstName }} {{ user.lastName }}</span>
+                      </div>
+                    </td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                      <div class="role-badges">
+                        @for (roleId of user.roles; track roleId) {
+                          <span class="role-badge" [class.admin]="roleId === 'admin'">
+                            {{ getRoleName(roleId) }}
+                          </span>
+                        }
+                      </div>
+                    </td>
+                    <td>
+                      <span class="status-badge" [class.active]="user.isActive" [class.inactive]="!user.isActive">
+                        {{ (user.isActive ? 'user_management.status.active' : 'user_management.status.inactive') | translate }}
+                      </span>
+                    </td>
+                    <td>
+                      @if (user.lastLogin) {
+                        {{ user.lastLogin | date:'short' }}
+                      } @else {
+                        <span class="text-muted">{{ 'user_management.never' | translate }}</span>
+                      }
+                    </td>
+                    <td class="actions-cell">
+                      <button
+                        class="icon-btn"
+                        [matTooltip]="'common.edit' | translate"
+                        (click)="openEditUserDialog(user)"
+                      >
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button
+                        class="icon-btn"
+                        [matTooltip]="(user.isActive ? 'user_management.actions.deactivate' : 'user_management.actions.activate') | translate"
+                        (click)="toggleUserStatus(user)"
+                      >
+                        <mat-icon>{{ user.isActive ? 'block' : 'check_circle' }}</mat-icon>
+                      </button>
+                      <button
+                        class="icon-btn danger"
+                        [matTooltip]="'common.delete' | translate"
+                        (click)="deleteUser(user)"
+                      >
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+
+        <div class="table-footer">
+          <span>{{ filteredUsers().length }} {{ 'user_management.users_count' | translate }}</span>
+        </div>
+      </div>
+    }
+
+    <!-- Roles Tab -->
+    @if (activeTab() === 'roles') {
+      <div class="panel roles-panel">
+        <div class="roles-grid">
+          @for (role of roles(); track role.id) {
+            <div class="role-card" [class.system]="role.isSystem">
+              <div class="role-header">
+                <div class="role-icon">
+                  <mat-icon>{{ role.id === 'admin' ? 'admin_panel_settings' : role.id === 'viewer' ? 'visibility' : 'person' }}</mat-icon>
+                </div>
+                <div class="role-title">
+                  <h3>{{ role.name }}</h3>
+                  @if (role.isSystem) {
+                    <span class="system-badge">{{ 'user_management.system_role' | translate }}</span>
+                  }
+                </div>
+                <div class="role-actions">
+                  <button
+                    class="icon-btn"
+                    [matTooltip]="'common.edit' | translate"
+                    (click)="openEditRoleDialog(role)"
+                  >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  @if (!role.isSystem) {
+                    <button
+                      class="icon-btn danger"
+                      [matTooltip]="'common.delete' | translate"
+                      (click)="deleteRole(role)"
+                    >
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <p class="role-description">{{ role.description }}</p>
+
+              <div class="role-stats">
+                <div class="stat">
+                  <mat-icon>security</mat-icon>
+                  <span>{{ getPermissionCount(role) }} {{ 'user_management.permissions' | translate }}</span>
+                </div>
+                <div class="stat">
+                  <mat-icon>people</mat-icon>
+                  <span>{{ getUsersWithRole(role.id) }} {{ 'user_management.users' | translate }}</span>
+                </div>
+              </div>
+
+              <div class="role-permissions">
+                <h4>{{ 'user_management.permissions_list' | translate }}</h4>
+                <div class="permissions-list">
+                  @for (permId of role.permissions.slice(0, 6); track permId) {
+                    <span class="permission-chip">{{ permId.split(':')[1] }}</span>
+                  }
+                  @if (role.permissions.length > 6) {
+                    <span class="permission-chip more">+{{ role.permissions.length - 6 }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

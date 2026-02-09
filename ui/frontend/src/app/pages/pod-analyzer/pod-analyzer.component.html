@@ -1,0 +1,444 @@
+<div class="pod-analyzer">
+  <!-- Header -->
+  <div class="pod-analyzer__header">
+    <div class="pod-analyzer__header-content">
+      <div class="pod-analyzer__icon">
+        <i class="fa fa-file-pdf"></i>
+      </div>
+      <div>
+        <h1 class="pod-analyzer__title">Analyseur de POD</h1>
+        <p class="pod-analyzer__subtitle">
+          Corrélation automatique des preuves de livraison avec les bons de commande
+        </p>
+      </div>
+    </div>
+    <button
+      class="pod-analyzer__config-btn"
+      (click)="openConfigDialog()"
+      title="Configuration">
+      <i class="fa fa-cog"></i>
+    </button>
+  </div>
+
+  <!-- Configuration des chemins -->
+  <div class="pod-analyzer__section">
+    <h2 class="pod-analyzer__section-title">
+      <i class="fa fa-folder"></i>
+      Configuration des dossiers
+    </h2>
+
+    <div class="pod-analyzer__folder-config">
+      <div class="folder-config__item">
+        <label>Dossier POD (fichiers .pdf)</label>
+        <input
+          type="text"
+          [(ngModel)]="podFolderPath"
+          (blur)="saveConfig()"
+          placeholder="/tmp/POD"
+          class="folder-config__input">
+      </div>
+
+      <div class="folder-config__item">
+        <label>Dossier BDC (fichiers .pdf)</label>
+        <input
+          type="text"
+          [(ngModel)]="bdcFolderPath"
+          (blur)="saveConfig()"
+          placeholder="/tmp/BDC"
+          class="folder-config__input">
+      </div>
+
+      <app-custom-button
+        label="Rafraîchir"
+        variant="secondary"
+        icon="fa fa-sync"
+        [loading]="isLoading"
+        (onClick)="loadFolders()">
+      </app-custom-button>
+    </div>
+  </div>
+
+  <!-- Upload de fichiers -->
+  <div class="pod-analyzer__section">
+    <h2 class="pod-analyzer__section-title">
+      <i class="fa fa-upload"></i>
+      Upload de fichiers
+    </h2>
+
+    <div class="pod-analyzer__upload-container">
+      <!-- Upload POD -->
+      <div class="upload-zone">
+        <h3 class="upload-zone__title">
+          <i class="fa fa-file-pdf"></i>
+          Fichiers POD (PDF)
+        </h3>
+        <app-file-upload
+          [accept]="'.pdf'"
+          [multiple]="true"
+          [maxSize]="50"
+          [maxFiles]="10"
+          [label]="'Déposer des fichiers POD (.pdf) ici'"
+          [hint]="'ou cliquez pour sélectionner'"
+          [disabled]="isUploading"
+          (filesSelected)="onPodFilesSelected($event)"
+          (error)="onUploadError($event)">
+        </app-file-upload>
+      </div>
+
+      <!-- Upload BDC -->
+      <div class="upload-zone">
+        <h3 class="upload-zone__title">
+          <i class="fa fa-file-invoice"></i>
+          Fichiers BDC (PDF)
+        </h3>
+        <app-file-upload
+          [accept]="'.pdf'"
+          [multiple]="true"
+          [maxSize]="50"
+          [maxFiles]="10"
+          [label]="'Déposer des fichiers BDC (.pdf) ici'"
+          [hint]="'ou cliquez pour sélectionner'"
+          [disabled]="isUploading"
+          (filesSelected)="onBdcFilesSelected($event)"
+          (error)="onUploadError($event)">
+        </app-file-upload>
+      </div>
+    </div>
+
+    <!-- Bouton d'upload -->
+    <div class="pod-analyzer__upload-actions">
+      <app-custom-button
+        label="Uploader les fichiers"
+        variant="primary"
+        icon="fa fa-cloud-upload-alt"
+        [disabled]="!canUpload"
+        [loading]="isUploading"
+        (onClick)="uploadFiles()">
+      </app-custom-button>
+    </div>
+
+    <!-- Message de succès -->
+    @if (uploadMessage) {
+      <div class="pod-analyzer__success">
+        <i class="fa fa-check-circle"></i>
+        {{ uploadMessage }}
+      </div>
+    }
+  </div>
+
+  <!-- Tableaux côte à côte -->
+  <div class="pod-analyzer__tables">
+    <!-- Tableau POD -->
+    <div class="pod-analyzer__table-container">
+      <h2 class="pod-analyzer__section-title">
+        <i class="fa fa-file-pdf"></i>
+        Dossier POD ({{ podFiles.length }} fichier(s))
+      </h2>
+
+      @if (isLoading) {
+        <div class="pod-analyzer__loading">
+          <i class="fa fa-spinner fa-spin"></i>
+          Chargement...
+        </div>
+      } @else if (podFiles.length === 0) {
+        <div class="pod-analyzer__empty">
+          <i class="fa fa-inbox"></i>
+          <p>Aucun fichier PDF POD trouvé</p>
+        </div>
+      } @else {
+        <div class="pod-analyzer__table-wrapper">
+          <table class="pod-analyzer__table">
+            <thead>
+              <tr>
+                <th>Fichier</th>
+                <th>Taille</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (file of podFiles; track file.filename) {
+                <tr>
+                  <td class="file-name">
+                    <i class="fa fa-file-pdf"></i>
+                    {{ file.filename }}
+                  </td>
+                  <td>{{ formatFileSize(file.size) }}</td>
+                  <td>{{ formatDate(file.modified_date) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <!-- Tableau BDC -->
+    <div class="pod-analyzer__table-container">
+      <h2 class="pod-analyzer__section-title">
+        <i class="fa fa-file-invoice"></i>
+        Dossier BDC ({{ bdcFiles.length }} fichier(s))
+      </h2>
+
+      @if (isLoading) {
+        <div class="pod-analyzer__loading">
+          <i class="fa fa-spinner fa-spin"></i>
+          Chargement...
+        </div>
+      } @else if (bdcFiles.length === 0) {
+        <div class="pod-analyzer__empty">
+          <i class="fa fa-inbox"></i>
+          <p>Aucun fichier .pdf trouvé</p>
+        </div>
+      } @else {
+        <div class="pod-analyzer__table-wrapper">
+          <table class="pod-analyzer__table">
+            <thead>
+              <tr>
+                <th>Fichier</th>
+                <th>Taille</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (file of bdcFiles; track file.filename) {
+                <tr>
+                  <td class="file-name">
+                    <i class="fa fa-file-pdf"></i>
+                    {{ file.filename }}
+                  </td>
+                  <td>{{ formatFileSize(file.size) }}</td>
+                  <td>{{ formatDate(file.modified_date) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Bouton d'analyse -->
+  <div class="pod-analyzer__actions">
+    <app-custom-button
+      label="Vérifier"
+      variant="primary"
+      size="large"
+      icon="fa fa-search"
+      [disabled]="!canAnalyze"
+      [loading]="isAnalyzing"
+      (onClick)="analyzeFiles()">
+    </app-custom-button>
+
+    @if (analysisResult) {
+      <app-custom-button
+        label="Nouvelle vérification"
+        variant="secondary"
+        size="large"
+        icon="fa fa-redo"
+        (onClick)="resetAnalysis()">
+      </app-custom-button>
+    }
+  </div>
+
+  <!-- Message d'erreur -->
+  @if (errorMessage) {
+    <div class="pod-analyzer__error">
+      <i class="fa fa-exclamation-triangle"></i>
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- Progression -->
+  @if (isAnalyzing) {
+    <div class="pod-analyzer__section">
+      <h2 class="pod-analyzer__section-title">
+        <i class="fa fa-spinner fa-spin"></i>
+        Analyse et corrélation en cours...
+      </h2>
+
+      <app-progress-bar
+        [value]="progress"
+        [max]="100"
+        variant="primary"
+        size="large"
+        [showLabel]="true"
+        [animated]="true"
+        [striped]="true"
+        labelPosition="outside">
+      </app-progress-bar>
+
+      <p class="pod-analyzer__progress-text">
+        Analyse des POD et BDC et corrélation avec IA...
+      </p>
+    </div>
+  }
+
+  <!-- Résultats de corrélation -->
+  @if (analysisResult && analysisResult.success && analysisResult.correlations && analysisResult.correlations.length > 0) {
+    <div class="pod-analyzer__section">
+      <h2 class="pod-analyzer__section-title">
+        <i class="fa fa-check-circle"></i>
+        Résultats de l'analyse
+      </h2>
+
+      <div class="pod-analyzer__results">
+        <!-- Métadonnées -->
+        <div class="pod-analyzer__metadata">
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-clock"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">Temps de traitement</div>
+              <div class="metadata-card__value">
+                {{ analysisResult.processing_time_seconds?.toFixed(2) }} secondes
+              </div>
+            </div>
+          </div>
+
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-link"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">Corrélations trouvées</div>
+              <div class="metadata-card__value">
+                {{ analysisResult.correlations.length }}
+              </div>
+            </div>
+          </div>
+
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-trash"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">Fichiers supprimés</div>
+              <div class="metadata-card__value">
+                {{ getDeletedFilesCount() }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Corrélations -->
+        @for (correlation of analysisResult.correlations; track $index) {
+          <div class="correlation-card">
+            <div class="correlation-card__header">
+              <h3 class="correlation-card__title">
+                <i class="fa fa-link"></i>
+                Corrélation {{ $index + 1 }}
+              </h3>
+              <div class="correlation-card__score"
+                   [class]="getCorrelationScoreClass(correlation.correlation_score)">
+                Score: {{ (correlation.correlation_score * 100).toFixed(0) }}%
+              </div>
+            </div>
+
+            <div class="correlation-card__files">
+              <div class="correlation-file">
+                <div class="correlation-file__label">
+                  <i class="fa fa-file-pdf"></i> POD
+                </div>
+                <div class="correlation-file__value">
+                  {{ correlation.pod_filename }}
+                  @if (correlation.pod_deleted) {
+                    <span class="badge badge--danger">
+                      <i class="fa fa-trash"></i> Supprimé
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <div class="correlation-file">
+                <div class="correlation-file__label">
+                  <i class="fa fa-file-invoice"></i> BDC
+                </div>
+                <div class="correlation-file__value">
+                  {{ correlation.bdc_filename }}
+                  @if (correlation.bdc_deleted) {
+                    <span class="badge badge--danger">
+                      <i class="fa fa-trash"></i> Supprimé
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Tableau de contrôle de cohérence -->
+            @if (correlation.criteria_checks && correlation.criteria_checks.length > 0) {
+              <div class="correlation-card__criteria-table">
+                <h4>
+                  <i class="fa fa-clipboard-check"></i>
+                  Tableau de contrôle de cohérence
+                </h4>
+                <table class="criteria-table">
+                  <thead>
+                    <tr>
+                      <th>Critère</th>
+                      <th>Taux de correspondance</th>
+                      <th>Valeur POD</th>
+                      <th>Valeur BDC</th>
+                      <th>Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (criteria of correlation.criteria_checks; track criteria.criteria_name) {
+                      <tr [class]="getCriteriaStatusClass(criteria.status)">
+                        <td class="criteria-name">{{ criteria.criteria_name }}</td>
+                        <td class="criteria-rate">
+                          <div class="rate-bar">
+                            <div class="rate-bar__fill" [style.width.%]="criteria.match_rate * 100"></div>
+                          </div>
+                          <span class="rate-text">{{ (criteria.match_rate * 100).toFixed(0) }}%</span>
+                        </td>
+                        <td class="criteria-value">{{ criteria.pod_value || '-' }}</td>
+                        <td class="criteria-value">{{ criteria.bdc_value || '-' }}</td>
+                        <td class="criteria-status">
+                          <span class="status-badge">
+                            <i [class]="getCriteriaStatusIcon(criteria.status)"></i>
+                            {{ criteria.comment }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+
+            @if (correlation.matching_fields && correlation.matching_fields.length > 0) {
+              <div class="correlation-card__fields">
+                <h4>Champs correspondants:</h4>
+                <ul>
+                  @for (field of correlation.matching_fields; track field) {
+                    <li>{{ field }}</li>
+                  }
+                </ul>
+              </div>
+            }
+
+            <div class="correlation-card__synthesis">
+              <h4>
+                <i class="fa fa-file-text"></i>
+                Synthèse de l'analyse
+              </h4>
+              <app-markdown-viewer [content]="correlation.synthesis">
+              </app-markdown-viewer>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Aucune corrélation trouvée -->
+  @if (analysisResult && analysisResult.success && (!analysisResult.correlations || analysisResult.correlations.length === 0)) {
+    <div class="pod-analyzer__section">
+      <div class="pod-analyzer__no-results">
+        <i class="fa fa-info-circle"></i>
+        <p>{{ analysisResult.message }}</p>
+      </div>
+    </div>
+  }
+</div>

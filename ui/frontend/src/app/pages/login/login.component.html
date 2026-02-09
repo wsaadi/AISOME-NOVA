@@ -1,0 +1,87 @@
+<div class="login-page">
+  <div class="login-container">
+    <div class="login-card">
+      <!-- Logo / Header -->
+      <div class="login-header">
+        <div class="logo">
+          <mat-icon>smart_toy</mat-icon>
+        </div>
+        <h1>{{ 'login.title' | translate }}</h1>
+        <p>{{ 'login.subtitle' | translate }}</p>
+      </div>
+
+      <!-- Error Message -->
+      @if (errorMessage()) {
+        <div class="error-message">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Login Form -->
+      <form class="login-form" (keypress)="onKeyPress($event)">
+        <div class="form-group">
+          <label for="username">{{ 'login.username' | translate }}</label>
+          <div class="input-wrapper">
+            <mat-icon class="input-icon">person</mat-icon>
+            <input
+              type="text"
+              id="username"
+              [ngModel]="username()"
+              (ngModelChange)="username.set($event)"
+              [placeholder]="'login.username_placeholder' | translate"
+              autocomplete="username"
+              [disabled]="isLoading()"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">{{ 'login.password' | translate }}</label>
+          <div class="input-wrapper">
+            <mat-icon class="input-icon">lock</mat-icon>
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              id="password"
+              [ngModel]="password()"
+              (ngModelChange)="password.set($event)"
+              [placeholder]="'login.password_placeholder' | translate"
+              autocomplete="current-password"
+              [disabled]="isLoading()"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="'login.toggle_password' | translate"
+            >
+              <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <app-custom-button
+          variant="primary"
+          [label]="isLoading() ? ('login.logging_in' | translate) : ('login.login_button' | translate)"
+          [disabled]="isLoading() || !username() || !password()"
+          (click)="login()"
+          class="login-button"
+        ></app-custom-button>
+      </form>
+
+      <!-- Default credentials hint -->
+      <div class="credentials-hint">
+        <mat-icon>info_outline</mat-icon>
+        <div>
+          <strong>{{ 'login.default_credentials' | translate }}</strong>
+          <p>{{ 'login.admin_hint' | translate }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      <p>Agent PF &copy; 2024</p>
+    </div>
+  </div>
+</div>

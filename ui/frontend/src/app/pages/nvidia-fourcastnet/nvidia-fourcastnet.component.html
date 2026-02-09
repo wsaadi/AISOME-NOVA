@@ -1,0 +1,389 @@
+<div class="nvidia-fourcastnet-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="nvidia-logo">
+        <mat-icon class="logo-icon">cloud</mat-icon>
+        <div class="logo-text">
+          <h1>{{ 'nvidia_fourcastnet.title' | translate }}</h1>
+          <span class="subtitle">{{ 'nvidia_fourcastnet.subtitle' | translate }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="toggleSettings()" [matTooltip]="'nvidia_fourcastnet.settings' | translate"
+              [class.active]="showSettings">
+        <mat-icon>{{ showSettings ? 'close' : 'tune' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  @if (showSettings) {
+    <div class="settings-panel">
+      <div class="settings-grid">
+        <mat-form-field appearance="outline" class="api-key-field">
+          <mat-label>{{ 'nvidia_fourcastnet.api_key' | translate }}</mat-label>
+          <input matInput type="password" [(ngModel)]="apiKey" (change)="saveConfig()"
+                 placeholder="nvapi-...">
+          <mat-icon matSuffix>vpn_key</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="stack-info">
+        <span class="stack-badge model">
+          <mat-icon>cloud</mat-icon> FourCastNet V2 (SFNO)
+        </span>
+        <span class="stack-badge variables">
+          <mat-icon>category</mat-icon> {{ totalVariables || 73 }} variables
+        </span>
+        <span class="stack-badge resolution">
+          <mat-icon>grid_on</mat-icon> 0.25° (721 x 1440)
+        </span>
+        <span class="stack-badge timestep">
+          <mat-icon>schedule</mat-icon> Pas de 6h
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <!-- Left: Configuration Panel -->
+    <div class="config-panel">
+      <!-- Date Input -->
+      <div class="section">
+        <div class="section-header">
+          <mat-icon>calendar_today</mat-icon>
+          <span>{{ 'nvidia_fourcastnet.date_input' | translate }}</span>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'nvidia_fourcastnet.initial_date' | translate }}</mat-label>
+          <input matInput type="datetime-local" [(ngModel)]="initialDate">
+          <mat-icon matSuffix>event</mat-icon>
+        </mat-form-field>
+
+        <div class="quick-dates">
+          <span class="quick-label">{{ 'nvidia_fourcastnet.quick_dates' | translate }}</span>
+          <div class="date-chips">
+            <button mat-stroked-button class="date-chip" (click)="setQuickDate(0)">
+              <mat-icon>today</mat-icon> {{ 'nvidia_fourcastnet.today' | translate }}
+            </button>
+            <button mat-stroked-button class="date-chip" (click)="setQuickDate(-1)">
+              <mat-icon>history</mat-icon> {{ 'nvidia_fourcastnet.yesterday' | translate }}
+            </button>
+            <button mat-stroked-button class="date-chip" (click)="setQuickDate(-7)">
+              <mat-icon>date_range</mat-icon> {{ 'nvidia_fourcastnet.week_ago' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simulation Length -->
+      <div class="section">
+        <div class="section-header">
+          <mat-icon>timelapse</mat-icon>
+          <span>{{ 'nvidia_fourcastnet.simulation_length' | translate }}</span>
+          <span class="horizon-badge">{{ forecastHorizon }}</span>
+        </div>
+
+        <div class="simulation-slider">
+          <mat-slider [min]="1" [max]="40" [step]="1" discrete class="slider-control">
+            <input matSliderThumb [(ngModel)]="simulationLength">
+          </mat-slider>
+          <span class="step-info">{{ simulationLength }} {{ 'nvidia_fourcastnet.steps' | translate }} ({{ simulationLength * 6 }}h)</span>
+        </div>
+
+        <div class="quick-lengths">
+          <button mat-stroked-button class="length-chip" (click)="simulationLength = 4"
+                  [class.active]="simulationLength === 4">24h</button>
+          <button mat-stroked-button class="length-chip" (click)="simulationLength = 8"
+                  [class.active]="simulationLength === 8">48h</button>
+          <button mat-stroked-button class="length-chip" (click)="simulationLength = 14"
+                  [class.active]="simulationLength === 14">3.5j</button>
+          <button mat-stroked-button class="length-chip" (click)="simulationLength = 28"
+                  [class.active]="simulationLength === 28">7j</button>
+          <button mat-stroked-button class="length-chip" (click)="simulationLength = 40"
+                  [class.active]="simulationLength === 40">10j</button>
+        </div>
+      </div>
+
+      <!-- Quick Presets -->
+      <div class="section">
+        <div class="section-header">
+          <mat-icon>tune</mat-icon>
+          <span>{{ 'nvidia_fourcastnet.presets' | translate }}</span>
+        </div>
+        <div class="presets-grid">
+          @for (preset of presets; track preset.id) {
+            <button mat-stroked-button class="preset-btn"
+                    (click)="applyPreset(preset)"
+                    [matTooltip]="preset.variables.join(', ')">
+              <mat-icon>{{ preset.icon }}</mat-icon>
+              {{ preset.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Variable Selection -->
+      <div class="section classes-section">
+        <div class="section-header">
+          <mat-icon>category</mat-icon>
+          <span>{{ 'nvidia_fourcastnet.variable_selection' | translate }}</span>
+          @if (selectedVariables.length > 0) {
+            <span class="class-count">{{ selectedVariables.length }} {{ 'nvidia_fourcastnet.selected' | translate }}</span>
+            <button mat-icon-button (click)="clearSelection()" matTooltip="Effacer la selection" class="clear-btn">
+              <mat-icon>clear_all</mat-icon>
+            </button>
+          }
+        </div>
+
+        @if (selectedVariables.length === 0) {
+          <div class="all-mode-hint">
+            <mat-icon>info_outline</mat-icon>
+            <span>{{ 'nvidia_fourcastnet.all_mode_hint' | translate }}</span>
+          </div>
+        }
+
+        <mat-accordion multi>
+          @for (groupKey of variableGroupKeys; track groupKey) {
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>{{ variableGroups[groupKey].icon }}</mat-icon>
+                  {{ variableGroups[groupKey].label }}
+                </mat-panel-title>
+                <mat-panel-description>
+                  {{ variableGroups[groupKey].variables.length }} variables
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+
+              <div class="class-chips">
+                @for (v of variableGroups[groupKey].variables; track v.id) {
+                  <button mat-stroked-button
+                          class="class-chip"
+                          [class.selected]="isVariableSelected(v.id)"
+                          (click)="toggleVariable(v.id)"
+                          [matTooltip]="v.unit">
+                    @if (isVariableSelected(v.id)) {
+                      <mat-icon>check</mat-icon>
+                    }
+                    {{ v.name }}
+                  </button>
+                }
+              </div>
+
+              <div class="group-actions">
+                <button mat-button (click)="selectGroup(groupKey)" class="select-all-btn">
+                  <mat-icon>select_all</mat-icon>
+                  {{ 'nvidia_fourcastnet.select_group' | translate }}
+                </button>
+              </div>
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
+      </div>
+
+      <!-- Run Button -->
+      <div class="run-section">
+        <button mat-flat-button
+                class="run-button"
+                (click)="runInference()"
+                [disabled]="!canRun">
+          @if (isProcessing) {
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>{{ processingStage }}</span>
+          } @else {
+            <mat-icon>play_arrow</mat-icon>
+            <span>{{ 'nvidia_fourcastnet.run_inference' | translate }}</span>
+          }
+        </button>
+
+        @if (!apiKey) {
+          <div class="api-key-hint">
+            <mat-icon>info_outline</mat-icon>
+            {{ 'nvidia_fourcastnet.api_key_hint' | translate }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right: Results Panel -->
+    <div class="results-panel">
+      <!-- Error Banner -->
+      @if (errorMessage) {
+        <div class="error-banner">
+          <mat-icon>warning_amber</mat-icon>
+          <span [innerHTML]="errorMessage"></span>
+          <button mat-icon-button (click)="errorMessage = ''">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+
+      <!-- Processing Indicator -->
+      @if (isProcessing) {
+        <div class="processing-card">
+          <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+          <div class="processing-info">
+            <mat-spinner diameter="24"></mat-spinner>
+            <div class="processing-text">
+              <span class="processing-title">{{ 'nvidia_fourcastnet.processing_title' | translate }}</span>
+              <span class="processing-stage">{{ processingStage }}</span>
+            </div>
+          </div>
+          <div class="processing-detail">
+            <mat-icon>info_outline</mat-icon>
+            {{ 'nvidia_fourcastnet.processing_hint' | translate }}
+          </div>
+        </div>
+      }
+
+      <!-- Current Result: 3D Globe Viewer -->
+      @if (currentResult && currentResult.success && currentResult.forecasts) {
+        <div class="result-card">
+          <div class="result-header">
+            <mat-icon class="success-icon">check_circle</mat-icon>
+            <span class="result-title">{{ currentResult.message }}</span>
+            @if (currentResult.demo_mode) {
+              <span class="demo-badge">DEMO</span>
+            }
+          </div>
+
+          <!-- Variable Selector -->
+          @if (currentStep && currentStep.variables.length > 1) {
+            <div class="variable-tabs">
+              @for (v of currentStep.variables; track v.variable; let i = $index) {
+                <button mat-stroked-button
+                        class="var-tab"
+                        [class.active]="currentVariableIndex === i"
+                        (click)="selectVariable(i)">
+                  {{ v.name }}
+                </button>
+              }
+            </div>
+          }
+
+          <!-- 3D Globe + Colorbar -->
+          <div class="globe-viewer">
+            <div class="globe-canvas-wrapper">
+              <canvas #globeCanvas class="globe-canvas"></canvas>
+              <!-- Overlay info badge -->
+              @if (currentPreview) {
+                <div class="globe-overlay-badge">
+                  {{ currentPreview.name }} | +{{ currentStep?.hours_ahead }}h
+                </div>
+              }
+            </div>
+
+            <!-- Colorbar (right side like NVIDIA demo) -->
+            @if (currentPreview?.colorbar) {
+              <div class="colorbar-container">
+                <img [src]="'data:image/png;base64,' + currentPreview!.colorbar"
+                     class="colorbar-image"
+                     alt="Colorbar">
+                <span class="colorbar-unit">{{ currentPreview!.unit }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Lead Time Slider -->
+          <div class="lead-time-section">
+            <span class="lead-time-label">{{ 'nvidia_fourcastnet.lead_time' | translate }}</span>
+            <div class="lead-time-slider">
+              <mat-slider [min]="0" [max]="maxStepIndex" [step]="1" discrete class="slider-control">
+                <input matSliderThumb [ngModel]="currentStepIndex"
+                       (ngModelChange)="onStepChange($event)">
+              </mat-slider>
+              <div class="lead-time-value">{{ currentStep?.hours_ahead || 6 }}</div>
+            </div>
+            @if (currentStep) {
+              <div class="valid-time-badge">
+                <mat-icon>event</mat-icon>
+                {{ formatDate(currentStep.valid_time) }}
+              </div>
+            }
+          </div>
+
+          <!-- Stats Row -->
+          @if (currentPreview) {
+            <div class="stats-row">
+              <div class="stat">
+                <span class="stat-label">Min</span>
+                <span class="stat-value">{{ currentPreview.min | number:'1.1-1' }} {{ currentPreview.unit }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Moy</span>
+                <span class="stat-value">{{ currentPreview.mean | number:'1.1-1' }} {{ currentPreview.unit }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Max</span>
+                <span class="stat-value">{{ currentPreview.max | number:'1.1-1' }} {{ currentPreview.unit }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if (!isProcessing && !currentResult) {
+        <div class="empty-state">
+          <div class="empty-illustration">
+            <mat-icon>public</mat-icon>
+          </div>
+          <h2>{{ 'nvidia_fourcastnet.empty_title' | translate }}</h2>
+          <p>{{ 'nvidia_fourcastnet.empty_description' | translate }}</p>
+
+          <div class="features-grid">
+            <div class="feature-card">
+              <mat-icon>public</mat-icon>
+              <span class="feature-title">{{ 'nvidia_fourcastnet.feature_global_title' | translate }}</span>
+              <span class="feature-desc">{{ 'nvidia_fourcastnet.feature_global' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>3d_rotation</mat-icon>
+              <span class="feature-title">Globe 3D</span>
+              <span class="feature-desc">{{ 'nvidia_fourcastnet.feature_3d_globe' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>category</mat-icon>
+              <span class="feature-title">73 Variables</span>
+              <span class="feature-desc">{{ 'nvidia_fourcastnet.feature_variables' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>schedule</mat-icon>
+              <span class="feature-title">{{ 'nvidia_fourcastnet.feature_speed_title' | translate }}</span>
+              <span class="feature-desc">{{ 'nvidia_fourcastnet.feature_speed' | translate }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- History -->
+      @if (history.length > 0) {
+        <div class="history-section">
+          <div class="history-header">
+            <mat-icon>history</mat-icon>
+            <span>{{ 'nvidia_fourcastnet.history' | translate }}</span>
+            <button mat-icon-button (click)="clearHistory()" matTooltip="Effacer l'historique" class="clear-btn">
+              <mat-icon>delete_sweep</mat-icon>
+            </button>
+          </div>
+
+          @for (entry of history; track entry.id) {
+            <div class="history-entry">
+              <div class="entry-header">
+                <mat-icon class="entry-icon">check_circle</mat-icon>
+                <span class="entry-time">{{ entry.timestamp | date:'HH:mm:ss' }}</span>
+                <span class="entry-classes">{{ entry.simulationLength * 6 }}h - {{ entry.variables.length }} var(s)</span>
+              </div>
+              <div class="entry-url">{{ entry.date }}</div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

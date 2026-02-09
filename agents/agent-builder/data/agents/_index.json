@@ -1,0 +1,271 @@
+{
+  "2334709b-26ae-4cd6-a15f-78eeddb9a6d8": {
+    "id": "2334709b-26ae-4cd6-a15f-78eeddb9a6d8",
+    "name": "Analyseur de sch\u00e9ma",
+    "description": "Analyse des sch\u00e9mas et donne une description et explication",
+    "icon": "fa fa-file-alt",
+    "category": "custom",
+    "status": "active",
+    "created_at": "2026-01-13T09:49:20.366145",
+    "updated_at": "2026-01-13T10:40:11.276110",
+    "version": "1.0.0",
+    "tags": []
+  },
+  "04a21794-39ed-4305-b439-ac900a0c0234": {
+    "id": "04a21794-39ed-4305-b439-ac900a0c0234",
+    "name": "Analyseur CO2",
+    "description": "Analyse un extract AWS pour mise en graphique",
+    "icon": "fa fa-chart-line",
+    "category": "custom",
+    "status": "active",
+    "created_at": "2026-01-13T10:55:06.966259",
+    "updated_at": "2026-01-13T16:20:37.915534",
+    "version": "1.0.0",
+    "tags": []
+  },
+  "f67cc145-5fdf-4064-9802-a744263f32d2": {
+    "id": "f67cc145-5fdf-4064-9802-a744263f32d2",
+    "name": "Assistant m\u00e9dical",
+    "description": "assistant m\u00e9dical d'analyse de diagnostic",
+    "icon": "fa fa-comments",
+    "category": "custom",
+    "status": "active",
+    "created_at": "2026-01-13T17:53:55.190258",
+    "updated_at": "2026-01-19T16:31:13.846954",
+    "version": "1.0.0",
+    "tags": []
+  },
+  "9de04fd5-b46c-4f92-8f52-801ea0002498": {
+    "id": "9de04fd5-b46c-4f92-8f52-801ea0002498",
+    "name": "Analyse radio patient",
+    "description": "Analyse les photos de radio et les analyses",
+    "icon": "fa fa-brain",
+    "category": "custom",
+    "status": "active",
+    "created_at": "2026-01-13T17:58:22.929072",
+    "updated_at": "2026-01-13T18:01:48.151882",
+    "version": "1.0.0",
+    "tags": []
+  },
+  "bbec9fc0-01e9-4e96-b738-25c8b1e48411": {
+    "id": "bbec9fc0-01e9-4e96-b738-25c8b1e48411",
+    "name": "Analyseur d'\u00c9missions CO\u2082 AWS",
+    "description": "Agent permettant d'analyser un fichier CSV d'\u00e9missions CO\u2082 d'AWS et de g\u00e9n\u00e9rer une synth\u00e8se d\u00e9taill\u00e9e avec recommandations",
+    "icon": "fa fa-leaf",
+    "category": "data_processing",
+    "status": "active",
+    "created_at": "2026-01-19T14:47:37.043089",
+    "updated_at": "2026-01-19T14:48:15.106439",
+    "version": "1.0.0",
+    "tags": [
+      "co2",
+      "aws",
+      "analyse",
+      "rapport",
+      "recommandations",
+      "environnement"
+    ]
+  },
+  "587d22bf-a3a8-4c5f-a9c1-1fa267d25d5d": {
+    "id": "587d22bf-a3a8-4c5f-a9c1-1fa267d25d5d",
+    "name": "Analyseur d'Appels d'Offre IT",
+    "description": "Agent sp\u00e9cialis\u00e9 dans l'analyse des documents d'appels d'offre IT, extrait les informations cl\u00e9s et g\u00e9n\u00e8re une synth\u00e8se compl\u00e8te au format Word.",
+    "icon": "fa fa-file-contract",
+    "category": "document_analysis",
+    "status": "active",
+    "created_at": "2026-01-19T23:05:18.554356",
+    "updated_at": "2026-01-19T23:05:50.440284",
+    "version": "1.0.0",
+    "tags": [
+      "appel_offre",
+      "analyse_document",
+      "IT",
+      "cahier_charges",
+      "synth\u00e8se"
+    ]
+  },
+  "fe5b994f-a307-4aae-b5ad-b418b67f9cbe": {
+    "id": "fe5b994f-a307-4aae-b5ad-b418b67f9cbe",
+    "name": "Veille Tech & March\u00e9",
+    "description": "Agent de veille technologique et march\u00e9 qui recherche des actualit\u00e9s mondiales multilingues et les pr\u00e9sente de mani\u00e8re structur\u00e9e.",
+    "icon": "fa fa-chart-line",
+    "category": "analytics",
+    "status": "active",
+    "created_at": "2026-01-20T10:49:12.067762",
+    "updated_at": "2026-01-20T10:51:18.348917",
+    "version": "1.0.0",
+    "tags": [
+      "veille",
+      "technologie",
+      "march\u00e9",
+      "actualit\u00e9s",
+      "multilangue",
+      "recherche"
+    ]
+  },
+  "9f20f98a-3925-4843-948e-667df66f3bb6": {
+    "id": "9f20f98a-3925-4843-948e-667df66f3bb6",
+    "name": "AWS CO2 Data Visualizer",
+    "description": "Agent qui transforme un fichier CSV de donn\u00e9es CO2 AWS en graphique lin\u00e9aire interactif",
+    "icon": "fa fa-line-chart",
+    "category": "data_processing",
+    "status": "active",
+    "created_at": "2026-01-20T11:05:15.764259",
+    "updated_at": "2026-01-20T11:05:37.587285",
+    "version": "1.0.0",
+    "tags": [
+      "aws",
+      "co2",
+      "visualization",
+      "data_analysis",
+      "carbon_footprint"
+    ]
+  },
+  "e21773c9-edfc-4a77-9267-ed540073da7d": {
+    "id": "e21773c9-edfc-4a77-9267-ed540073da7d",
+    "name": "AWS CO2 Emissions Visualizer",
+    "description": "Agent qui analyse un fichier CSV d'\u00e9missions CO2 d'AWS et g\u00e9n\u00e8re un graphique lin\u00e9aire visuel",
+    "icon": "fa fa-line-chart",
+    "category": "analytics",
+    "status": "active",
+    "created_at": "2026-01-20T11:38:42.303500",
+    "updated_at": "2026-01-20T11:39:01.731046",
+    "version": "1.0.0",
+    "tags": [
+      "co2",
+      "aws",
+      "visualisation",
+      "data_analysis",
+      "graphique"
+    ]
+  },
+  "d793ff8f-393a-4e1b-b11c-e730f3f27005": {
+    "id": "d793ff8f-393a-4e1b-b11c-e730f3f27005",
+    "name": "Veille Technologique Avanc\u00e9e",
+    "description": "Agent de veille technologique qui analyse les actualit\u00e9s web et produit une analyse SWOT, une synth\u00e8se, des recommandations et les sources associ\u00e9es.",
+    "icon": "fa fa-search",
+    "category": "document_analysis",
+    "status": "active",
+    "created_at": "2026-01-20T14:26:06.967114",
+    "updated_at": "2026-01-20T14:26:19.298218",
+    "version": "1.0.0",
+    "tags": [
+      "veille",
+      "technologie",
+      "analyse",
+      "swot",
+      "synth\u00e8se",
+      "web_search"
+    ]
+  },
+  "034dd450-69cd-4472-a0e4-3aa7fc5fcce0": {
+    "id": "034dd450-69cd-4472-a0e4-3aa7fc5fcce0",
+    "name": "Tech Market Trends Analyzer",
+    "description": "Analyse les tendances de croissance et d\u00e9croissance d'un secteur technologique avec veille web multi-langue et extrapolation des donn\u00e9es futures.",
+    "icon": "fa fa-chart-line",
+    "category": "analytics",
+    "status": "active",
+    "created_at": "2026-01-20T15:00:54.557126",
+    "updated_at": "2026-01-20T15:01:04.009449",
+    "version": "1.0.0",
+    "tags": [
+      "market_analysis",
+      "trends",
+      "technology",
+      "web_search",
+      "data_visualization",
+      "forecasting"
+    ]
+  },
+  "958c7d94-d138-415a-9586-e4167f39c642": {
+    "id": "958c7d94-d138-415a-9586-e4167f39c642",
+    "name": "Analyseur d'Appels d'Offres (AO)",
+    "description": "Analyse automatique des documents d'un AO (CCTP, CCAP, RC, annexes) pour produire une synth\u00e8se d\u00e9taill\u00e9e facilitant l'arbitrage go/no-go.",
+    "icon": "fa fa-file-contract",
+    "category": "analyse",
+    "status": "active",
+    "created_at": "2026-01-26T23:01:47.301868",
+    "updated_at": "2026-01-27T18:00:42.018187",
+    "version": "1.0.0",
+    "tags": [
+      "AO",
+      "appel d'offres",
+      "analyse",
+      "IT",
+      "arbitrage"
+    ]
+  },
+  "7bf4f55b-3697-4298-bbaa-a50a2debeef3": {
+    "id": "7bf4f55b-3697-4298-bbaa-a50a2debeef3",
+    "name": "Extracteur de Donn\u00e9es JSON",
+    "description": "Analyse vos PDF et Excel pour extraire les donn\u00e9es structur\u00e9es en JSON t\u00e9l\u00e9chargeable",
+    "icon": "fa fa-file-code",
+    "category": "analyse",
+    "status": "active",
+    "created_at": "2026-01-28T10:43:32.986515",
+    "updated_at": "2026-01-28T10:43:32.986905",
+    "version": "1.0.0",
+    "tags": [
+      "extraction",
+      "analyse",
+      "json",
+      "pdf",
+      "excel"
+    ]
+  },
+  "7b839663-127e-478a-9cd5-470ee5870c75": {
+    "id": "7b839663-127e-478a-9cd5-470ee5870c75",
+    "name": "Extracteur de Devis Universel",
+    "description": "Extrait et structure toutes les donn\u00e9es d'un devis PDF en JSON, avec d\u00e9tection de synonymes et validation des montants.",
+    "icon": "fa fa-file-invoice-dollar",
+    "category": "finance",
+    "status": "active",
+    "created_at": "2026-01-28T17:32:50.240036",
+    "updated_at": "2026-01-28T17:32:50.241528",
+    "version": "1.0.0",
+    "tags": [
+      "devis",
+      "extraction",
+      "finance",
+      "json"
+    ]
+  },
+  "79c60b8e-1329-4565-95d4-1824a761df28": {
+    "id": "79c60b8e-1329-4565-95d4-1824a761df28",
+    "name": "Cartographe des Alternatives Digitales",
+    "description": "Recherche exhaustive des solutions open source et fran\u00e7aises/europ\u00e9ennes pour remplacer Office 365, Adobe, Windows, etc. avec cartographie d\u00e9taill\u00e9e, crit\u00e8res techniques et sources v\u00e9rifi\u00e9es.",
+    "icon": "fa fa-map-signs",
+    "category": "recherche",
+    "status": "active",
+    "created_at": "2026-01-29T13:07:02.848326",
+    "updated_at": "2026-01-29T13:07:02.848845",
+    "version": "1.0.0",
+    "tags": [
+      "open source",
+      "alternatives",
+      "fran\u00e7ais",
+      "europ\u00e9en",
+      "digital workspace",
+      "cartographie",
+      "recherche approfondie"
+    ]
+  },
+  "b2389faa-c9ca-40e1-bd10-ea0826857212": {
+    "id": "b2389faa-c9ca-40e1-bd10-ea0826857212",
+    "name": "Strat\u00e8ge Num\u00e9rique Public",
+    "description": "Expert en transformation num\u00e9rique du secteur public : analyse des directives, r\u00e9glementations, financements et innovations pour l'\u00e9ducation, la sant\u00e9, les collectivit\u00e9s et les organismes publics.",
+    "icon": "fa fa-university",
+    "category": "strat\u00e9gie publique",
+    "status": "active",
+    "created_at": "2026-01-29T13:58:45.944332",
+    "updated_at": "2026-01-29T13:58:45.944829",
+    "version": "1.0.0",
+    "tags": [
+      "num\u00e9rique public",
+      "strat\u00e9gie",
+      "r\u00e9glementation",
+      "financement",
+      "secteur public"
+    ]
+  }
+}

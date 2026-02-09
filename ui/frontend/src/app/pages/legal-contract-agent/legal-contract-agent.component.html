@@ -1,0 +1,435 @@
+<div class="legal-agent">
+  <!-- Header -->
+  <div class="legal-agent__header">
+    <div class="legal-agent__header-content">
+      <div class="legal-agent__icon">
+        <i class="fa fa-scale-balanced"></i>
+      </div>
+      <div>
+        <h1 class="legal-agent__title">{{ 'legal_contract.title' | translate }}</h1>
+        <p class="legal-agent__subtitle">{{ 'legal_contract.subtitle' | translate }}</p>
+      </div>
+    </div>
+    <div class="legal-agent__header-actions">
+      <div class="legal-agent__provider-badge" [matTooltip]="'Provider: ' + getProviderLabel()">
+        <i class="fa fa-microchip"></i>
+        {{ getProviderLabel() }}
+      </div>
+      <button class="legal-agent__config-btn" (click)="openConfigDialog()" [matTooltip]="'common.settings' | translate">
+        <i class="fa fa-cog"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mode Selector -->
+  <div class="legal-agent__modes">
+    <h2 class="legal-agent__section-label">
+      <i class="fa fa-compass"></i>
+      {{ 'legal_contract.mode_select' | translate }}
+    </h2>
+    <div class="legal-agent__mode-cards">
+      @for (mode of modes; track mode.value) {
+        <button
+          class="mode-card"
+          [class.mode-card--active]="currentMode === mode.value"
+          (click)="setMode(mode.value)">
+          <div class="mode-card__icon">
+            <i [class]="mode.icon"></i>
+          </div>
+          <div class="mode-card__content">
+            <span class="mode-card__label">{{ mode.label | translate }}</span>
+            <span class="mode-card__description">{{ mode.description | translate }}</span>
+          </div>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Contract Type Selector (for analyze & risk modes) -->
+  @if (currentMode === 'analyze' || currentMode === 'risk' || currentMode === 'draft') {
+    <div class="legal-agent__section">
+      <h2 class="legal-agent__section-title">
+        <i class="fa fa-file-contract"></i>
+        {{ 'legal_contract.contract_type' | translate }}
+      </h2>
+      <div class="legal-agent__type-groups">
+        <!-- Partner contracts -->
+        <div class="type-group">
+          <h3 class="type-group__title">
+            <i class="fa fa-handshake"></i>
+            {{ 'legal_contract.categories.partner' | translate }}
+          </h3>
+          <div class="type-group__chips">
+            @for (type of getContractTypesByCategory('partner'); track type.value) {
+              <button
+                class="type-chip"
+                [class.type-chip--active]="selectedContractType === type.value"
+                (click)="selectContractType(type.value)"
+                [matTooltip]="type.label | translate">
+                <i [class]="type.icon"></i>
+                <span>{{ type.label | translate }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Client contracts -->
+        <div class="type-group">
+          <h3 class="type-group__title">
+            <i class="fa fa-building"></i>
+            {{ 'legal_contract.categories.client' | translate }}
+          </h3>
+          <div class="type-group__chips">
+            @for (type of getContractTypesByCategory('client'); track type.value) {
+              <button
+                class="type-chip"
+                [class.type-chip--active]="selectedContractType === type.value"
+                (click)="selectContractType(type.value)"
+                [matTooltip]="type.label | translate">
+                <i [class]="type.icon"></i>
+                <span>{{ type.label | translate }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- General contracts -->
+        <div class="type-group">
+          <h3 class="type-group__title">
+            <i class="fa fa-folder-open"></i>
+            {{ 'legal_contract.categories.general' | translate }}
+          </h3>
+          <div class="type-group__chips">
+            @for (type of getContractTypesByCategory('general'); track type.value) {
+              <button
+                class="type-chip"
+                [class.type-chip--active]="selectedContractType === type.value"
+                (click)="selectContractType(type.value)"
+                [matTooltip]="type.label | translate">
+                <i [class]="type.icon"></i>
+                <span>{{ type.label | translate }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Document Upload Section (for analyze & risk modes) -->
+  @if (currentMode === 'analyze' || currentMode === 'risk') {
+    <div class="legal-agent__section">
+      <h2 class="legal-agent__section-title">
+        <i class="fa fa-upload"></i>
+        {{ 'legal_contract.documents' | translate }}
+      </h2>
+
+      <div class="legal-agent__uploads">
+        <!-- Contract upload -->
+        <div class="legal-agent__upload-block">
+          <h3 class="legal-agent__upload-label">
+            <i class="fa fa-file-lines"></i>
+            {{ 'legal_contract.contract_upload' | translate }}
+            <span class="legal-agent__required">*</span>
+          </h3>
+          <app-file-upload
+            [accept]="'.pdf,.docx,.doc,.txt,.rtf'"
+            [multiple]="true"
+            [maxSize]="30"
+            [maxFiles]="10"
+            [label]="'legal_contract.contract_upload_label' | translate"
+            [hint]="'legal_contract.contract_upload_hint' | translate"
+            (filesSelected)="onContractFilesSelected($event)"
+            (filesRemoved)="onContractFilesRemoved($event)"
+            (error)="errorMessage = $event">
+          </app-file-upload>
+        </div>
+
+        <!-- Template upload -->
+        <div class="legal-agent__upload-block legal-agent__upload-block--template">
+          <h3 class="legal-agent__upload-label">
+            <i class="fa fa-file-circle-check"></i>
+            {{ 'legal_contract.template_upload' | translate }}
+            <span class="legal-agent__optional">({{ 'legal_contract.optional' | translate }})</span>
+          </h3>
+          <p class="legal-agent__upload-description">
+            {{ 'legal_contract.template_upload_desc' | translate }}
+          </p>
+          <app-file-upload
+            [accept]="'.pdf,.docx,.doc,.txt,.rtf'"
+            [multiple]="false"
+            [maxSize]="20"
+            [maxFiles]="1"
+            [label]="'legal_contract.template_upload_label' | translate"
+            [hint]="'legal_contract.template_upload_hint' | translate"
+            (filesSelected)="onTemplateFilesSelected($event)"
+            (filesRemoved)="onTemplateFilesRemoved($event)">
+          </app-file-upload>
+        </div>
+      </div>
+
+      <!-- Specific focus -->
+      <div class="legal-agent__focus">
+        <label class="legal-agent__focus-label" for="specificFocus">
+          <i class="fa fa-crosshairs"></i>
+          {{ 'legal_contract.specific_focus' | translate }}
+        </label>
+        <textarea
+          id="specificFocus"
+          class="legal-agent__textarea"
+          [(ngModel)]="specificFocus"
+          [placeholder]="'legal_contract.specific_focus_placeholder' | translate"
+          rows="3"></textarea>
+      </div>
+    </div>
+  }
+
+  <!-- Drafting Section -->
+  @if (currentMode === 'draft') {
+    <div class="legal-agent__section">
+      <h2 class="legal-agent__section-title">
+        <i class="fa fa-pen-fancy"></i>
+        {{ 'legal_contract.drafting_title' | translate }}
+      </h2>
+
+      <!-- Draft templates -->
+      <div class="legal-agent__draft-templates">
+        <h3 class="legal-agent__templates-label">
+          <i class="fa fa-wand-magic-sparkles"></i>
+          {{ 'legal_contract.quick_templates' | translate }}
+        </h3>
+        <div class="legal-agent__templates-grid">
+          @for (template of draftTemplates; track template.value) {
+            <button
+              class="template-card"
+              (click)="useDraftTemplate(template)"
+              [class.template-card--active]="draftingInstructions === template.value">
+              <i [class]="template.icon"></i>
+              <span>{{ template.label | translate }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Drafting instructions -->
+      <div class="legal-agent__drafting">
+        <label class="legal-agent__focus-label" for="draftInstructions">
+          <i class="fa fa-pen-to-square"></i>
+          {{ 'legal_contract.drafting_instructions' | translate }}
+        </label>
+        <textarea
+          id="draftInstructions"
+          class="legal-agent__textarea legal-agent__textarea--large"
+          [(ngModel)]="draftingInstructions"
+          [placeholder]="'legal_contract.drafting_placeholder' | translate"
+          rows="5"></textarea>
+      </div>
+    </div>
+  }
+
+  <!-- Chat Section -->
+  @if (currentMode === 'chat') {
+    <div class="legal-agent__section legal-agent__section--chat">
+      <div class="legal-agent__chat-header">
+        <h2 class="legal-agent__section-title">
+          <i class="fa fa-comments"></i>
+          {{ 'legal_contract.chat_title' | translate }}
+        </h2>
+        <button class="legal-agent__chat-clear" (click)="clearChat()" [matTooltip]="'legal_contract.clear_chat' | translate">
+          <i class="fa fa-trash-can"></i>
+          {{ 'legal_contract.clear_chat' | translate }}
+        </button>
+      </div>
+
+      <!-- Chat messages -->
+      <div class="legal-agent__chat-messages" #chatMessagesContainer>
+        @for (msg of chatMessages; track $index) {
+          <div class="chat-message" [class.chat-message--user]="msg.role === 'user'" [class.chat-message--assistant]="msg.role === 'assistant'">
+            <div class="chat-message__avatar">
+              @if (msg.role === 'assistant') {
+                <i class="fa fa-scale-balanced"></i>
+              } @else {
+                <i class="fa fa-user"></i>
+              }
+            </div>
+            <div class="chat-message__body">
+              <div class="chat-message__header">
+                <span class="chat-message__role">
+                  {{ msg.role === 'assistant' ? ('legal_contract.chat_assistant' | translate) : ('legal_contract.chat_you' | translate) }}
+                </span>
+                <span class="chat-message__time">{{ formatTimestamp(msg.timestamp) }}</span>
+              </div>
+              @if (msg.isLoading) {
+                <div class="chat-message__loading">
+                  <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                  </div>
+                </div>
+              } @else {
+                <div class="chat-message__content">
+                  <app-markdown-viewer [content]="msg.content" [showLineNumbers]="false"></app-markdown-viewer>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Chat input -->
+      <div class="legal-agent__chat-input-area">
+        <textarea
+          class="legal-agent__chat-input"
+          [(ngModel)]="chatInput_text"
+          (keydown)="onChatKeydown($event)"
+          [placeholder]="'legal_contract.chat_placeholder' | translate"
+          [disabled]="isSendingMessage"
+          rows="2"
+          #chatInput></textarea>
+        <button
+          class="legal-agent__chat-send"
+          (click)="sendChatMessage()"
+          [disabled]="!chatInput_text.trim() || isSendingMessage">
+          @if (isSendingMessage) {
+            <i class="fa fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fa fa-paper-plane"></i>
+          }
+        </button>
+      </div>
+      <p class="legal-agent__chat-hint">
+        <i class="fa fa-info-circle"></i>
+        {{ 'legal_contract.chat_hint' | translate }}
+      </p>
+    </div>
+  }
+
+  <!-- Action Buttons (for non-chat modes) -->
+  @if (currentMode !== 'chat') {
+    <div class="legal-agent__actions">
+      <app-custom-button
+        [label]="analysisButtonLabel"
+        variant="primary"
+        size="large"
+        [icon]="analysisButtonIcon"
+        [disabled]="!canLaunchAnalysis"
+        [loading]="isAnalyzing"
+        (onClick)="launchAnalysis()">
+      </app-custom-button>
+
+      @if (analysisResult || analysisContent) {
+        <app-custom-button
+          [label]="'legal_contract.actions.reset' | translate"
+          variant="secondary"
+          size="large"
+          icon="fa fa-rotate-right"
+          (onClick)="resetAll()">
+        </app-custom-button>
+      }
+
+      @if (analysisResult?.synthesis_word_file_id) {
+        <app-custom-button
+          [label]="'legal_contract.actions.download_word' | translate"
+          variant="success"
+          size="large"
+          icon="fa fa-file-word"
+          (onClick)="downloadWordReport()">
+        </app-custom-button>
+      }
+    </div>
+  }
+
+  <!-- Error message -->
+  @if (errorMessage) {
+    <div class="legal-agent__error">
+      <i class="fa fa-circle-exclamation"></i>
+      <span>{{ errorMessage }}</span>
+      <button class="legal-agent__error-close" (click)="errorMessage = ''">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+  }
+
+  <!-- Progress -->
+  @if (isAnalyzing) {
+    <div class="legal-agent__section legal-agent__section--progress">
+      <div class="legal-agent__progress-header">
+        <i class="fa fa-spinner fa-spin"></i>
+        <span>{{ 'legal_contract.analyzing' | translate }}</span>
+      </div>
+      <app-progress-bar
+        [value]="progress"
+        [max]="100"
+        variant="primary"
+        size="large"
+        [showLabel]="true"
+        [animated]="true"
+        [striped]="true"
+        labelPosition="outside">
+      </app-progress-bar>
+      <p class="legal-agent__progress-text">
+        {{ 'legal_contract.analyzing_desc' | translate }}
+      </p>
+    </div>
+  }
+
+  <!-- Results Section -->
+  @if (analysisContent && !isAnalyzing) {
+    <div class="legal-agent__section legal-agent__section--results">
+      <div class="legal-agent__results-header">
+        <h2 class="legal-agent__section-title">
+          <i class="fa fa-check-circle"></i>
+          {{ 'legal_contract.results_title' | translate }}
+        </h2>
+        @if (analysisResult?.processing_time_seconds) {
+          <div class="legal-agent__results-meta">
+            <span class="meta-badge">
+              <i class="fa fa-clock"></i>
+              {{ analysisResult!.processing_time_seconds }}s
+            </span>
+            <span class="meta-badge">
+              <i class="fa fa-file"></i>
+              {{ contractFiles.length }} {{ 'legal_contract.files' | translate }}
+            </span>
+            @if (templateFiles.length > 0) {
+              <span class="meta-badge meta-badge--template">
+                <i class="fa fa-file-circle-check"></i>
+                {{ 'legal_contract.with_template' | translate }}
+              </span>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="legal-agent__results-content">
+        <app-markdown-viewer
+          [content]="analysisContent"
+          [showLineNumbers]="false"
+          maxHeight="none">
+        </app-markdown-viewer>
+      </div>
+
+      <!-- Download section -->
+      @if (analysisResult?.synthesis_word_file_id) {
+        <div class="legal-agent__download-bar">
+          <div class="legal-agent__download-info">
+            <i class="fa fa-file-word"></i>
+            <span>{{ 'legal_contract.download_ready' | translate }}</span>
+          </div>
+          <app-custom-button
+            [label]="'legal_contract.actions.download_word' | translate"
+            variant="success"
+            size="medium"
+            icon="fa fa-download"
+            (onClick)="downloadWordReport()">
+          </app-custom-button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Disclaimer -->
+  <div class="legal-agent__disclaimer">
+    <i class="fa fa-triangle-exclamation"></i>
+    <span>{{ 'legal_contract.disclaimer' | translate }}</span>
+  </div>
+</div>

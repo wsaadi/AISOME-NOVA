@@ -1,0 +1,254 @@
+<div class="ai-behavior-editor">
+  <div class="editor-layout">
+    <!-- System Prompt Section -->
+    <mat-card class="behavior-card prompt-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>psychology</mat-icon>
+          {{ 'agent_builder.ai.system_prompt' | translate }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- Personality Presets -->
+        <div class="presets-section">
+          <label>{{ 'agent_builder.ai.quick_presets' | translate }}</label>
+          <div class="preset-buttons">
+            @for (preset of personalityPresets | keyvalue; track preset.key) {
+              <button
+                mat-stroked-button
+                [class.active]="selectedPreset === preset.key"
+                (click)="applyPreset(preset.key)"
+              >
+                {{ preset.key | titlecase }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- System Prompt Input -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'agent_builder.ai.system_prompt_label' | translate }}</mat-label>
+          <textarea
+            matInput
+            [value]="behavior.system_prompt"
+            (input)="updateBehavior({ system_prompt: $any($event.target).value })"
+            rows="10"
+            [placeholder]="'agent_builder.ai.system_prompt_placeholder' | translate"
+          ></textarea>
+          <mat-hint>{{ 'agent_builder.ai.system_prompt_hint' | translate }}</mat-hint>
+        </mat-form-field>
+
+        <!-- User Prompt Input -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Prompt utilisateur par défaut (optionnel)</mat-label>
+          <textarea
+            matInput
+            [value]="behavior.user_prompt || ''"
+            (input)="updateBehavior({ user_prompt: $any($event.target).value })"
+            rows="5"
+            placeholder="Exemple : Tu dois analyser ce document de contrat, et me faire une synthèse propre sur les forces, risques et faiblesse du contrat."
+          ></textarea>
+          <mat-hint>Ce prompt sera envoyé comme message utilisateur lors du déclenchement de l'agent. Si vide, les données du formulaire seront utilisées.</mat-hint>
+        </mat-form-field>
+
+        <!-- Tone Selection -->
+        <div class="tone-section">
+          <label>{{ 'agent_builder.ai.tone' | translate }}</label>
+          <div class="tone-chips">
+            @for (tone of tones; track tone.id) {
+              <button
+                class="tone-chip"
+                [class.selected]="behavior.tone === tone.id"
+                (click)="updateBehavior({ tone: tone.id })"
+              >
+                <i [class]="tone.icon"></i>
+                <span>{{ tone.name }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- LLM Configuration Section -->
+    <mat-card class="behavior-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>settings</mat-icon>
+          {{ 'agent_builder.ai.llm_config' | translate }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- Provider Selection -->
+        <div class="provider-section">
+          <label>{{ 'agent_builder.ai.provider' | translate }}</label>
+          <div class="provider-cards">
+            @for (provider of providers; track provider.id) {
+              <div
+                class="provider-card"
+                [class.selected]="behavior.default_provider === provider.id"
+                (click)="updateBehavior({ default_provider: provider.id, default_model: provider.models[0] })"
+              >
+                <i [class]="provider.icon"></i>
+                <span>{{ provider.name }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Model Selection -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'agent_builder.ai.model' | translate }}</mat-label>
+          <mat-select [value]="behavior.default_model" (selectionChange)="updateBehavior({ default_model: $event.value })">
+            @for (model of getAvailableModels(); track model) {
+              <mat-option [value]="model">{{ model }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Temperature -->
+        <div class="slider-section">
+          <div class="slider-header">
+            <label>{{ 'agent_builder.ai.temperature' | translate }}</label>
+            <span class="slider-value">{{ formatTemperature(behavior.temperature) }}</span>
+          </div>
+          <mat-slider min="0" max="2" step="0.1" class="full-width">
+            <input
+              matSliderThumb
+              [value]="behavior.temperature"
+              (valueChange)="updateBehavior({ temperature: $event })"
+            />
+          </mat-slider>
+          <div class="slider-labels">
+            <span>{{ 'agent_builder.ai.precise' | translate }}</span>
+            <span>{{ 'agent_builder.ai.creative' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- Max Tokens -->
+        <div class="slider-section">
+          <div class="slider-header">
+            <label>{{ 'agent_builder.ai.max_tokens' | translate }}</label>
+            <span class="slider-value">{{ formatTokens(behavior.max_tokens) }}</span>
+          </div>
+          <mat-slider min="1" max="32000" step="256" class="full-width">
+            <input
+              matSliderThumb
+              [value]="behavior.max_tokens"
+              (valueChange)="updateBehavior({ max_tokens: $event })"
+            />
+          </mat-slider>
+          <div class="slider-labels">
+            <span>1</span>
+            <span>32k</span>
+          </div>
+        </div>
+
+        <!-- Context Window -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'agent_builder.ai.context_window' | translate }}</mat-label>
+          <mat-select [value]="behavior.context_window || 10" (selectionChange)="updateBehavior({ context_window: $event.value })">
+            <mat-option [value]="5">5 messages</mat-option>
+            <mat-option [value]="10">10 messages</mat-option>
+            <mat-option [value]="20">20 messages</mat-option>
+            <mat-option [value]="50">50 messages</mat-option>
+          </mat-select>
+          <mat-hint>{{ 'agent_builder.ai.context_window_hint' | translate }}</mat-hint>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Governance Section -->
+    <mat-card class="behavior-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>shield</mat-icon>
+          {{ 'agent_builder.ai.governance' | translate }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="toggle-section">
+          <mat-slide-toggle
+            [checked]="behavior.enable_moderation !== false"
+            (change)="updateBehavior({ enable_moderation: $event.checked })"
+          >
+            <div class="toggle-content">
+              <span class="toggle-label">{{ 'agent_builder.ai.enable_moderation' | translate }}</span>
+              <span class="toggle-hint">{{ 'agent_builder.ai.moderation_hint' | translate }}</span>
+            </div>
+          </mat-slide-toggle>
+        </div>
+
+        <div class="toggle-section">
+          <mat-slide-toggle
+            [checked]="behavior.enable_classification !== false"
+            (change)="updateBehavior({ enable_classification: $event.checked })"
+          >
+            <div class="toggle-content">
+              <span class="toggle-label">{{ 'agent_builder.ai.enable_classification' | translate }}</span>
+              <span class="toggle-hint">{{ 'agent_builder.ai.classification_hint' | translate }}</span>
+            </div>
+          </mat-slide-toggle>
+        </div>
+
+        <div class="toggle-section">
+          <mat-slide-toggle
+            [checked]="behavior.include_sources || false"
+            (change)="updateBehavior({ include_sources: $event.checked })"
+          >
+            <div class="toggle-content">
+              <span class="toggle-label">{{ 'agent_builder.ai.include_sources' | translate }}</span>
+              <span class="toggle-hint">{{ 'agent_builder.ai.sources_hint' | translate }}</span>
+            </div>
+          </mat-slide-toggle>
+        </div>
+
+        <div class="toggle-section">
+          <mat-slide-toggle
+            [checked]="behavior.include_confidence || false"
+            (change)="updateBehavior({ include_confidence: $event.checked })"
+          >
+            <div class="toggle-content">
+              <span class="toggle-label">{{ 'agent_builder.ai.include_confidence' | translate }}</span>
+              <span class="toggle-hint">{{ 'agent_builder.ai.confidence_hint' | translate }}</span>
+            </div>
+          </mat-slide-toggle>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Advanced Settings -->
+    <mat-expansion-panel class="advanced-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>tune</mat-icon>
+          {{ 'agent_builder.ai.advanced_settings' | translate }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="advanced-content">
+        <!-- Response Format -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'agent_builder.ai.response_format' | translate }}</mat-label>
+          <mat-select
+            [value]="behavior.response_format?.type || 'text'"
+            (selectionChange)="updateBehavior({ response_format: { type: $event.value } })"
+          >
+            <mat-option value="text">Text</mat-option>
+            <mat-option value="markdown">Markdown</mat-option>
+            <mat-option value="json">JSON</mat-option>
+            <mat-option value="structured">Structured</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Include System Context -->
+        <mat-slide-toggle
+          [checked]="behavior.include_system_context !== false"
+          (change)="updateBehavior({ include_system_context: $event.checked })"
+        >
+          {{ 'agent_builder.ai.include_system_context' | translate }}
+        </mat-slide-toggle>
+      </div>
+    </mat-expansion-panel>
+  </div>
+</div>

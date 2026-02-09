@@ -1,0 +1,420 @@
+<div class="agent-preview">
+  <!-- Header -->
+  @if (agent.ui_layout.show_header) {
+    <div class="preview-header">
+      @if (agent.ui_layout.header_icon || agent.icon) {
+        <i [class]="agent.ui_layout.header_icon || agent.icon" class="header-icon"></i>
+      }
+      <div class="header-text">
+        <h2>{{ agent.ui_layout.header_title || agent.name }}</h2>
+        @if (agent.ui_layout.header_subtitle || agent.description) {
+          <p>{{ agent.ui_layout.header_subtitle || agent.description }}</p>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Content: Dashboard Mode or Sections Mode -->
+  <div class="preview-content">
+    <!-- Dashboard Grid Mode -->
+    @if (isDashboardMode()) {
+      <div class="dashboard-grid" [ngStyle]="getDashboardGridStyle()">
+        @for (widget of getWidgets(); track widget.id) {
+          <div class="widget-cell" [ngStyle]="getWidgetGridStyle(widget)">
+            <ng-container *ngTemplateOutlet="widgetTemplate; context: { widget: widget }"></ng-container>
+          </div>
+        }
+      </div>
+    }
+    <!-- Sections Mode (legacy) -->
+    @else if (agent.ui_layout.sections.length === 0) {
+      <div class="empty-preview">
+        <mat-icon>preview</mat-icon>
+        <p>{{ 'agent_builder.preview.no_layout' | translate }}</p>
+      </div>
+    } @else {
+      @for (section of agent.ui_layout.sections; track section.id) {
+        <div class="preview-section">
+          @if (section.title) {
+            <h3 class="section-title">{{ section.title }}</h3>
+          }
+          @if (section.description) {
+            <p class="section-description">{{ section.description }}</p>
+          }
+
+          <div class="section-content" [ngStyle]="getSectionStyle(section)">
+            @for (component of section.components; track component.id) {
+              <div class="component-wrapper">
+                <!-- Input Components -->
+                @if (isInputComponent(component.type)) {
+                  @switch (component.type) {
+                    @case ('text_input') {
+                      <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>{{ component.label }}</mat-label>
+                        <input
+                          matInput
+                          [type]="getInputType(component.type)"
+                          [placeholder]="component.placeholder || ''"
+                          [(ngModel)]="previewData[component.name]"
+                        />
+                        @if (component.help_text) {
+                          <mat-hint>{{ component.help_text }}</mat-hint>
+                        }
+                      </mat-form-field>
+                    }
+                    @case ('textarea') {
+                      <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>{{ component.label }}</mat-label>
+                        <textarea
+                          matInput
+                          [placeholder]="component.placeholder || ''"
+                          [(ngModel)]="previewData[component.name]"
+                          rows="4"
+                        ></textarea>
+                        @if (component.help_text) {
+                          <mat-hint>{{ component.help_text }}</mat-hint>
+                        }
+                      </mat-form-field>
+                    }
+                    @case ('number_input') {
+                      <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>{{ component.label }}</mat-label>
+                        <input matInput type="number" [(ngModel)]="previewData[component.name]" />
+                      </mat-form-field>
+                    }
+                    @case ('email_input') {
+                      <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>{{ component.label }}</mat-label>
+                        <input matInput type="email" [(ngModel)]="previewData[component.name]" />
+                      </mat-form-field>
+                    }
+                    @case ('date_picker') {
+                      <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>{{ component.label }}</mat-label>
+                        <input matInput type="date" [(ngModel)]="previewData[component.name]" />
+                      </mat-form-field>
+                    }
+                    @case ('select') {
+                      <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>{{ component.label }}</mat-label>
+                        <mat-select [(ngModel)]="previewData[component.name]">
+                          @for (option of component.options || []; track option.value) {
+                            <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                          }
+                          @if (!component.options?.length) {
+                            <mat-option value="option1">Option 1</mat-option>
+                            <mat-option value="option2">Option 2</mat-option>
+                          }
+                        </mat-select>
+                      </mat-form-field>
+                    }
+                    @case ('checkbox') {
+                      <mat-checkbox [(ngModel)]="previewData[component.name]">
+                        {{ component.label }}
+                      </mat-checkbox>
+                    }
+                    @case ('slider') {
+                      <div class="slider-preview">
+                        <label>{{ component.label }}</label>
+                        <mat-slider min="0" max="100">
+                          <input matSliderThumb [(ngModel)]="previewData[component.name]" />
+                        </mat-slider>
+                      </div>
+                    }
+                    @default {
+                      <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>{{ component.label }}</mat-label>
+                        <input
+                          matInput
+                          [type]="getInputType(component.type)"
+                          [(ngModel)]="previewData[component.name]"
+                        />
+                      </mat-form-field>
+                    }
+                  }
+                }
+
+                <!-- File Components -->
+                @if (isFileComponent(component.type)) {
+                  <div class="file-upload-preview">
+                    <label>{{ component.label }}</label>
+                    <div class="upload-zone">
+                      <mat-icon>cloud_upload</mat-icon>
+                      <span>{{ 'agent_builder.preview.drag_files' | translate }}</span>
+                      <button mat-stroked-button>{{ 'agent_builder.preview.browse' | translate }}</button>
+                    </div>
+                  </div>
+                }
+
+                <!-- Display Components -->
+                @if (isDisplayComponent(component.type)) {
+                  <div class="display-preview">
+                    @if (component.type === 'text_display') {
+                      <p class="text-display">{{ component.default_value || 'Sample text content...' }}</p>
+                    }
+                    @if (component.type === 'markdown_viewer') {
+                      <div class="markdown-preview">
+                        <p><strong>Markdown Preview</strong></p>
+                        <p>Content will be rendered here...</p>
+                      </div>
+                    }
+                    @if (component.type === 'code_viewer') {
+                      <pre class="code-preview"><code>// Code will be displayed here
+function example() {{ '{' }}
+  return "Hello World";
+{{ '}' }}</code></pre>
+                    }
+                  </div>
+                }
+
+                <!-- Chart Components -->
+                @if (isChartComponent(component.type)) {
+                  <div class="chart-preview">
+                    <mat-icon>{{ component.type === 'bar_chart' ? 'bar_chart' : component.type === 'line_chart' ? 'show_chart' : 'pie_chart' }}</mat-icon>
+                    <span>{{ component.label || 'Chart' }}</span>
+                  </div>
+                }
+
+                <!-- Interactive Components -->
+                @if (isInteractiveComponent(component.type)) {
+                  @if (component.type === 'chat_interface') {
+                    <div class="chat-preview">
+                      <div class="chat-messages">
+                        @for (msg of chatMessages; track $index) {
+                          <div class="chat-message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+                            {{ msg.content }}
+                          </div>
+                        }
+                        @if (chatMessages.length === 0) {
+                          <div class="chat-empty">
+                            <mat-icon>chat</mat-icon>
+                            <p>{{ 'agent_builder.preview.start_chat' | translate }}</p>
+                          </div>
+                        }
+                      </div>
+                      <div class="chat-input">
+                        <mat-form-field appearance="outline" class="full-width">
+                          <input
+                            matInput
+                            [(ngModel)]="chatInput"
+                            [placeholder]="'agent_builder.preview.type_message' | translate"
+                            (keyup.enter)="sendChatMessage()"
+                          />
+                          <button mat-icon-button matSuffix (click)="sendChatMessage()">
+                            <mat-icon>send</mat-icon>
+                          </button>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  }
+                  @if (component.type === 'button') {
+                    <button mat-raised-button color="primary">
+                      {{ component.label || 'Button' }}
+                    </button>
+                  }
+                  @if (component.type === 'progress_bar') {
+                    <div class="progress-preview">
+                      <label>{{ component.label }}</label>
+                      <mat-progress-bar mode="determinate" [value]="50"></mat-progress-bar>
+                    </div>
+                  }
+                  @if (component.type === 'data_table') {
+                    <div class="table-preview">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Column 1</th>
+                            <th>Column 2</th>
+                            <th>Column 3</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Data 1</td>
+                            <td>Data 2</td>
+                            <td>Data 3</td>
+                          </tr>
+                          <tr>
+                            <td>Data 4</td>
+                            <td>Data 5</td>
+                            <td>Data 6</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Actions -->
+  @if (agent.ui_layout.show_actions && agent.ui_layout.actions?.length) {
+    <div class="preview-actions">
+      @for (action of agent.ui_layout.actions; track action.id) {
+        <button mat-raised-button color="primary">
+          {{ action.label || 'Action' }}
+        </button>
+      }
+    </div>
+  }
+</div>
+
+<!-- Reusable Widget Template for Dashboard Mode -->
+<ng-template #widgetTemplate let-widget="widget">
+  <div class="widget-content">
+    <!-- Input Components -->
+    @if (isInputComponent(widget.type)) {
+      @switch (widget.type) {
+        @case ('text_input') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ widget.label }}</mat-label>
+            <input matInput [placeholder]="widget.placeholder || ''" [(ngModel)]="previewData[widget.name]" />
+          </mat-form-field>
+        }
+        @case ('textarea') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ widget.label }}</mat-label>
+            <textarea matInput [placeholder]="widget.placeholder || ''" [(ngModel)]="previewData[widget.name]" rows="3"></textarea>
+          </mat-form-field>
+        }
+        @case ('number_input') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ widget.label }}</mat-label>
+            <input matInput type="number" [(ngModel)]="previewData[widget.name]" />
+          </mat-form-field>
+        }
+        @case ('select') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ widget.label }}</mat-label>
+            <mat-select [(ngModel)]="previewData[widget.name]">
+              @for (option of widget.options || []; track option.value) {
+                <mat-option [value]="option.value">{{ option.label }}</mat-option>
+              }
+              @if (!widget.options?.length) {
+                <mat-option value="option1">Option 1</mat-option>
+                <mat-option value="option2">Option 2</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+        @case ('checkbox') {
+          <mat-checkbox [(ngModel)]="previewData[widget.name]">{{ widget.label }}</mat-checkbox>
+        }
+        @case ('date_picker') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ widget.label }}</mat-label>
+            <input matInput type="date" [(ngModel)]="previewData[widget.name]" />
+          </mat-form-field>
+        }
+        @default {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ widget.label }}</mat-label>
+            <input matInput [(ngModel)]="previewData[widget.name]" />
+          </mat-form-field>
+        }
+      }
+    }
+
+    <!-- File Components -->
+    @if (isFileComponent(widget.type)) {
+      <div class="file-upload-preview compact">
+        <label>{{ widget.label }}</label>
+        <div class="upload-zone">
+          <mat-icon>cloud_upload</mat-icon>
+          <span>Déposer des fichiers</span>
+        </div>
+      </div>
+    }
+
+    <!-- Display Components -->
+    @if (isDisplayComponent(widget.type)) {
+      <div class="display-preview">
+        @if (widget.type === 'text_display') {
+          <p class="text-display">{{ widget.default_value || 'Texte...' }}</p>
+        }
+        @if (widget.type === 'markdown_viewer') {
+          <div class="markdown-preview">
+            <mat-icon>article</mat-icon>
+            <span>Résultat IA</span>
+          </div>
+        }
+        @if (widget.type === 'code_viewer') {
+          <pre class="code-preview compact"><code>// Code...</code></pre>
+        }
+      </div>
+    }
+
+    <!-- Chart Components -->
+    @if (isChartComponent(widget.type)) {
+      <div class="chart-preview">
+        @switch (widget.type) {
+          @case ('line_chart') {
+            <div class="mini-chart line">
+              <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+                <polyline points="0,35 20,25 40,30 60,10 80,20 100,5" fill="none" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+          }
+          @case ('bar_chart') {
+            <div class="mini-chart bar">
+              <div class="bar" style="height: 60%"></div>
+              <div class="bar" style="height: 85%"></div>
+              <div class="bar" style="height: 45%"></div>
+              <div class="bar" style="height: 95%"></div>
+              <div class="bar" style="height: 70%"></div>
+            </div>
+          }
+          @case ('pie_chart') {
+            <div class="mini-chart pie">
+              <svg viewBox="0 0 32 32">
+                <circle r="16" cx="16" cy="16" fill="var(--primary)" />
+                <circle r="16" cx="16" cy="16" fill="transparent" stroke="var(--secondary)" stroke-width="32" stroke-dasharray="40 60" transform="rotate(-90 16 16)"/>
+              </svg>
+            </div>
+          }
+          @case ('donut_chart') {
+            <div class="mini-chart donut">
+              <svg viewBox="0 0 32 32">
+                <circle r="12" cx="16" cy="16" fill="transparent" stroke="var(--primary)" stroke-width="6"/>
+                <circle r="12" cx="16" cy="16" fill="transparent" stroke="var(--secondary)" stroke-width="6" stroke-dasharray="30 70" transform="rotate(-90 16 16)"/>
+              </svg>
+            </div>
+          }
+        }
+        <span class="chart-label">{{ widget.label || 'Graphique' }}</span>
+      </div>
+    }
+
+    <!-- Button -->
+    @if (widget.type === 'button') {
+      <button
+        mat-raised-button
+        [color]="widget.is_trigger_button ? 'primary' : (widget.button_variant === 'danger' ? 'warn' : 'accent')"
+        class="full-width"
+      >
+        @if (widget.is_trigger_button) {
+          <mat-icon>play_arrow</mat-icon>
+        }
+        {{ widget.label || 'Exécuter' }}
+      </button>
+    }
+
+    <!-- Chat Interface -->
+    @if (widget.type === 'chat_interface') {
+      <div class="chat-preview compact">
+        <div class="chat-messages">
+          <div class="chat-bubble assistant">Bonjour, comment puis-je vous aider ?</div>
+        </div>
+        <div class="chat-input">
+          <input type="text" placeholder="Votre message..." disabled />
+          <mat-icon>send</mat-icon>
+        </div>
+      </div>
+    }
+  </div>
+</ng-template>

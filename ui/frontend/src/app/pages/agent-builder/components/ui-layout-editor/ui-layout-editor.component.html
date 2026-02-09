@@ -1,0 +1,473 @@
+<div class="ui-layout-editor">
+  <!-- Left Panel: Component Palette -->
+  <div class="palette-panel">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>widgets</mat-icon>
+          {{ 'agent_builder.ui.components' | translate }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- Component Categories -->
+        <div class="component-categories">
+          @for (category of componentCategories; track category.id) {
+            <button
+              class="category-btn"
+              [class.active]="selectedComponentCategory === category.id"
+              (click)="selectedComponentCategory = category.id"
+              [matTooltip]="category.name"
+            >
+              <i [class]="category.icon"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Component List -->
+        <div
+          class="component-list"
+          cdkDropList
+          id="component-palette"
+          [cdkDropListData]="filteredComponents"
+          [cdkDropListConnectedTo]="getDropListIds()"
+          [cdkDropListSortingDisabled]="true"
+        >
+          @for (comp of filteredComponents; track comp.type) {
+            <div class="component-item" cdkDrag [cdkDragData]="comp">
+              <div class="drag-preview" *cdkDragPreview>
+                <i [class]="comp.icon"></i>
+                <span>{{ comp.name }}</span>
+              </div>
+              <i [class]="comp.icon"></i>
+              <div class="component-info">
+                <span class="component-name">{{ comp.name }}</span>
+                <span class="component-desc">{{ comp.description }}</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Templates -->
+        <div class="templates-section">
+          <h4>{{ 'agent_builder.ui.templates' | translate }}</h4>
+          <div class="template-buttons">
+            @for (template of templates | keyvalue; track template.key) {
+              <button
+                mat-stroked-button
+                (click)="applyTemplate(template.key)"
+                [matTooltip]="template.value.description"
+              >
+                {{ template.value.name }}
+              </button>
+            }
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Center Panel: Canvas -->
+  <div class="canvas-panel">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>dashboard</mat-icon>
+          {{ 'agent_builder.ui.canvas' | translate }}
+        </mat-card-title>
+        <div class="canvas-actions">
+          <button mat-stroked-button (click)="addSection()">
+            <mat-icon>add</mat-icon>
+            {{ 'agent_builder.ui.add_section' | translate }}
+          </button>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- Header Settings -->
+        <mat-expansion-panel class="settings-panel">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>title</mat-icon>
+              {{ 'agent_builder.ui.header_settings' | translate }}
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="settings-content">
+            <mat-slide-toggle
+              [checked]="agent.ui_layout.show_header"
+              (change)="updateLayoutSetting('show_header', $event.checked)"
+            >
+              {{ 'agent_builder.ui.show_header' | translate }}
+            </mat-slide-toggle>
+
+            @if (agent.ui_layout.show_header) {
+              <mat-form-field appearance="outline">
+                <mat-label>{{ 'agent_builder.ui.header_title' | translate }}</mat-label>
+                <input
+                  matInput
+                  [value]="agent.ui_layout.header_title || ''"
+                  (input)="updateLayoutSetting('header_title', $any($event.target).value)"
+                />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>{{ 'agent_builder.ui.header_subtitle' | translate }}</mat-label>
+                <input
+                  matInput
+                  [value]="agent.ui_layout.header_subtitle || ''"
+                  (input)="updateLayoutSetting('header_subtitle', $any($event.target).value)"
+                />
+              </mat-form-field>
+            }
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Sections -->
+        <div class="sections-container" cdkDropList (cdkDropListDropped)="onSectionDrop($event)">
+          @if (agent.ui_layout.sections.length === 0) {
+            <div class="empty-canvas">
+              <mat-icon>dashboard_customize</mat-icon>
+              <h3>{{ 'agent_builder.ui.empty_canvas' | translate }}</h3>
+              <p>{{ 'agent_builder.ui.empty_canvas_hint' | translate }}</p>
+              <button mat-raised-button color="primary" (click)="addSection()">
+                <mat-icon>add</mat-icon>
+                {{ 'agent_builder.ui.add_first_section' | translate }}
+              </button>
+            </div>
+          } @else {
+            @for (section of agent.ui_layout.sections; track section.id) {
+              <div
+                class="section-block"
+                cdkDrag
+                [class.selected]="selectedSection?.id === section.id"
+                (click)="selectSection(section)"
+              >
+                <div class="section-header">
+                  <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+                  <span class="section-title">{{ section.title || section.name }}</span>
+                  <span class="section-layout-badge">{{ section.layout_type }}</span>
+                  <button mat-icon-button [matMenuTriggerFor]="sectionMenu" (click)="$event.stopPropagation()">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #sectionMenu="matMenu">
+                    <button mat-menu-item (click)="removeSection(section)">
+                      <mat-icon color="warn">delete</mat-icon>
+                      <span>{{ 'agent_builder.ui.delete_section' | translate }}</span>
+                    </button>
+                  </mat-menu>
+                </div>
+
+                <div
+                  class="section-content"
+                  [class.layout-row]="section.layout_type === 'row'"
+                  [class.layout-grid]="section.layout_type === 'grid'"
+                  [style.grid-template-columns]="section.layout_type === 'grid' ? 'repeat(' + (section.grid_columns || 2) + ', 1fr)' : null"
+                  [style.gap]="section.gap"
+                  cdkDropList
+                  [id]="'section-' + section.id"
+                  [cdkDropListData]="section.components"
+                  [cdkDropListConnectedTo]="['component-palette'].concat(getDropListIds())"
+                  (cdkDropListDropped)="onComponentDrop($event, section)"
+                >
+                  @if (section.components.length === 0) {
+                    <div class="empty-section">
+                      <span>{{ 'agent_builder.ui.drop_components_here' | translate }}</span>
+                    </div>
+                  } @else {
+                    @for (component of section.components; track component.id) {
+                      <div
+                        class="component-block"
+                        cdkDrag
+                        [class.selected]="selectedComponent?.id === component.id"
+                        [class.trigger-component]="component.is_trigger_button"
+                        [class.auto-bind-component]="component.auto_bind_output"
+                        [class.chart-component]="isChartComponent(component.type)"
+                        (click)="selectComponent(component); $event.stopPropagation()"
+                      >
+                        <div class="component-preview">
+                          <i [class]="getComponentIcon(component.type)"></i>
+                          <span>{{ component.label || getComponentName(component.type) }}</span>
+                          @if (component.required) {
+                            <span class="required-badge">*</span>
+                          }
+                          @if (component.is_trigger_button) {
+                            <span class="trigger-badge" matTooltip="{{ 'agent_builder.ui.trigger_button_tooltip' | translate }}">
+                              <mat-icon>bolt</mat-icon>
+                              Trigger
+                            </span>
+                          }
+                          @if (component.auto_bind_output && isChartComponent(component.type)) {
+                            <span class="auto-bind-badge" matTooltip="Données liées automatiquement">
+                              <mat-icon>sync</mat-icon>
+                              Auto
+                            </span>
+                          }
+                        </div>
+                        <button
+                          mat-icon-button
+                          class="remove-btn"
+                          (click)="removeComponent(section, component); $event.stopPropagation()"
+                        >
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Right Panel: Properties -->
+  <div class="properties-panel">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>settings</mat-icon>
+          {{ 'agent_builder.ui.properties' | translate }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (selectedComponent) {
+          <!-- Component Properties -->
+          <div class="property-group">
+            <h4>{{ 'agent_builder.ui.component_properties' | translate }}</h4>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'agent_builder.ui.name' | translate }}</mat-label>
+              <input
+                matInput
+                [value]="selectedComponent.name"
+                (input)="updateComponentProperty(selectedComponent, 'name', $any($event.target).value)"
+              />
+              <mat-hint>{{ 'agent_builder.ui.name_hint' | translate }}</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'agent_builder.ui.label' | translate }}</mat-label>
+              <input
+                matInput
+                [value]="selectedComponent.label || ''"
+                (input)="updateComponentProperty(selectedComponent, 'label', $any($event.target).value)"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'agent_builder.ui.placeholder' | translate }}</mat-label>
+              <input
+                matInput
+                [value]="selectedComponent.placeholder || ''"
+                (input)="updateComponentProperty(selectedComponent, 'placeholder', $any($event.target).value)"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'agent_builder.ui.help_text' | translate }}</mat-label>
+              <textarea
+                matInput
+                [value]="selectedComponent.help_text || ''"
+                (input)="updateComponentProperty(selectedComponent, 'help_text', $any($event.target).value)"
+                rows="2"
+              ></textarea>
+            </mat-form-field>
+
+            <mat-slide-toggle
+              [checked]="selectedComponent.required || false"
+              (change)="updateComponentProperty(selectedComponent, 'required', $event.checked)"
+            >
+              {{ 'agent_builder.ui.required' | translate }}
+            </mat-slide-toggle>
+          </div>
+
+          @if (isChartComponent(selectedComponent.type)) {
+            <div class="property-group">
+              <h4>
+                <mat-icon>bar_chart</mat-icon>
+                {{ 'agent_builder.ui.chart_settings' | translate }}
+              </h4>
+
+              <div class="chart-info-banner">
+                <mat-icon>tips_and_updates</mat-icon>
+                <span>Les graphiques nécessitent des données au format JSON avec "labels" et "datasets".</span>
+              </div>
+
+              <div class="auto-bind-toggle">
+                <mat-slide-toggle
+                  [checked]="selectedComponent.auto_bind_output || false"
+                  (change)="updateComponentProperty(selectedComponent, 'auto_bind_output', $event.checked)"
+                  color="primary"
+                >
+                  {{ 'agent_builder.ui.auto_bind_output' | translate }}
+                </mat-slide-toggle>
+                <p class="toggle-hint">{{ 'agent_builder.ui.auto_bind_output_hint' | translate }}</p>
+              </div>
+
+              @if (!selectedComponent.auto_bind_output) {
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ 'agent_builder.ui.data_source' | translate }}</mat-label>
+                  <input
+                    matInput
+                    [value]="selectedComponent.data_source || ''"
+                    (input)="updateComponentProperty(selectedComponent, 'data_source', $any($event.target).value)"
+                  />
+                  <mat-hint>{{ 'agent_builder.ui.data_source_hint' | translate }}</mat-hint>
+                </mat-form-field>
+              }
+            </div>
+          }
+
+          @if (selectedComponent.type === 'markdown_viewer' || selectedComponent.type === 'text_display') {
+            <div class="property-group">
+              <h4>
+                <mat-icon>text_snippet</mat-icon>
+                Paramètres d'affichage
+              </h4>
+
+              <div class="auto-bind-toggle">
+                <mat-slide-toggle
+                  [checked]="selectedComponent.auto_bind_output || false"
+                  (change)="updateComponentProperty(selectedComponent, 'auto_bind_output', $event.checked)"
+                  color="primary"
+                >
+                  Lier automatiquement la réponse de l'agent
+                </mat-slide-toggle>
+                <p class="toggle-hint">Affiche automatiquement la réponse de l'IA dans ce composant.</p>
+              </div>
+            </div>
+          }
+
+          <!-- Button-specific Properties -->
+          @if (selectedComponent.type === 'button' || selectedComponent.type === 'button_group') {
+            <div class="property-group trigger-group">
+              <h4>
+                <mat-icon>play_circle</mat-icon>
+                {{ 'agent_builder.ui.trigger_settings' | translate }}
+              </h4>
+
+              <div class="trigger-info-banner">
+                <mat-icon>info</mat-icon>
+                <span>{{ 'agent_builder.ui.trigger_info' | translate }}</span>
+              </div>
+
+              <mat-form-field appearance="outline">
+                <mat-label>{{ 'agent_builder.ui.button_action' | translate }}</mat-label>
+                <mat-select
+                  [value]="selectedComponent.button_action || 'trigger_agent'"
+                  (selectionChange)="updateComponentProperty(selectedComponent, 'button_action', $event.value)"
+                >
+                  <mat-option value="trigger_agent">
+                    <mat-icon class="option-icon">rocket_launch</mat-icon>
+                    {{ 'agent_builder.ui.action_trigger_agent' | translate }}
+                  </mat-option>
+                  <mat-option value="submit_form">
+                    <mat-icon class="option-icon">send</mat-icon>
+                    {{ 'agent_builder.ui.action_submit_form' | translate }}
+                  </mat-option>
+                  <mat-option value="reset_form">
+                    <mat-icon class="option-icon">refresh</mat-icon>
+                    {{ 'agent_builder.ui.action_reset_form' | translate }}
+                  </mat-option>
+                  <mat-option value="navigate">
+                    <mat-icon class="option-icon">open_in_new</mat-icon>
+                    {{ 'agent_builder.ui.action_navigate' | translate }}
+                  </mat-option>
+                  <mat-option value="custom">
+                    <mat-icon class="option-icon">code</mat-icon>
+                    {{ 'agent_builder.ui.action_custom' | translate }}
+                  </mat-option>
+                </mat-select>
+                <mat-hint>{{ 'agent_builder.ui.button_action_hint' | translate }}</mat-hint>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>{{ 'agent_builder.ui.button_variant' | translate }}</mat-label>
+                <mat-select
+                  [value]="selectedComponent.button_variant || 'primary'"
+                  (selectionChange)="updateComponentProperty(selectedComponent, 'button_variant', $event.value)"
+                >
+                  <mat-option value="primary">{{ 'agent_builder.ui.variant_primary' | translate }}</mat-option>
+                  <mat-option value="secondary">{{ 'agent_builder.ui.variant_secondary' | translate }}</mat-option>
+                  <mat-option value="success">{{ 'agent_builder.ui.variant_success' | translate }}</mat-option>
+                  <mat-option value="warning">{{ 'agent_builder.ui.variant_warning' | translate }}</mat-option>
+                  <mat-option value="danger">{{ 'agent_builder.ui.variant_danger' | translate }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-slide-toggle
+                [checked]="selectedComponent.is_trigger_button || false"
+                (change)="updateComponentProperty(selectedComponent, 'is_trigger_button', $event.checked)"
+                class="trigger-toggle"
+              >
+                <div class="trigger-toggle-content">
+                  <mat-icon [class.active]="selectedComponent.is_trigger_button">bolt</mat-icon>
+                  {{ 'agent_builder.ui.is_trigger_button' | translate }}
+                </div>
+              </mat-slide-toggle>
+              <p class="trigger-hint">{{ 'agent_builder.ui.trigger_button_hint' | translate }}</p>
+            </div>
+          }
+        } @else if (selectedSection) {
+          <!-- Section Properties -->
+          <div class="property-group">
+            <h4>{{ 'agent_builder.ui.section_properties' | translate }}</h4>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'agent_builder.ui.section_title' | translate }}</mat-label>
+              <input
+                matInput
+                [value]="selectedSection.title || ''"
+                (input)="updateSectionProperty(selectedSection, 'title', $any($event.target).value)"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'agent_builder.ui.layout_type' | translate }}</mat-label>
+              <mat-select
+                [value]="selectedSection.layout_type"
+                (selectionChange)="updateSectionProperty(selectedSection, 'layout_type', $event.value)"
+              >
+                <mat-option value="column">Column</mat-option>
+                <mat-option value="row">Row</mat-option>
+                <mat-option value="grid">Grid</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            @if (selectedSection.layout_type === 'grid') {
+              <mat-form-field appearance="outline">
+                <mat-label>{{ 'agent_builder.ui.grid_columns' | translate }}</mat-label>
+                <mat-select
+                  [value]="selectedSection.grid_columns || 2"
+                  (selectionChange)="updateSectionProperty(selectedSection, 'grid_columns', $event.value)"
+                >
+                  <mat-option [value]="2">2 Columns</mat-option>
+                  <mat-option [value]="3">3 Columns</mat-option>
+                  <mat-option [value]="4">4 Columns</mat-option>
+                </mat-select>
+              </mat-form-field>
+            }
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'agent_builder.ui.gap' | translate }}</mat-label>
+              <mat-select
+                [value]="selectedSection.gap || '16px'"
+                (selectionChange)="updateSectionProperty(selectedSection, 'gap', $event.value)"
+              >
+                <mat-option value="8px">Small (8px)</mat-option>
+                <mat-option value="16px">Medium (16px)</mat-option>
+                <mat-option value="24px">Large (24px)</mat-option>
+                <mat-option value="32px">Extra Large (32px)</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        } @else {
+          <div class="no-selection">
+            <mat-icon>touch_app</mat-icon>
+            <p>{{ 'agent_builder.ui.select_element' | translate }}</p>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

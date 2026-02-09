@@ -1,0 +1,317 @@
+$nvidia-green: #76b900;
+$nvidia-green-light: #8ecf00;
+$dino-orange: #ff6d00;
+$dino-blue: #2979ff;
+
+:host { display: block; height: 100%; overflow: hidden; }
+
+.nvidia-grounding-dino-container {
+  display: flex; flex-direction: column; height: 100%;
+  background: var(--page-bg); color: var(--text-primary);
+}
+
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+
+  .header-left { display: flex; align-items: center; gap: 12px; }
+
+  .nvidia-logo {
+    display: flex; align-items: center; gap: 10px;
+    .logo-icon { color: $dino-orange; font-size: 28px; width: 28px; height: 28px; }
+    .logo-text {
+      h1 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 1.2; }
+      .subtitle { font-size: 11px; color: var(--text-secondary); }
+    }
+  }
+
+  .header-actions {
+    display: flex; gap: 4px;
+    button { color: var(--text-secondary); &.active, &:hover { color: $nvidia-green; } }
+  }
+}
+
+.settings-panel {
+  padding: 16px 20px; background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+
+  .settings-grid {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start;
+    .api-key-field { flex: 1; min-width: 250px; }
+  }
+
+  .stack-info {
+    margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;
+    .stack-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;
+      mat-icon { font-size: 13px; width: 13px; height: 13px; }
+      &.model { background: rgba($dino-orange, 0.1); color: $dino-orange; }
+      &.algorithm { background: rgba($nvidia-green, 0.1); color: $nvidia-green; }
+      &.format { background: rgba(#009688, 0.1); color: #00897b; }
+      &.limit { background: rgba(#ff9800, 0.1); color: #f57c00; }
+    }
+  }
+}
+
+.main-content { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+
+.config-panel {
+  width: 420px; flex-shrink: 0; display: flex; flex-direction: column;
+  overflow-y: auto; border-right: 1px solid var(--border-color); background: var(--surface-color);
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+}
+
+.section {
+  padding: 16px; border-bottom: 1px solid var(--border-color);
+  .section-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    font-size: 13px; font-weight: 600; color: var(--text-secondary);
+    mat-icon { font-size: 18px; color: $dino-orange; }
+    .threshold-value {
+      margin-left: auto; padding: 2px 8px; border-radius: 10px;
+      background: rgba($dino-orange, 0.1); color: $dino-orange; font-size: 11px; font-weight: 500;
+    }
+  }
+}
+
+.full-width { width: 100%; }
+
+// Drop zone
+.drop-zone {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 30px 20px; border: 2px dashed var(--border-color); border-radius: 12px;
+  cursor: pointer; transition: all 0.2s; gap: 8px;
+  background: rgba(0, 0, 0, 0.02);
+
+  mat-icon { font-size: 40px; width: 40px; height: 40px; color: var(--text-muted); }
+  .drop-text { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+  .drop-hint { font-size: 11px; color: var(--text-muted); }
+
+  &:hover {
+    border-color: $dino-orange; background: rgba($dino-orange, 0.04);
+    mat-icon { color: $dino-orange; }
+  }
+}
+
+// Image preview
+.image-preview-container {
+  position: relative; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border-color);
+  .image-preview { width: 100%; max-height: 200px; object-fit: cover; display: block; }
+  .clear-image-btn {
+    position: absolute; top: 6px; right: 6px; width: 28px; height: 28px;
+    background: rgba(0, 0, 0, 0.6); color: #fff; backdrop-filter: blur(4px);
+    mat-icon { font-size: 16px; }
+  }
+  .image-name {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 4px 10px; font-size: 11px; color: #fff;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  }
+}
+
+.input-hint {
+  display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 8px;
+  background: rgba(#2196f3, 0.06); border: 1px solid rgba(#2196f3, 0.15);
+  font-size: 11px; color: var(--info-color, #2196f3); margin-top: 8px;
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+}
+
+.samples-grid {
+  display: flex; flex-direction: column; gap: 6px;
+  .sample-btn {
+    font-size: 12px; padding: 8px 12px; border-radius: 8px;
+    border: 1px solid var(--border-color); background: var(--card-bg);
+    color: var(--text-secondary); cursor: pointer; display: flex; align-items: center;
+    text-align: left; justify-content: flex-start;
+    .sample-info {
+      display: flex; flex-direction: column; gap: 2px;
+      .sample-name { font-weight: 500; color: var(--text-primary); font-size: 12px; }
+      .sample-prompt { font-size: 10px; color: var(--text-muted); font-family: 'Courier New', monospace; }
+    }
+    &:hover { background: rgba($dino-orange, 0.06); border-color: rgba($dino-orange, 0.2); }
+  }
+}
+
+.run-section {
+  padding: 16px; border-top: 1px solid var(--border-color); background: var(--card-bg); flex-shrink: 0;
+  .run-button {
+    width: 100%; height: 48px; font-size: 14px; font-weight: 600; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    --mdc-filled-button-container-color: #{$nvidia-green};
+    --mat-filled-button-state-layer-color: #{$nvidia-green-light};
+    color: #fff;
+    mat-icon { font-size: 22px; }
+    &[disabled] { --mdc-filled-button-container-color: rgba(118, 185, 0, 0.25); color: rgba(255, 255, 255, 0.4); }
+  }
+  .api-key-hint {
+    display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--text-muted);
+    mat-icon { font-size: 14px; width: 14px; height: 14px; }
+  }
+}
+
+.results-panel {
+  flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; gap: 16px;
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+}
+
+.error-banner {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px;
+  background: var(--error-bg); border: 1px solid rgba(#ef4444, 0.2); color: var(--error-text); font-size: 12px;
+  mat-icon:first-child { font-size: 18px; }
+  span { flex: 1; }
+  button { color: var(--text-muted); }
+}
+
+.processing-card {
+  background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: var(--card-shadow);
+  ::ng-deep .mat-mdc-progress-bar { --mdc-linear-progress-active-indicator-color: #{$dino-orange}; height: 3px; }
+  .processing-info {
+    display: flex; align-items: center; gap: 12px; padding: 16px;
+    .processing-text {
+      display: flex; flex-direction: column; gap: 2px;
+      .processing-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+      .processing-stage { font-size: 12px; color: $dino-orange; }
+    }
+  }
+}
+
+.result-card {
+  background: var(--card-bg); border: 1px solid rgba($dino-orange, 0.3);
+  border-radius: 12px; padding: 16px; box-shadow: var(--card-shadow); animation: fadeIn 0.3s ease;
+  .result-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+    .success-icon { color: var(--success-color, $nvidia-green); font-size: 24px; }
+    .result-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  }
+}
+
+.demo-badge {
+  margin-left: auto; padding: 2px 10px; border-radius: 8px;
+  background: rgba(#ff9800, 0.15); color: #ff9800; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+}
+
+// Detection viewer
+.detection-viewer { margin-bottom: 14px; }
+
+.viewer-canvas-wrapper {
+  position: relative; width: 100%; background: #1a1a2e; border-radius: 12px;
+  overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 300px;
+  border: 1px solid rgba($dino-orange, 0.12);
+  .detection-canvas { display: block; max-width: 100%; max-height: 500px; }
+  .viewer-overlay-badge {
+    position: absolute; top: 10px; left: 10px; padding: 4px 12px; border-radius: 6px;
+    background: rgba(10, 10, 26, 0.7); backdrop-filter: blur(8px);
+    font-size: 12px; color: rgba(255, 255, 255, 0.9); font-weight: 500; pointer-events: none;
+    border: 1px solid rgba($dino-orange, 0.2);
+  }
+}
+
+// Detection legend
+.detection-legend {
+  margin-top: 14px;
+  .legend-chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    .legend-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500;
+      border: 1.5px solid; background: var(--surface-color); color: var(--text-primary);
+      .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+      .legend-count {
+        padding: 0 6px; border-radius: 8px; font-size: 10px; font-weight: 600;
+        background: rgba(0, 0, 0, 0.08); color: var(--text-secondary);
+      }
+    }
+  }
+}
+
+// Detection table
+.detection-table {
+  margin-top: 14px;
+  .table-body {
+    border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;
+    .detection-row {
+      display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+      border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 12px;
+      transition: background 0.15s;
+      &:last-child { border-bottom: none; }
+      &:hover { background: rgba($dino-orange, 0.04); }
+      &.selected { background: rgba($dino-orange, 0.08); }
+      .det-color { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+      .det-label { font-weight: 500; color: var(--text-primary); flex: 1; }
+      .det-score {
+        padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600;
+        background: rgba($nvidia-green, 0.1); color: $nvidia-green;
+      }
+      .det-bbox { font-size: 10px; color: var(--text-muted); font-family: 'Courier New', monospace; }
+    }
+  }
+}
+
+// Empty state
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 40px 20px; flex: 1;
+  .empty-illustration {
+    width: 80px; height: 80px; border-radius: 50%; background: rgba($dino-orange, 0.08);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+    mat-icon { font-size: 40px; width: 40px; height: 40px; color: $dino-orange; }
+  }
+  h2 { margin: 0 0 8px; font-size: 18px; font-weight: 600; color: var(--text-primary); }
+  p { margin: 0 0 24px; font-size: 13px; color: var(--text-secondary); max-width: 400px; }
+}
+
+.features-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 420px;
+  .feature-card {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 16px 12px; border-radius: 12px; background: var(--card-bg);
+    border: 1px solid var(--border-color); box-shadow: var(--card-shadow);
+    mat-icon { font-size: 24px; width: 24px; height: 24px; color: $dino-orange; margin-bottom: 4px; }
+    .feature-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .feature-desc { font-size: 10px; color: var(--text-muted); text-align: center; }
+  }
+}
+
+.history-section {
+  .history-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    font-size: 13px; font-weight: 600; color: var(--text-secondary);
+    mat-icon { font-size: 18px; color: var(--primary-color); }
+    .clear-btn { margin-left: auto; width: 28px; height: 28px; mat-icon { font-size: 16px; color: var(--text-muted); } }
+  }
+}
+
+.history-entry {
+  background: var(--card-bg); border: 1px solid var(--border-color);
+  border-radius: 10px; padding: 12px; margin-bottom: 8px; animation: fadeIn 0.3s ease;
+  .entry-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+    .entry-icon { font-size: 16px; width: 16px; height: 16px; color: var(--success-color, $nvidia-green); }
+    .entry-time { font-size: 11px; color: var(--text-muted); }
+    .entry-count { margin-left: auto; font-size: 11px; color: var(--text-secondary); }
+  }
+  .entry-prompt { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Courier New', monospace; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 960px) {
+  .main-content { flex-direction: column; }
+  .config-panel { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); max-height: 50vh; }
+}
+
+@media (max-width: 600px) {
+  .header { padding: 8px 12px; .nvidia-logo .logo-text h1 { font-size: 14px; } }
+  .results-panel { padding: 12px; }
+  .features-grid { grid-template-columns: 1fr; }
+}

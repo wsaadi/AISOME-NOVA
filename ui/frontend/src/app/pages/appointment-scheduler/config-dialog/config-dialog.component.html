@@ -1,0 +1,162 @@
+<div class="config-dialog">
+  <h2 mat-dialog-title class="config-dialog__title">
+    <i class="fa fa-cog"></i>
+    Configuration de l'agent
+  </h2>
+
+  <mat-dialog-content class="config-dialog__content">
+    <!-- Section Provider -->
+    <div class="config-dialog__section">
+      <h3 class="config-dialog__section-title">
+        <i class="fa fa-server"></i>
+        Fournisseur d'IA
+      </h3>
+
+      <div class="config-dialog__field">
+        <label>Provider</label>
+        <select
+          [(ngModel)]="config.provider"
+          (ngModelChange)="onProviderChange()"
+          class="config-dialog__select">
+          @for (option of providerOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- Section API Mistral -->
+    @if (config.provider === 'mistral') {
+      <div class="config-dialog__section">
+        <h3 class="config-dialog__section-title">
+          <i class="fa fa-key"></i>
+          Configuration API Mistral
+        </h3>
+
+        <div class="config-dialog__field">
+          <label>Clé API Mistral *</label>
+          <input
+            type="password"
+            [(ngModel)]="config.mistralApiKey"
+            placeholder="sk-..."
+            class="config-dialog__input">
+          <p class="config-dialog__hint">
+            Votre clé API Mistral sera stockée localement dans votre navigateur
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Section API OpenAI -->
+    @if (config.provider === 'openai') {
+      <div class="config-dialog__section">
+        <h3 class="config-dialog__section-title">
+          <i class="fa fa-key"></i>
+          Configuration API OpenAI
+        </h3>
+
+        <div class="config-dialog__field">
+          <label>Clé API OpenAI *</label>
+          <input
+            type="password"
+            [(ngModel)]="config.openaiApiKey"
+            placeholder="sk-..."
+            class="config-dialog__input">
+          <p class="config-dialog__hint">
+            Votre clé API OpenAI sera stockée localement dans votre navigateur
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Section Modèle -->
+    <div class="config-dialog__section">
+      <h3 class="config-dialog__section-title">
+        <i class="fa fa-brain"></i>
+        Paramètres du modèle
+      </h3>
+
+      <!-- Modèle Mistral -->
+      @if (config.provider === 'mistral') {
+        <div class="config-dialog__field">
+          <label>Modèle Mistral</label>
+          <select
+            [(ngModel)]="config.mistralModel"
+            (ngModelChange)="onModelChange()"
+            class="config-dialog__select">
+            @for (option of mistralModelOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <!-- Modèle OpenAI -->
+      @if (config.provider === 'openai') {
+        <div class="config-dialog__field">
+          <label>Modèle OpenAI</label>
+          <select
+            [(ngModel)]="config.openaiModel"
+            (ngModelChange)="onModelChange()"
+            class="config-dialog__select">
+            @for (option of openaiModelOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <div class="config-dialog__field">
+        <label>Température ({{ config.temperature }})</label>
+        <input
+          type="range"
+          [(ngModel)]="config.temperature"
+          min="0"
+          max="1"
+          step="0.1"
+          class="config-dialog__range">
+        <p class="config-dialog__hint">
+          Contrôle la créativité du modèle (0 = précis, 1 = créatif)
+        </p>
+      </div>
+
+      <div class="config-dialog__field">
+        <label>Tokens maximum</label>
+        <input
+          type="number"
+          [(ngModel)]="config.maxTokens"
+          min="1024"
+          max="32768"
+          step="512"
+          class="config-dialog__input">
+        @if (config.provider === 'mistral') {
+          <p class="config-dialog__hint">
+            Nombre maximum de tokens générés par le modèle (Mistral Small : 8192, Mistral Medium : 8192, Mistral Large : jusqu'à 32768)
+          </p>
+        }
+        @if (config.provider === 'openai') {
+          <p class="config-dialog__hint">
+            Nombre maximum de tokens générés par le modèle (GPT-3.5 Turbo : 16384, GPT-4o mini : 16384, GPT-4o/GPT-4 Turbo : jusqu'à 128000)
+          </p>
+        }
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="config-dialog__actions">
+    <app-custom-button
+      label="Annuler"
+      variant="secondary"
+      size="medium"
+      (onClick)="onCancel()">
+    </app-custom-button>
+
+    <app-custom-button
+      label="Sauvegarder"
+      variant="primary"
+      size="medium"
+      icon="fa fa-save"
+      (onClick)="onSave()">
+    </app-custom-button>
+  </mat-dialog-actions>
+</div>

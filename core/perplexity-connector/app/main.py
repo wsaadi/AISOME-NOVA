@@ -1,0 +1,185 @@
+"""
+Application principale du connecteur Perplexity
+"""
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+import logging
+
+from app.config import settings
+from app.routers import perplexity_router
+
+
+# Configuration du logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+# Description complète de l'API
+API_DESCRIPTION = """
+# Connecteur Perplexity
+
+Connecteur central pour interagir avec Perplexity AI à travers toute la plateforme agent-pf.
+
+## 🎯 Objectif
+
+Ce connecteur offre une interface unifiée pour exploiter les capacités de Perplexity AI,
+notamment son accès à Internet en temps réel pour des réponses actualisées.
+
+## 🚀 Fonctionnalités
+
+### Chat avec accès Internet
+* **Informations en temps réel** - Accès aux dernières informations via Internet
+* **Recherche intégrée** - Perplexity effectue des recherches pour répondre
+* **Multi-modèles** - Accès aux modèles Sonar
+* **Contrôle fin** - Température, max tokens, top-p, penalties
+
+## 🔐 Authentification
+
+L'API supporte deux modes d'authentification :
+
+### 1. Configuration globale (recommandé)
+Configurez la clé API via la variable d'environnement `PERPLEXITY_API_KEY`.
+
+### 2. Clé API par requête
+Fournissez une clé API spécifique dans le header `X-API-Key`.
+
+## 📊 Modèles disponibles
+
+- **sonar** - Modèle standard avec accès Internet (par défaut)
+- **sonar-pro** - Modèle avancé avec recherche approfondie
+- **sonar-reasoning-pro** - Modèle avec raisonnement avancé
+- **sonar-deep-research** - Recherche approfondie multi-sources
+
+## 💡 Exemple d'utilisation
+
+```python
+import httpx
+
+response = httpx.post(
+    "http://localhost:8007/api/v1/perplexity/chat",
+    json={
+        "messages": [
+            {"role": "user", "content": "Quelles sont les dernières nouvelles en IA ?"}
+        ],
+        "temperature": 0.7
+    }
+)
+```
+
+## 🔧 Configuration
+
+Variables d'environnement :
+
+- `PERPLEXITY_API_KEY` - Clé API Perplexity (obligatoire)
+- `DEFAULT_MODEL` - Modèle par défaut
+- `DEFAULT_MAX_TOKENS` - Tokens max par défaut (défaut: 1024)
+- `DEFAULT_TEMPERATURE` - Température par défaut (défaut: 0.7)
+"""
+
+
+# Créer l'application FastAPI
+app = FastAPI(
+    title=settings.api_title,
+    description=API_DESCRIPTION,
+    version=settings.api_version,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
+)
+
+
+# Configuration CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins.split(","),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# Enregistrer les routers
+app.include_router(perplexity_router)
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Actions au démarrage de l'application"""
+    logger.info(f"Démarrage de {settings.api_title} v{settings.api_version}")
+    logger.info(f"Environment: {settings.environment}")
+
+    if settings.perplexity_api_key:
+        logger.info("Clé API Perplexity configurée ✓")
+    else:
+        logger.warning("⚠️  Clé API Perplexity non configurée ! Configurez PERPLEXITY_API_KEY")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Actions à l'arrêt de l'application"""
+    logger.info(f"Arrêt de {settings.api_title}")
+
+
+@app.get("/", tags=["Root"])
+async def root():
+    """Point d'entrée principal de l'API"""
+    return {
+        "name": settings.api_title,
+        "version": settings.api_version,
+        "status": "operational",
+        "documentation": {
+            "swagger": "/docs",
+            "redoc": "/redoc",
+            "openapi": "/openapi.json"
+        },
+        "endpoints": {
+            "health": "/health",
+            "chat": "/api/v1/perplexity/chat",
+            "models": "/api/v1/perplexity/models"
+        }
+    }
+
+
+@app.get("/health", tags=["Health"])
+async def health():
+    """Endpoint de santé pour les health checks"""
+    is_configured = settings.perplexity_api_key is not None
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": "healthy" if is_configured else "unhealthy",
+            "service": "perplexity-connector",
+            "version": settings.api_version,
+            "perplexity_configured": is_configured
+        }
+    )
+
+
+# Gestionnaire d'erreurs global
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    """Gestion globale des erreurs"""
+    logger.error(f"Erreur non gérée: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "message": f"Erreur interne du serveur: {str(exc)}",
+            "error": type(exc).__name__
+        }
+    )
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=settings.environment == "development"
+    )

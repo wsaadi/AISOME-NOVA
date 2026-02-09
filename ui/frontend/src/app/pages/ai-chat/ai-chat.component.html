@@ -1,0 +1,202 @@
+<div class="ai-chat-container">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-left">
+      <i class="fa fa-comments"></i>
+      <h1>{{ 'agents.ai_chat.title' | translate }}</h1>
+      <span class="provider-badge">{{ providerName }}</span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" (click)="toggleMetadata()" [title]="'agents.ai_chat.metadata' | translate">
+        <i class="fa" [ngClass]="showMetadata ? 'fa-eye-slash' : 'fa-eye'"></i>
+      </button>
+      <button class="icon-btn" *ngIf="isAdmin" (click)="openModerationSettings()" [title]="'moderation.title' | translate">
+        <i class="fa fa-shield-alt"></i>
+      </button>
+      <button class="icon-btn" (click)="openConfigDialog()" [title]="'agents.ai_chat.config' | translate">
+        <i class="fa fa-cog"></i>
+      </button>
+      <button class="icon-btn" (click)="clearChat()" [title]="'agents.ai_chat.clear' | translate">
+        <i class="fa fa-trash"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages Container -->
+  <div class="messages-container" #messagesContainer>
+    <div class="messages-wrapper">
+      <div
+        *ngFor="let message of messages"
+        class="message-item"
+        [ngClass]="{
+          'user-message': message.role === 'user',
+          'assistant-message': message.role === 'assistant',
+          'blocked-message': message.blocked
+        }"
+      >
+        <!-- Message Header -->
+        <div class="message-header">
+          <div class="message-avatar">
+            <i class="fa" [ngClass]="message.role === 'user' ? 'fa-user' : 'fa-robot'"></i>
+          </div>
+          <div class="message-info">
+            <span class="message-sender">{{ message.role === 'user' ? ('agents.ai_chat.messages.you' | translate) : ('agents.ai_chat.messages.assistant' | translate) }}</span>
+            <span class="message-time" *ngIf="message.timestamp">
+              {{ message.timestamp | date:'short' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Message Content -->
+        <div class="message-content">
+          <app-markdown-viewer [content]="message.content"></app-markdown-viewer>
+
+          <!-- Display images if present -->
+          <div class="message-images" *ngIf="message.images && message.images.length > 0">
+            <div class="image-grid">
+              <img *ngFor="let img of message.images" [src]="img" [alt]="'common.image_attached' | translate" class="message-image" />
+            </div>
+          </div>
+
+          <!-- Display documents if present -->
+          <div class="message-documents" *ngIf="message.documents && message.documents.length > 0">
+            <div class="document-item" *ngFor="let doc of message.documents">
+              <i class="fa fa-file-alt"></i>
+              <span>{{ doc.name }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Indicator -->
+        <div class="error-indicator" *ngIf="message.isError">
+          <i class="fa fa-exclamation-circle"></i>
+          <span>{{ 'agents.ai_chat.messages.error' | translate }}</span>
+        </div>
+
+        <!-- Blocked Indicator -->
+        <div class="blocked-indicator" *ngIf="message.blocked && !message.isError">
+          <i class="fa fa-exclamation-triangle"></i>
+          <span>{{ 'agents.ai_chat.moderation.blocked' | translate }}</span>
+        </div>
+
+        <!-- Metadata (if enabled) -->
+        <div class="message-metadata" *ngIf="showMetadata && message.metadata">
+          <div class="metadata-content">
+            <app-markdown-viewer [content]="getMessageMetadata(message)"></app-markdown-viewer>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading indicator -->
+      <div class="message-item assistant-message loading" *ngIf="isSending">
+        <div class="message-header">
+          <div class="message-avatar">
+            <i class="fa fa-robot"></i>
+          </div>
+          <div class="message-info">
+            <span class="message-sender">{{ 'agents.ai_chat.messages.assistant' | translate }}</span>
+          </div>
+        </div>
+        <div class="message-content">
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-container" *ngIf="errorMessage">
+    <div class="error-message">
+      <i class="fa fa-exclamation-circle"></i>
+      <span>{{ errorMessage }}</span>
+      <button class="close-btn" (click)="errorMessage = ''">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Input Container -->
+  <div class="input-container">
+    <!-- File uploads preview -->
+    <div class="uploads-preview" *ngIf="uploadedImages.length > 0 || uploadedDocuments.length > 0">
+      <!-- Images preview -->
+      <div class="uploaded-images" *ngIf="uploadedImages.length > 0">
+        <div class="upload-item" *ngFor="let img of uploadedImages; let i = index">
+          <img [src]="img" alt="Image" class="preview-image" />
+          <button class="remove-btn" (click)="removeImage(i)" [title]="'agents.ai_chat.upload.remove' | translate">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Documents preview -->
+      <div class="uploaded-documents" *ngIf="uploadedDocuments.length > 0">
+        <div class="upload-item" *ngFor="let doc of uploadedDocuments; let i = index">
+          <i class="fa fa-file-alt"></i>
+          <span>{{ doc.name }}</span>
+          <button class="remove-btn" (click)="removeDocument(i)" [title]="'agents.ai_chat.upload.remove' | translate">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-wrapper">
+      <!-- File upload buttons -->
+      <div class="upload-buttons">
+        <label class="upload-btn" [title]="'agents.ai_chat.upload.images' | translate">
+          <i class="fa fa-image"></i>
+          <input
+            type="file"
+            accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.svg,image/*"
+            multiple
+            (change)="onImageSelect($event)"
+            style="display: none"
+          />
+        </label>
+        <label class="upload-btn" [title]="'agents.ai_chat.upload.documents' | translate">
+          <i class="fa fa-paperclip"></i>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.json,.csv"
+            multiple
+            (change)="onDocumentSelect($event)"
+            style="display: none"
+          />
+        </label>
+      </div>
+
+      <textarea
+        [(ngModel)]="currentMessage"
+        (keypress)="onKeyPress($event)"
+        [disabled]="isSending"
+        [placeholder]="'agents.ai_chat.placeholder' | translate"
+        rows="3"
+        class="message-input"
+      ></textarea>
+      <app-custom-button
+        [label]="isSending ? ('common.loading' | translate) : ('agents.ai_chat.send' | translate)"
+        [icon]="'fa fa-paper-plane'"
+        [disabled]="!canSend"
+        [loading]="isSending"
+        (click)="sendMessage()"
+        class="send-button"
+      ></app-custom-button>
+    </div>
+
+    <!-- Input Footer -->
+    <div class="input-footer">
+      <div class="footer-info">
+        <i class="fa fa-shield-alt"></i>
+        <span>{{ strictModeration ? ('agents.ai_chat.moderation.strict' | translate) : ('agents.ai_chat.moderation.normal' | translate) }}</span>
+      </div>
+      <div class="footer-stats">
+        <span>{{ messages.length - 1 }} {{ 'agents.ai_chat.messages.count' | translate }}</span>
+      </div>
+    </div>
+  </div>
+</div>

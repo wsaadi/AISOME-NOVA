@@ -1,0 +1,374 @@
+# Agent Descriptor Language (ADL) v1.0.0
+# Dolibarr Stats Agent - ERP Analytics Dashboard
+
+metadata:
+  adl_version: "1.0.0"
+  schema_url: "https://agent-pf.io/schemas/adl/v1"
+  version: "1.0.0"
+  tags:
+    - erp
+    - dolibarr
+    - analytics
+    - dashboard
+    - business-intelligence
+  changelog:
+    - "1.0.0: Initial ADL conversion"
+
+identity:
+  name: "Dolibarr Stats Agent"
+  slug: "dolibarr-stats-agent"
+  description: "Tableau de bord analytique pour Dolibarr ERP"
+  long_description: |
+    Agent de Business Intelligence pour Dolibarr ERP.
+
+    ## Fonctionnalités
+    - Connexion à l'API Dolibarr
+    - Récupération des statistiques commerciales
+    - Visualisation en graphiques
+    - Analyse IA des tendances
+
+    ## Métriques disponibles
+    - Chiffre d'affaires
+    - Commandes et factures
+    - Clients et prospects
+    - Produits et stocks
+  icon: "fa fa-chart-bar"
+  category: "analytics"
+  status: "active"
+
+business_logic:
+  system_prompt: |
+    Tu es un analyste business spécialisé dans l'interprétation des données ERP.
+
+    Ta mission est d'analyser les données Dolibarr fournies et de:
+    1. Identifier les tendances clés
+    2. Détecter les anomalies
+    3. Proposer des insights actionables
+    4. Formuler des recommandations
+
+    Format de réponse:
+
+    ## Synthèse des Indicateurs
+    | Indicateur | Valeur | Évolution |
+    |------------|--------|-----------|
+
+    ## Tendances Identifiées
+    - [Tendance 1]
+    - [Tendance 2]
+
+    ## Points d'Attention
+    ⚠️ [Alertes ou anomalies]
+
+    ## Recommandations
+    1. [Recommandation actionable]
+    2. [Recommandation actionable]
+
+  user_prompt_template: |
+    Analyse les données Dolibarr suivantes:
+
+    Période: {{period}}
+
+    Données:
+    {{erp_data}}
+
+    {{#if focus}}
+    Focus sur: {{focus}}
+    {{/if}}
+
+  personality_traits:
+    - name: "analytical"
+      intensity: 1.7
+    - name: "business-oriented"
+      intensity: 1.5
+    - name: "actionable"
+      intensity: 1.4
+
+  tone: "professional"
+  language: "fr"
+
+  llm_provider: "mistral"
+  llm_model: "mistral-large-latest"
+  temperature: 0.4
+  max_tokens: 4000
+
+  context_window_messages: 5
+  include_system_context: true
+  streaming_enabled: true
+
+  moderation:
+    enabled: false
+
+  classification:
+    enabled: false
+
+  instructions:
+    - "Toujours contextualiser les chiffres"
+    - "Comparer avec les périodes précédentes"
+    - "Proposer des actions concrètes"
+
+  constraints:
+    - "Ne pas inventer de données"
+    - "Signaler les données manquantes"
+
+tools:
+  tools:
+    - tool_id: "dolibarr-connector"
+      name: "Connecteur Dolibarr"
+      enabled: true
+      description: "Récupère les données de l'ERP Dolibarr"
+      parameters:
+        - name: "endpoint"
+          source: "constant"
+          value: "stats"
+        - name: "period"
+          source: "input"
+          input_component: "period_select"
+        - name: "metrics"
+          source: "input"
+          input_component: "metrics_select"
+      output_variable: "erp_data"
+      on_error: "stop"
+      timeout_ms: 30000
+
+  default_error_handling: "stop"
+  parallel_execution: false
+
+ui:
+  show_header: true
+  header_title: "Dolibarr Analytics"
+  header_subtitle: "Tableau de bord Business Intelligence"
+  header_icon: "fa fa-chart-bar"
+
+  sections:
+    - name: "filters_section"
+      title: "Filtres"
+      layout_type: "row"
+      gap: "16px"
+      components:
+        - type: "select"
+          name: "period_select"
+          label: "Période"
+          default_value: "month"
+          options:
+            - value: "week"
+              label: "Cette semaine"
+            - value: "month"
+              label: "Ce mois"
+            - value: "quarter"
+              label: "Ce trimestre"
+            - value: "year"
+              label: "Cette année"
+            - value: "custom"
+              label: "Personnalisé"
+          style:
+            width: "200px"
+
+        - type: "date_picker"
+          name: "start_date"
+          label: "Date début"
+          visible_when:
+            field: "period_select"
+            operator: "equals"
+            value: "custom"
+
+        - type: "date_picker"
+          name: "end_date"
+          label: "Date fin"
+          visible_when:
+            field: "period_select"
+            operator: "equals"
+            value: "custom"
+
+        - type: "multi_select"
+          name: "metrics_select"
+          label: "Métriques"
+          default_value: ["revenue", "orders"]
+          options:
+            - value: "revenue"
+              label: "Chiffre d'affaires"
+            - value: "orders"
+              label: "Commandes"
+            - value: "invoices"
+              label: "Factures"
+            - value: "customers"
+              label: "Clients"
+            - value: "products"
+              label: "Produits"
+          style:
+            width: "300px"
+
+    - name: "charts_section"
+      title: "Visualisations"
+      layout_type: "grid"
+      grid_columns: 2
+      gap: "20px"
+      components:
+        - type: "bar_chart"
+          name: "revenue_chart"
+          label: "Chiffre d'affaires"
+          data_source: "erp_data.revenue"
+          chart_config:
+            type: "bar"
+            colors: ["#3B82F6"]
+          style:
+            height: "300px"
+
+        - type: "line_chart"
+          name: "orders_chart"
+          label: "Évolution des commandes"
+          data_source: "erp_data.orders"
+          chart_config:
+            type: "line"
+            colors: ["#10B981"]
+          style:
+            height: "300px"
+
+        - type: "pie_chart"
+          name: "customers_chart"
+          label: "Répartition clients"
+          data_source: "erp_data.customers"
+          chart_config:
+            type: "pie"
+          style:
+            height: "300px"
+
+        - type: "donut_chart"
+          name: "products_chart"
+          label: "Top produits"
+          data_source: "erp_data.products"
+          chart_config:
+            type: "donut"
+          style:
+            height: "300px"
+
+    - name: "analysis_section"
+      title: "Analyse IA"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "markdown_viewer"
+          name: "ai_analysis"
+          label: "Insights"
+          auto_bind_output: true
+          style:
+            min_height: "300px"
+            border: "1px solid #e5e7eb"
+            border_radius: "8px"
+            padding: "16px"
+
+  show_sidebar: false
+  show_footer: false
+
+  show_actions: true
+  actions:
+    - type: "button"
+      name: "refresh_button"
+      label: "Actualiser"
+      button_action: "trigger_agent"
+      button_variant: "primary"
+      is_trigger_button: true
+
+    - type: "button"
+      name: "export_button"
+      label: "Exporter"
+      button_action: "custom"
+      button_variant: "secondary"
+      custom_action: "exportData"
+
+  actions_position: "right"
+  theme: "auto"
+  primary_color: "#3B82F6"
+
+connectors:
+  default_connector: "mistral-analytics"
+  connectors:
+    - id: "mistral-analytics"
+      provider: "mistral"
+      name: "Mistral Large"
+      description: "Analyse des données ERP"
+      model: "mistral-large-latest"
+      default_temperature: 0.4
+      default_max_tokens: 4000
+      retry_on_error: true
+      max_retries: 2
+      timeout_ms: 60000
+      priority: 0
+
+  enable_fallback: false
+
+workflows:
+  workflows:
+    - name: "Dashboard Refresh Flow"
+      description: "Rafraîchissement du tableau de bord"
+      trigger: "button_click"
+      trigger_config:
+        button: "refresh_button"
+      enabled: true
+      steps:
+        - id: "fetch_data"
+          name: "Récupérer les données"
+          type: "tool_call"
+          tool_config_id: "dolibarr-connector"
+          output_variable: "erp_data"
+          on_error: "stop"
+          next_step: "analyze"
+
+        - id: "analyze"
+          name: "Analyser avec l'IA"
+          type: "llm_call"
+          prompt_template: |
+            {{system_prompt}}
+
+            Période: {{period_select}}
+            Métriques: {{metrics_select}}
+
+            Données:
+            {{erp_data}}
+          output_variable: "analysis"
+
+      entry_step: "fetch_data"
+      initial_variables:
+        erp_data: null
+        analysis: null
+
+      timeout_ms: 60000
+
+    - name: "Auto Refresh Flow"
+      description: "Rafraîchissement automatique"
+      trigger: "schedule"
+      trigger_config:
+        cron: "0 */15 * * * *"
+      enabled: false
+      steps:
+        - id: "auto_fetch"
+          name: "Récupération automatique"
+          type: "tool_call"
+          tool_config_id: "dolibarr-connector"
+          output_variable: "erp_data"
+
+      entry_step: "auto_fetch"
+
+  default_workflow: "dashboard-refresh"
+
+security:
+  requires_auth: true
+  allowed_roles:
+    - "admin"
+    - "manager"
+    - "analyst"
+  rate_limit_enabled: true
+  requests_per_minute: 30
+  requests_per_hour: 300
+  sanitize_inputs: true
+  max_input_length: 10000
+  audit_logging: true
+
+deployment:
+  auto_route: true
+  environment: "production"
+  min_instances: 1
+  max_instances: 2
+  health_check_enabled: true
+  feature_flags:
+    auto_refresh: false
+    export_enabled: true

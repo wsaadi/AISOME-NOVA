@@ -1,0 +1,359 @@
+<div class="appointment-scheduler">
+  <!-- Header -->
+  <div class="appointment-scheduler__header">
+    <div class="appointment-scheduler__header-content">
+      <div class="appointment-scheduler__icon">
+        <i class="fa fa-calendar-check"></i>
+      </div>
+      <div>
+        <h1 class="appointment-scheduler__title">{{ 'agents.appointment_scheduler.title' | translate }}</h1>
+        <p class="appointment-scheduler__subtitle">
+          {{ 'agents.appointment_scheduler.subtitle' | translate }}
+        </p>
+      </div>
+    </div>
+    <button class="appointment-scheduler__config-btn" (click)="openConfigDialog()" [title]="'settings.title' | translate">
+      <i class="fa fa-cog"></i>
+    </button>
+  </div>
+
+  <!-- Formulaire -->
+  <div class="appointment-scheduler__section">
+    <h2 class="appointment-scheduler__section-title">
+      <i class="fa fa-info-circle"></i>
+      {{ 'agents.appointment_scheduler.appointment_info' | translate }}
+    </h2>
+
+    <div class="appointment-scheduler__form">
+      <!-- Date du rendez-vous -->
+      <div class="form-group">
+        <label for="appointmentDate" class="form-group__label">
+          <i class="fa fa-calendar"></i>
+          {{ 'agents.appointment_scheduler.appointment_date' | translate }} *
+        </label>
+        <input
+          type="date"
+          id="appointmentDate"
+          class="form-group__input"
+          [(ngModel)]="appointmentDate"
+          [disabled]="isPreparing"
+        />
+      </div>
+
+      <!-- Nom de la société -->
+      <div class="form-group">
+        <label for="companyName" class="form-group__label">
+          <i class="fa fa-building"></i>
+          {{ 'agents.appointment_scheduler.company_name' | translate }} *
+        </label>
+        <input
+          type="text"
+          id="companyName"
+          class="form-group__input"
+          [placeholder]="'agents.appointment_scheduler.placeholders.company' | translate"
+          [(ngModel)]="companyName"
+          [disabled]="isPreparing"
+        />
+      </div>
+
+      <!-- Nom de l'interlocuteur -->
+      <div class="form-group">
+        <label for="contactName" class="form-group__label">
+          <i class="fa fa-user"></i>
+          {{ 'agents.appointment_scheduler.contact_name' | translate }} *
+        </label>
+        <input
+          type="text"
+          id="contactName"
+          class="form-group__input"
+          [placeholder]="'agents.appointment_scheduler.placeholders.contact' | translate"
+          [(ngModel)]="contactName"
+          [disabled]="isPreparing"
+        />
+      </div>
+
+      <!-- Poste de l'interlocuteur -->
+      <div class="form-group">
+        <label for="contactPosition" class="form-group__label">
+          <i class="fa fa-briefcase"></i>
+          {{ 'agents.appointment_scheduler.contact_position' | translate }} *
+        </label>
+        <input
+          type="text"
+          id="contactPosition"
+          class="form-group__input"
+          [placeholder]="'agents.appointment_scheduler.placeholders.position' | translate"
+          [(ngModel)]="contactPosition"
+          [disabled]="isPreparing"
+        />
+      </div>
+
+      <!-- Objectif du rendez-vous -->
+      <div class="form-group">
+        <label for="appointmentObjective" class="form-group__label">
+          <i class="fa fa-bullseye"></i>
+          {{ 'agents.appointment_scheduler.appointment_objective' | translate }} *
+        </label>
+        <textarea
+          id="appointmentObjective"
+          class="form-group__textarea"
+          [placeholder]="'agents.appointment_scheduler.placeholders.objective' | translate"
+          rows="4"
+          [(ngModel)]="appointmentObjective"
+          [disabled]="isPreparing"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Boutons d'action -->
+  <div class="appointment-scheduler__actions">
+    <app-custom-button
+      [label]="'agents.appointment_scheduler.prepare_appointment' | translate"
+      variant="primary"
+      size="large"
+      icon="fa fa-magic"
+      [disabled]="!canPrepare"
+      [loading]="isPreparing"
+      (onClick)="prepareAppointment()">
+    </app-custom-button>
+
+    @if (preparationResult) {
+      <app-custom-button
+        [label]="'agents.appointment_scheduler.new_preparation' | translate"
+        variant="secondary"
+        size="large"
+        icon="fa fa-redo"
+        (onClick)="resetPreparation()">
+      </app-custom-button>
+    }
+  </div>
+
+  <!-- Message d'erreur -->
+  @if (errorMessage) {
+    <div class="appointment-scheduler__error">
+      <i class="fa fa-exclamation-triangle"></i>
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- Progression -->
+  @if (isPreparing) {
+    <div class="appointment-scheduler__section">
+      <h2 class="appointment-scheduler__section-title">
+        <i class="fa fa-spinner fa-spin"></i>
+        {{ 'agents.appointment_scheduler.preparation_in_progress' | translate }}
+      </h2>
+
+      <app-progress-bar
+        [value]="progress"
+        [max]="100"
+        variant="primary"
+        size="large"
+        [showLabel]="true"
+        [animated]="true"
+        [striped]="true"
+        labelPosition="outside">
+      </app-progress-bar>
+
+      <p class="appointment-scheduler__progress-text">
+        {{ 'agents.appointment_scheduler.research_progress' | translate }}
+      </p>
+    </div>
+  }
+
+  <!-- Résultats -->
+  @if (preparationResult && preparationResult.success && preparationResult.synthesis) {
+    <div class="appointment-scheduler__section">
+      <h2 class="appointment-scheduler__section-title">
+        <i class="fa fa-check-circle"></i>
+        {{ 'agents.appointment_scheduler.preparation_synthesis' | translate }}
+      </h2>
+
+      <div class="appointment-scheduler__results">
+        <!-- Métadonnées -->
+        <div class="appointment-scheduler__metadata">
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-clock"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">{{ 'agents.appointment_scheduler.processing_time' | translate }}</div>
+              <div class="metadata-card__value">
+                {{ preparationResult.processing_time_seconds }} {{ 'agents.appointment_scheduler.seconds' | translate }}
+              </div>
+            </div>
+          </div>
+
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-calendar"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">{{ 'agents.appointment_scheduler.appointment_date_label' | translate }}</div>
+              <div class="metadata-card__value">
+                {{ appointmentDate }}
+              </div>
+            </div>
+          </div>
+
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-building"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">{{ 'agents.appointment_scheduler.company' | translate }}</div>
+              <div class="metadata-card__value">
+                {{ companyName }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Synthèse exécutive -->
+        <div class="synthesis-section synthesis-section--highlight">
+          <h3 class="synthesis-section__title">
+            <i class="fa fa-star"></i>
+            {{ 'agents.appointment_scheduler.executive_summary' | translate }}
+          </h3>
+          <p class="synthesis-section__content">
+            {{ preparationResult.synthesis.executive_summary }}
+          </p>
+        </div>
+
+        <!-- Analyse de l'entreprise -->
+        <div class="synthesis-section">
+          <h3 class="synthesis-section__title">
+            <i class="fa fa-building"></i>
+            {{ 'agents.appointment_scheduler.company_analysis' | translate }}
+          </h3>
+          <app-markdown-viewer
+            [content]="preparationResult.synthesis.company_analysis.market_analysis">
+          </app-markdown-viewer>
+
+          @if (preparationResult.synthesis.company_analysis.tech_stack) {
+            <div class="synthesis-subsection">
+              <h4 class="synthesis-subsection__title">{{ 'agents.appointment_scheduler.tech_stack' | translate }}</h4>
+              <app-markdown-viewer
+                [content]="preparationResult.synthesis.company_analysis.tech_stack">
+              </app-markdown-viewer>
+            </div>
+          }
+        </div>
+
+        <!-- Analyse de l'interlocuteur -->
+        <div class="synthesis-section">
+          <h3 class="synthesis-section__title">
+            <i class="fa fa-user"></i>
+            {{ 'agents.appointment_scheduler.contact_profile' | translate }}
+          </h3>
+
+          <div class="synthesis-subsection">
+            <h4 class="synthesis-subsection__title">{{ 'agents.appointment_scheduler.background' | translate }}</h4>
+            <app-markdown-viewer
+              [content]="preparationResult.synthesis.contact_analysis.background">
+            </app-markdown-viewer>
+          </div>
+
+          <div class="synthesis-subsection">
+            <h4 class="synthesis-subsection__title">{{ 'agents.appointment_scheduler.public_positions' | translate }}</h4>
+            <app-markdown-viewer
+              [content]="preparationResult.synthesis.contact_analysis.professional_positions">
+            </app-markdown-viewer>
+          </div>
+
+          @if (preparationResult.synthesis.contact_analysis.key_interests) {
+            <div class="synthesis-subsection">
+              <h4 class="synthesis-subsection__title">{{ 'agents.appointment_scheduler.interests' | translate }}</h4>
+              <app-markdown-viewer
+                [content]="preparationResult.synthesis.contact_analysis.key_interests">
+              </app-markdown-viewer>
+            </div>
+          }
+        </div>
+
+        <!-- Recommandations -->
+        <div class="synthesis-section synthesis-section--recommendations">
+          <h3 class="synthesis-section__title">
+            <i class="fa fa-lightbulb"></i>
+            {{ 'agents.appointment_scheduler.recommendations' | translate }}
+          </h3>
+
+          <!-- Points de discussion -->
+          <div class="recommendation-group">
+            <h4 class="recommendation-group__title">
+              <i class="fa fa-comments"></i>
+              {{ 'agents.appointment_scheduler.talking_points' | translate }}
+            </h4>
+            <ul class="recommendation-list">
+              @for (point of preparationResult.synthesis.recommendations.talking_points; track point) {
+                <li class="recommendation-list__item">{{ point }}</li>
+              }
+            </ul>
+          </div>
+
+          <!-- Questions à poser -->
+          <div class="recommendation-group">
+            <h4 class="recommendation-group__title">
+              <i class="fa fa-question-circle"></i>
+              {{ 'agents.appointment_scheduler.strategic_questions' | translate }}
+            </h4>
+            <ul class="recommendation-list">
+              @for (question of preparationResult.synthesis.recommendations.questions_to_ask; track question) {
+                <li class="recommendation-list__item">{{ question }}</li>
+              }
+            </ul>
+          </div>
+
+          <!-- Propositions de valeur -->
+          <div class="recommendation-group">
+            <h4 class="recommendation-group__title">
+              <i class="fa fa-gem"></i>
+              {{ 'agents.appointment_scheduler.value_propositions' | translate }}
+            </h4>
+            <ul class="recommendation-list">
+              @for (vp of preparationResult.synthesis.recommendations.value_propositions; track vp) {
+                <li class="recommendation-list__item">{{ vp }}</li>
+              }
+            </ul>
+          </div>
+
+          <!-- Risques et considérations -->
+          <div class="recommendation-group">
+            <h4 class="recommendation-group__title">
+              <i class="fa fa-exclamation-triangle"></i>
+              {{ 'agents.appointment_scheduler.risks_considerations' | translate }}
+            </h4>
+            <ul class="recommendation-list">
+              @for (risk of preparationResult.synthesis.recommendations.risks_and_considerations; track risk) {
+                <li class="recommendation-list__item">{{ risk }}</li>
+              }
+            </ul>
+          </div>
+        </div>
+
+        <!-- Téléchargement PowerPoint -->
+        @if (preparationResult.pptx_file_id) {
+          <div class="appointment-scheduler__download">
+            <app-custom-button
+              [label]="'agents.appointment_scheduler.download_pptx' | translate"
+              variant="success"
+              size="large"
+              icon="fa fa-download"
+              [fullWidth]="true"
+              (onClick)="downloadPowerPoint()">
+            </app-custom-button>
+          </div>
+        } @else {
+          <div class="appointment-scheduler__warning">
+            <i class="fa fa-info-circle"></i>
+            <div class="warning-content">
+              <strong>{{ 'agents.appointment_scheduler.pptx_not_available' | translate }}</strong>
+              <p>{{ 'agents.appointment_scheduler.pptx_error_message' | translate }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

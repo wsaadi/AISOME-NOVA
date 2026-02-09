@@ -1,0 +1,286 @@
+<div class="nvidia-multimodal-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="nvidia-logo">
+        <mat-icon class="logo-icon">smart_toy</mat-icon>
+        <div class="logo-text">
+          <h1>{{ 'nvidia_multimodal.title' | translate }}</h1>
+          <span class="subtitle">{{ 'nvidia_multimodal.subtitle' | translate }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="toggleSettings()" [matTooltip]="'nvidia_multimodal.settings' | translate"
+              [class.active]="showSettings">
+        <mat-icon>{{ showSettings ? 'close' : 'tune' }}</mat-icon>
+      </button>
+      <button mat-icon-button (click)="clearChat()" [matTooltip]="'nvidia_multimodal.clear' | translate">
+        <mat-icon>delete_sweep</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  @if (showSettings) {
+    <div class="settings-panel">
+      <div class="settings-grid">
+        <mat-form-field appearance="outline" class="api-key-field">
+          <mat-label>{{ 'nvidia_multimodal.api_key' | translate }}</mat-label>
+          <input matInput type="password" [(ngModel)]="apiKey" (change)="saveConfig()"
+                 placeholder="nvapi-...">
+          <mat-icon matSuffix>vpn_key</mat-icon>
+        </mat-form-field>
+
+        <div class="toggle-group">
+          <mat-slide-toggle [(ngModel)]="generateImage" (change)="saveConfig()" color="primary">
+            <mat-icon>image</mat-icon> SDXL-turbo Image
+          </mat-slide-toggle>
+          <mat-slide-toggle [(ngModel)]="generateAudio" (change)="saveConfig()" color="primary">
+            <mat-icon>record_voice_over</mat-icon> Riva TTS
+          </mat-slide-toggle>
+          <mat-slide-toggle [(ngModel)]="generateAvatar" (change)="saveConfig()" color="primary">
+            <mat-icon>face</mat-icon> Audio2Face 3D
+          </mat-slide-toggle>
+        </div>
+
+        <div class="select-group">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'nvidia_multimodal.voice' | translate }}</mat-label>
+            <mat-select [(ngModel)]="selectedVoice" (selectionChange)="saveConfig()">
+              @for (v of voices; track v.value) {
+                <mat-option [value]="v.value">{{ v.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'nvidia_multimodal.avatar' | translate }}</mat-label>
+            <mat-select [(ngModel)]="selectedAvatar" (selectionChange)="saveConfig()">
+              @for (a of avatars; track a.value) {
+                <mat-option [value]="a.value">{{ a.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- NVIDIA Stack Info -->
+      <div class="stack-info">
+        <span class="stack-badge llm">
+          <mat-icon>memory</mat-icon> Llama 3.1 70B
+        </span>
+        <span class="stack-badge img">
+          <mat-icon>image</mat-icon> SDXL-turbo
+        </span>
+        <span class="stack-badge tts">
+          <mat-icon>record_voice_over</mat-icon> Riva TTS
+        </span>
+        <span class="stack-badge stt">
+          <mat-icon>hearing</mat-icon> Parakeet ASR
+        </span>
+        <span class="stack-badge vision">
+          <mat-icon>visibility</mat-icon> NVLM Vision
+        </span>
+        <span class="stack-badge a2f">
+          <mat-icon>face</mat-icon> Audio2Face 3D
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <!-- Left: Chat + Content -->
+    <div class="chat-panel">
+      <div class="messages" #messagesContainer>
+        @for (msg of messages; track msg.timestamp) {
+          <div class="message" [class.user-message]="msg.role === 'user'" [class.assistant-message]="msg.role === 'assistant'">
+            <div class="message-header">
+              <div class="avatar-icon" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+                <mat-icon>{{ msg.role === 'user' ? 'person' : 'smart_toy' }}</mat-icon>
+              </div>
+              <span class="message-role">{{ msg.role === 'user' ? ('nvidia_multimodal.you' | translate) : 'NVIDIA AI' }}</span>
+              <span class="message-time">{{ msg.timestamp | date:'HH:mm' }}</span>
+            </div>
+
+            <div class="message-content">
+              <!-- Text content (markdown) -->
+              @if (msg.content) {
+                <app-markdown-viewer [content]="msg.content"></app-markdown-viewer>
+              }
+
+              <!-- Tasks completed badges -->
+              @if (msg.tasksCompleted && msg.tasksCompleted.length > 0) {
+                <div class="tasks-badges">
+                  @for (task of msg.tasksCompleted; track task) {
+                    <span class="task-badge success">
+                      <mat-icon>{{ getTaskIcon(task) }}</mat-icon>
+                      {{ getTaskLabel(task) }}
+                    </span>
+                  }
+                  @if (msg.tasksFailed) {
+                    @for (task of msg.tasksFailed; track task) {
+                      <span class="task-badge failed">
+                        <mat-icon>error_outline</mat-icon>
+                        {{ getTaskLabel(task) }}
+                      </span>
+                    }
+                  }
+                </div>
+              }
+
+              <!-- Generated Image -->
+              @if (msg.image) {
+                <div class="generated-image">
+                  <img [src]="msg.image" alt="Generated by SDXL-turbo" loading="lazy" />
+                  <div class="image-label">
+                    <mat-icon>auto_awesome</mat-icon>
+                    {{ 'nvidia_multimodal.generated_by_flux' | translate }}
+                  </div>
+                </div>
+              }
+
+              <!-- Audio Player -->
+              @if (msg.audio) {
+                <div class="audio-section">
+                  <button mat-stroked-button (click)="playMessageAudio(msg)" class="play-btn">
+                    <mat-icon>play_arrow</mat-icon>
+                    {{ 'nvidia_multimodal.play_audio' | translate }}
+                    @if (msg.audioDuration) {
+                      <span class="duration">({{ msg.audioDuration | number:'1.1-1' }}s)</span>
+                    }
+                  </button>
+                  @if (msg.blendshapes) {
+                    <span class="avatar-sync-label">
+                      <mat-icon>face</mat-icon>
+                      {{ 'nvidia_multimodal.avatar_synced' | translate }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Processing indicator -->
+        @if (isProcessing) {
+          <div class="message assistant-message processing">
+            <div class="message-header">
+              <div class="avatar-icon assistant">
+                <mat-icon>smart_toy</mat-icon>
+              </div>
+              <span class="message-role">NVIDIA AI</span>
+            </div>
+            <div class="processing-content">
+              <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+              <div class="processing-stages">
+                <span class="stage active">
+                  <mat-spinner diameter="14"></mat-spinner>
+                  {{ processingStage || ('nvidia_multimodal.stages.processing' | translate) }}
+                </span>
+              </div>
+              <div class="pipeline-visual">
+                @for (step of pipelineSteps; track step.key) {
+                  <span class="pipe-step" [class.active]="step.active" [class.done]="step.done">
+                    <mat-icon>{{ step.done ? 'check_circle' : step.icon }}</mat-icon>
+                    {{ step.label }}
+                  </span>
+                  @if (!$last) {
+                    <mat-icon class="pipe-arrow">chevron_right</mat-icon>
+                  }
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+        @if (errorMessage) {
+          <div class="error-banner">
+            <mat-icon>warning_amber</mat-icon>
+            <span [innerHTML]="errorMessage"></span>
+            <button mat-icon-button (click)="errorMessage = ''">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        }
+
+        <div class="input-row">
+          <textarea
+            [(ngModel)]="currentMessage"
+            (keydown)="onKeyPress($event)"
+            [placeholder]="'nvidia_multimodal.placeholder' | translate"
+            [disabled]="isProcessing"
+            rows="2"
+            class="message-input"
+          ></textarea>
+          <button
+            mat-fab
+            (click)="sendMessage()"
+            [disabled]="!canSend"
+            class="send-button"
+          >
+            <mat-icon>{{ isProcessing ? 'hourglass_empty' : 'send' }}</mat-icon>
+          </button>
+        </div>
+
+        @if (!apiKey) {
+          <div class="api-key-hint">
+            <mat-icon>info_outline</mat-icon>
+            {{ 'nvidia_multimodal.api_key_hint' | translate }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right: Avatar Panel -->
+    <div class="avatar-panel">
+      <div class="avatar-header">
+        <mat-icon>face</mat-icon>
+        <span>{{ 'nvidia_multimodal.avatar_title' | translate }}</span>
+      </div>
+      <div class="avatar-canvas-container">
+        <canvas #avatarCanvas width="420" height="420"></canvas>
+      </div>
+      <audio #audioPlayer style="display: none;"></audio>
+
+      <!-- Stack diagram -->
+      <div class="stack-diagram">
+        <div class="stack-title">{{ 'nvidia_multimodal.nvidia_stack' | translate }}</div>
+        <div class="stack-flow">
+          <div class="stack-node llm">
+            <mat-icon>memory</mat-icon>
+            <span>Llama 3.1</span>
+            <small>70B NIM</small>
+          </div>
+          <div class="stack-connectors">
+            <div class="connector">
+              <div class="stack-node img">
+                <mat-icon>image</mat-icon>
+                <span>FLUX.1</span>
+                <small>schnell</small>
+              </div>
+            </div>
+            <div class="connector">
+              <div class="stack-node tts">
+                <mat-icon>record_voice_over</mat-icon>
+                <span>Magpie TTS</span>
+                <small>gRPC</small>
+              </div>
+            </div>
+            <div class="connector">
+              <div class="stack-node a2f">
+                <mat-icon>face</mat-icon>
+                <span>Audio2Face</span>
+                <small>gRPC</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

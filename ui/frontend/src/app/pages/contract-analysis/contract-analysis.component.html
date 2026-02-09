@@ -1,0 +1,281 @@
+<div class="contract-analysis">
+  <!-- Header -->
+  <div class="contract-analysis__header">
+    <div class="contract-analysis__header-content">
+      <div class="contract-analysis__icon">
+        <i class="fa fa-gavel"></i>
+      </div>
+      <div>
+        <h1 class="contract-analysis__title">Analyse de contrats</h1>
+        <p class="contract-analysis__subtitle">
+          Analyse juridique détaillée avec recommandations
+        </p>
+      </div>
+    </div>
+    <button class="contract-analysis__config-btn" (click)="openConfigDialog()" title="Configuration">
+      <i class="fa fa-cog"></i>
+    </button>
+  </div>
+
+  <!-- Upload de fichiers -->
+  <div class="contract-analysis__section">
+    <h2 class="contract-analysis__section-title">
+      <i class="fa fa-upload"></i>
+      Documents contractuels
+    </h2>
+
+    <app-file-upload
+      [accept]="'.pdf,.docx,.doc,.xlsx,.xls'"
+      [multiple]="true"
+      [maxSize]="50"
+      [maxFiles]="10"
+      label="Déposer vos documents contractuels ici"
+      hint="Formats acceptés : PDF, Word, Excel (max 50 MB par fichier)"
+      (filesSelected)="onFilesSelected($event)"
+      (filesRemoved)="onFilesRemoved($event)"
+      (error)="errorMessage = $event">
+    </app-file-upload>
+  </div>
+
+  <!-- Boutons d'action -->
+  <div class="contract-analysis__actions">
+    <app-custom-button
+      label="Analyser le contrat"
+      variant="primary"
+      size="large"
+      icon="fa fa-scale-balanced"
+      [disabled]="!canAnalyze"
+      [loading]="isAnalyzing"
+      (onClick)="analyzeContract()">
+    </app-custom-button>
+
+    @if (analysisResult) {
+      <app-custom-button
+        label="Nouvelle analyse"
+        variant="secondary"
+        size="large"
+        icon="fa fa-redo"
+        (onClick)="resetAnalysis()">
+      </app-custom-button>
+    }
+  </div>
+
+  <!-- Message d'erreur -->
+  @if (errorMessage) {
+    <div class="contract-analysis__error">
+      <i class="fa fa-exclamation-triangle"></i>
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- Progression -->
+  @if (isAnalyzing) {
+    <div class="contract-analysis__section">
+      <h2 class="contract-analysis__section-title">
+        <i class="fa fa-spinner fa-spin"></i>
+        Analyse juridique en cours...
+      </h2>
+
+      <app-progress-bar
+        [value]="progress"
+        [max]="100"
+        variant="primary"
+        size="large"
+        [showLabel]="true"
+        [animated]="true"
+        [striped]="true"
+        labelPosition="outside">
+      </app-progress-bar>
+
+      <p class="contract-analysis__progress-text">
+        Extraction et analyse juridique des documents avec IA...
+      </p>
+    </div>
+  }
+
+  <!-- Résultats -->
+  @if (analysisResult && analysisResult.success) {
+    <div class="contract-analysis__section">
+      <h2 class="contract-analysis__section-title">
+        <i class="fa fa-check-circle"></i>
+        Résultats de l'analyse juridique
+      </h2>
+
+      <div class="contract-analysis__results">
+        <!-- Métadonnées -->
+        <div class="contract-analysis__metadata">
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-clock"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">Temps de traitement</div>
+              <div class="metadata-card__value">
+                {{ analysisResult.processing_time_seconds }} secondes
+              </div>
+            </div>
+          </div>
+
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-file"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">Documents analysés</div>
+              <div class="metadata-card__value">
+                {{ uploadedFiles.length }} fichier(s)
+              </div>
+            </div>
+          </div>
+
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-fingerprint"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">ID d'analyse</div>
+              <div class="metadata-card__value metadata-card__value--small">
+                {{ analysisResult.analysis_id.substring(0, 8) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Synthèse -->
+        @if (analysisResult.synthesis) {
+          <div class="contract-analysis__synthesis">
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">
+                <i class="fa fa-users"></i>
+                Parties contractantes
+              </h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.parties || 'Non spécifié'">
+              </app-markdown-viewer>
+            </div>
+
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">
+                <i class="fa fa-bullseye"></i>
+                Objet du contrat
+              </h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.contract_object || 'Non spécifié'">
+              </app-markdown-viewer>
+            </div>
+
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">
+                <i class="fa fa-calendar-days"></i>
+                Durée et renouvellement
+              </h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.duration || 'Non spécifié'">
+              </app-markdown-viewer>
+            </div>
+
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">
+                <i class="fa fa-tasks"></i>
+                Obligations des parties
+              </h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.obligations || 'Non spécifié'">
+              </app-markdown-viewer>
+            </div>
+
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">
+                <i class="fa fa-ban"></i>
+                Clauses de résiliation
+              </h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.termination_clauses || 'Non spécifié'">
+              </app-markdown-viewer>
+            </div>
+
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">
+                <i class="fa fa-shield-halved"></i>
+                Clauses de responsabilité et garanties
+              </h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.liability_clauses || 'Non spécifié'">
+              </app-markdown-viewer>
+            </div>
+
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">
+                <i class="fa fa-money-bill"></i>
+                Conditions de paiement
+              </h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.payment_terms || 'Non spécifié'">
+              </app-markdown-viewer>
+            </div>
+
+            <!-- Points forts -->
+            <div class="synthesis-section synthesis-section--positive">
+              <h3 class="synthesis-section__title">
+                <i class="fa fa-thumbs-up"></i>
+                Points forts
+              </h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.strengths || 'Aucun point fort identifié'">
+              </app-markdown-viewer>
+            </div>
+
+            <!-- Risques -->
+            <div class="synthesis-section synthesis-section--warning">
+              <h3 class="synthesis-section__title">
+                <i class="fa fa-triangle-exclamation"></i>
+                Risques identifiés
+              </h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.risks || 'Aucun risque identifié'">
+              </app-markdown-viewer>
+            </div>
+
+            <!-- Recommandations -->
+            <div class="synthesis-section synthesis-section--info">
+              <h3 class="synthesis-section__title">
+                <i class="fa fa-lightbulb"></i>
+                Recommandations
+              </h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.recommendations || 'Aucune recommandation'">
+              </app-markdown-viewer>
+            </div>
+
+            <!-- Synthèse complète -->
+            <div class="synthesis-section synthesis-section--full">
+              <h3 class="synthesis-section__title">
+                <i class="fa fa-file-lines"></i>
+                Synthèse complète
+              </h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.formatted_output || analysisResult.synthesis.full_synthesis"
+                [showLineNumbers]="false"
+                maxHeight="600px">
+              </app-markdown-viewer>
+            </div>
+          </div>
+
+          <!-- Téléchargement -->
+          @if (analysisResult.synthesis_word_file_id) {
+            <div class="contract-analysis__download">
+              <app-custom-button
+                label="Télécharger l'analyse Word"
+                variant="success"
+                size="large"
+                icon="fa fa-download"
+                [fullWidth]="true"
+                (onClick)="downloadWordSynthesis()">
+              </app-custom-button>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

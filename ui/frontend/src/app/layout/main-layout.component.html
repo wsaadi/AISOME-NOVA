@@ -1,0 +1,189 @@
+<mat-sidenav-container class="sidenav-container">
+  <!-- Sidebar -->
+  <mat-sidenav
+    #sidenav
+    mode="side"
+    [opened]="sidenavOpened()"
+    class="sidenav"
+  >
+    <!-- Logo -->
+    <div class="logo-container">
+      <img src="assets/logo.svg" alt="Logo" class="logo" />
+      <h2 class="logo-text">{{ 'app.title' | translate }}</h2>
+    </div>
+
+    <!-- Menu Navigation -->
+    <mat-nav-list class="nav-list">
+      @for (item of filteredMenuItems(); track item.route) {
+        <a
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive="active-link"
+          class="nav-item"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label | translate }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!-- Main Content -->
+  <mat-sidenav-content class="main-content">
+    <!-- Toolbar -->
+    <mat-toolbar color="primary" class="toolbar">
+      <!-- Menu toggle button -->
+      <button
+        mat-icon-button
+        (click)="toggleSidenav()"
+        [matTooltip]="'Menu'"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <span class="spacer"></span>
+
+      <!-- Accessibility menu -->
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="accessibilityMenu"
+        [matTooltip]="'accessibility.title' | translate"
+      >
+        <mat-icon>accessibility_new</mat-icon>
+      </button>
+      <mat-menu #accessibilityMenu="matMenu" class="accessibility-menu">
+        <div class="menu-header" mat-menu-item disabled>
+          <mat-icon>accessibility_new</mat-icon>
+          <span>{{ 'accessibility.title' | translate }}</span>
+        </div>
+        <mat-divider></mat-divider>
+
+        <!-- Zoom controls -->
+        <div class="menu-section" mat-menu-item disabled>
+          <span class="section-label">{{ 'accessibility.zoom' | translate }}: {{ zoomPercent() }}%</span>
+        </div>
+        <div mat-menu-item disabled class="zoom-controls-wrapper">
+          <div class="zoom-controls">
+            <button mat-icon-button (click)="decreaseZoom(); $event.stopPropagation()">
+              <mat-icon>remove</mat-icon>
+            </button>
+            <button mat-icon-button (click)="resetZoom(); $event.stopPropagation()">
+              <mat-icon>restart_alt</mat-icon>
+            </button>
+            <button mat-icon-button (click)="increaseZoom(); $event.stopPropagation()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- High contrast -->
+        <button mat-menu-item (click)="toggleHighContrast()">
+          <mat-icon>{{ accessibilitySettings().highContrast ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+          <span>{{ 'accessibility.high_contrast' | translate }}</span>
+        </button>
+
+        <!-- Large text -->
+        <button mat-menu-item (click)="toggleLargeText()">
+          <mat-icon>{{ accessibilitySettings().largeText ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+          <span>{{ 'accessibility.large_text' | translate }}</span>
+        </button>
+
+        <!-- Reduced motion -->
+        <button mat-menu-item (click)="toggleReducedMotion()">
+          <mat-icon>{{ accessibilitySettings().reducedMotion ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+          <span>{{ 'accessibility.reduced_motion' | translate }}</span>
+        </button>
+
+        <mat-divider></mat-divider>
+
+        <!-- Reset -->
+        <button mat-menu-item (click)="resetAccessibility()">
+          <mat-icon>restart_alt</mat-icon>
+          <span>{{ 'accessibility.reset' | translate }}</span>
+        </button>
+      </mat-menu>
+
+      <!-- Theme selector -->
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="themeMenu"
+        [matTooltip]="'theme.select' | translate"
+      >
+        <mat-icon>{{ themeIcon() }}</mat-icon>
+      </button>
+      <mat-menu #themeMenu="matMenu">
+        <button mat-menu-item (click)="setTheme('light')">
+          <mat-icon>{{ currentTheme() === 'light' ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+          <span>{{ 'theme.light' | translate }}</span>
+        </button>
+        <button mat-menu-item (click)="setTheme('dark')">
+          <mat-icon>{{ currentTheme() === 'dark' ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+          <span>{{ 'theme.dark' | translate }}</span>
+        </button>
+        <button mat-menu-item (click)="setTheme('colorblind')">
+          <mat-icon>{{ currentTheme() === 'colorblind' ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+          <span>{{ 'theme.colorblind' | translate }}</span>
+        </button>
+      </mat-menu>
+
+      <!-- Language selector -->
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="langMenu"
+        [matTooltip]="'language.select' | translate"
+      >
+        <mat-icon>translate</mat-icon>
+      </button>
+      <mat-menu #langMenu="matMenu">
+        <button mat-menu-item (click)="changeLanguage('fr')">
+          <mat-icon>{{ currentLang() === 'fr' ? 'check' : '' }}</mat-icon>
+          <span>{{ 'language.fr' | translate }}</span>
+        </button>
+        <button mat-menu-item (click)="changeLanguage('en')">
+          <mat-icon>{{ currentLang() === 'en' ? 'check' : '' }}</mat-icon>
+          <span>{{ 'language.en' | translate }}</span>
+        </button>
+        <button mat-menu-item (click)="changeLanguage('es')">
+          <mat-icon>{{ currentLang() === 'es' ? 'check' : '' }}</mat-icon>
+          <span>{{ 'language.es' | translate }}</span>
+        </button>
+      </mat-menu>
+
+      <!-- User menu -->
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="userMenu"
+        [matTooltip]="'auth.profile' | translate"
+      >
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <div class="user-info" mat-menu-item disabled>
+          <mat-icon>person</mat-icon>
+          <div class="user-details">
+            <span class="user-greeting">{{ 'auth.welcome_back' | translate }}</span>
+            @if (username()) {
+              <span class="user-name">{{ username() }}</span>
+            }
+          </div>
+        </div>
+        <mat-divider></mat-divider>
+        <button mat-menu-item [routerLink]="'/profile'">
+          <mat-icon>account_box</mat-icon>
+          <span>{{ 'menu.profile' | translate }}</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>{{ 'menu.logout' | translate }}</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <!-- Router outlet for page content -->
+    <div class="page-content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,0 +1,237 @@
+.contract-analysis {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  &__header-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  &__icon {
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+  }
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  &__subtitle {
+    font-size: 1rem;
+    color: #6b7280;
+    margin: 0.25rem 0 0 0;
+  }
+
+  &__config-btn {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    border: 2px solid #e5e7eb;
+    background: white;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #f9fafb;
+      border-color: #9333ea;
+      color: #9333ea;
+    }
+  }
+
+  &__section {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  &__section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    i {
+      color: #9333ea;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  &__error {
+    background: #fef2f2;
+    border: 2px solid #fecaca;
+    border-radius: 0.75rem;
+    padding: 1rem 1.5rem;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    font-weight: 500;
+
+    i {
+      font-size: 1.25rem;
+    }
+  }
+
+  &__progress-text {
+    margin-top: 1rem;
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
+
+  &__metadata {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  &__synthesis {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__download {
+    margin-top: 2rem;
+  }
+}
+
+.metadata-card {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+
+  &__icon {
+    width: 3rem;
+    height: 3rem;
+    background: white;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #9333ea;
+    box-shadow: 0 2px 8px rgba(147, 51, 234, 0.15);
+  }
+
+  &__content {
+    flex: 1;
+  }
+
+  &__label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+  }
+
+  &__value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+
+    &--small {
+      font-size: 1rem;
+      font-family: 'Courier New', monospace;
+    }
+  }
+}
+
+.synthesis-section {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    i {
+      color: #9333ea;
+    }
+  }
+
+  &__content {
+    color: #374151;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  &--positive {
+    background: #f0fdf4;
+    border-color: #86efac;
+
+    .synthesis-section__title i {
+      color: #16a34a;
+    }
+  }
+
+  &--warning {
+    background: #fef3c7;
+    border-color: #fcd34d;
+
+    .synthesis-section__title i {
+      color: #d97706;
+    }
+  }
+
+  &--info {
+    background: #dbeafe;
+    border-color: #93c5fd;
+
+    .synthesis-section__title i {
+      color: #2563eb;
+    }
+  }
+
+  &--full {
+    background: #f9fafb;
+  }
+}

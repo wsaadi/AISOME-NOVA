@@ -1,0 +1,379 @@
+<div class="widget-grid-editor">
+  <!-- Left Panel: Widget Palette -->
+  <div class="palette-panel">
+    <div class="palette-header">
+      <h3>
+        <i class="fa fa-th-large"></i>
+        Widgets
+      </h3>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="category-tabs">
+      @for (category of widgetCategories; track category.id) {
+        <button
+          class="category-tab"
+          [class.active]="selectedCategory === category.id"
+          (click)="selectedCategory = category.id"
+          [matTooltip]="category.name"
+        >
+          <i [class]="category.icon"></i>
+          <span class="category-name">{{ category.name }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Widget List -->
+    <div class="widget-list">
+      @for (widget of filteredWidgets; track widget.type) {
+        <div
+          class="widget-item"
+          (click)="addWidget(widget)"
+          [matTooltip]="getWidgetDescription(widget)"
+        >
+          <div class="widget-icon">
+            <i [class]="widget.icon"></i>
+          </div>
+          <div class="widget-info">
+            <span class="widget-name">{{ widget.name }}</span>
+            <span class="widget-size">{{ widget.defaultSize.w }}x{{ widget.defaultSize.h }}</span>
+          </div>
+          <button mat-icon-button class="add-btn">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Quick Tips -->
+    <div class="palette-tips">
+      <div class="tip">
+        <mat-icon>lightbulb</mat-icon>
+        <span>Cliquez sur un widget pour l'ajouter à la grille</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center Panel: Grid Canvas -->
+  <div class="canvas-panel">
+    <div class="canvas-header">
+      <h3>
+        <i class="fa fa-th"></i>
+        Zone de design
+      </h3>
+      <div class="canvas-info">
+        <span class="grid-info">Grille {{ gridConfig.columns }} colonnes</span>
+      </div>
+    </div>
+
+    <div class="grid-container" [ngStyle]="getGridContainerStyle()">
+      <!-- Grid Background Lines -->
+      <div class="grid-background">
+        @for (row of gridCells; track $index) {
+          <div class="grid-row">
+            @for (cell of row; track cell.x) {
+              <div
+                class="grid-cell"
+                [class.occupied]="cell.occupied"
+              ></div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Widgets -->
+      @for (widget of getWidgets(); track widget.id) {
+        <div
+          class="widget-block"
+          [ngStyle]="getWidgetStyle(widget)"
+          [class.selected]="selectedWidget?.id === widget.id"
+          [class.chart-widget]="isChartType(widget.type)"
+          [class.trigger-widget]="widget.is_trigger_button"
+          [class.output-widget]="widget.auto_bind_output"
+          [class.resizing]="isResizing && resizingWidget?.id === widget.id"
+          [class.dragging]="isDragging && draggingWidget?.id === widget.id"
+          (mousedown)="onDragStart($event, widget)"
+        >
+          <div class="widget-header">
+            <mat-icon class="drag-handle" matTooltip="Glisser pour déplacer">drag_indicator</mat-icon>
+            <i [class]="getComponentIcon(widget.type)"></i>
+            <span class="widget-title">{{ widget.label || getComponentLabel(widget.type) }}</span>
+            <div class="widget-badges">
+              @if (widget.auto_bind_output) {
+                <span class="badge auto-badge" matTooltip="Données liées automatiquement">
+                  <mat-icon>sync</mat-icon>
+                </span>
+              }
+              @if (widget.is_trigger_button) {
+                <span class="badge trigger-badge" matTooltip="Bouton déclencheur">
+                  <mat-icon>bolt</mat-icon>
+                </span>
+              }
+            </div>
+            <button mat-icon-button class="widget-menu-btn" [matMenuTriggerFor]="widgetMenu" (click)="$event.stopPropagation()">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #widgetMenu="matMenu">
+              <button mat-menu-item (click)="removeWidget(widget)">
+                <mat-icon color="warn">delete</mat-icon>
+                <span>Supprimer</span>
+              </button>
+            </mat-menu>
+          </div>
+
+          <div class="widget-preview">
+            @switch (widget.type) {
+              @case ('text_input') {
+                <div class="preview-input"></div>
+              }
+              @case ('textarea') {
+                <div class="preview-textarea"></div>
+              }
+              @case ('file_upload') {
+                <div class="preview-upload">
+                  <mat-icon>cloud_upload</mat-icon>
+                  <span>Upload</span>
+                </div>
+              }
+              @case ('markdown_viewer') {
+                <div class="preview-markdown">
+                  <mat-icon>article</mat-icon>
+                  <span>Résultat IA</span>
+                </div>
+              }
+              @case ('line_chart') {
+                <div class="preview-chart line">
+                  <svg viewBox="0 0 100 50">
+                    <polyline points="0,40 20,30 40,35 60,15 80,25 100,10" fill="none" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
+              }
+              @case ('bar_chart') {
+                <div class="preview-chart bar">
+                  <div class="bar" style="height: 60%"></div>
+                  <div class="bar" style="height: 80%"></div>
+                  <div class="bar" style="height: 45%"></div>
+                  <div class="bar" style="height: 90%"></div>
+                  <div class="bar" style="height: 70%"></div>
+                </div>
+              }
+              @case ('pie_chart') {
+                <div class="preview-chart pie">
+                  <svg viewBox="0 0 32 32">
+                    <circle r="16" cx="16" cy="16" fill="transparent" stroke="currentColor" stroke-width="32" stroke-dasharray="40 60" transform="rotate(-90 16 16)"/>
+                    <circle r="16" cx="16" cy="16" fill="transparent" stroke="var(--secondary)" stroke-width="32" stroke-dasharray="30 70" stroke-dashoffset="-40" transform="rotate(-90 16 16)"/>
+                  </svg>
+                </div>
+              }
+              @case ('donut_chart') {
+                <div class="preview-chart donut">
+                  <svg viewBox="0 0 32 32">
+                    <circle r="12" cx="16" cy="16" fill="transparent" stroke="currentColor" stroke-width="6" stroke-dasharray="30 70" transform="rotate(-90 16 16)"/>
+                    <circle r="12" cx="16" cy="16" fill="transparent" stroke="var(--secondary)" stroke-width="6" stroke-dasharray="25 75" stroke-dashoffset="-30" transform="rotate(-90 16 16)"/>
+                  </svg>
+                </div>
+              }
+              @case ('button') {
+                <div class="preview-button" [class.primary]="widget.is_trigger_button">
+                  {{ widget.label || 'Exécuter' }}
+                </div>
+              }
+              @case ('chat_interface') {
+                <div class="preview-chat">
+                  <div class="chat-bubble user"></div>
+                  <div class="chat-bubble assistant"></div>
+                </div>
+              }
+              @default {
+                <div class="preview-generic">
+                  <i [class]="getComponentIcon(widget.type)"></i>
+                </div>
+              }
+            }
+          </div>
+
+          <!-- Resize Handle -->
+          <div
+            class="resize-handle"
+            matTooltip="Glisser pour redimensionner"
+            (mousedown)="onResizeStart($event, widget)"
+            [class.resizing]="isResizing && resizingWidget?.id === widget.id"
+          >
+            <mat-icon>open_in_full</mat-icon>
+          </div>
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if (getWidgets().length === 0) {
+        <div class="empty-grid">
+          <mat-icon>dashboard_customize</mat-icon>
+          <h3>Grille vide</h3>
+          <p>Cliquez sur un widget à gauche pour l'ajouter</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Right Panel: Properties -->
+  <div class="properties-panel">
+    <div class="properties-header">
+      <h3>
+        <i class="fa fa-sliders-h"></i>
+        Propriétés
+      </h3>
+    </div>
+
+    @if (selectedWidget) {
+      <div class="properties-content">
+        <!-- Basic Properties -->
+        <div class="property-section">
+          <h4>Général</h4>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nom technique</mat-label>
+            <input
+              matInput
+              [value]="selectedWidget.name"
+              (input)="updateWidgetProperty(selectedWidget, 'name', $any($event.target).value)"
+            />
+            <mat-hint>Utilisé pour référencer ce widget</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Libellé affiché</mat-label>
+            <input
+              matInput
+              [value]="selectedWidget.label || ''"
+              (input)="updateWidgetProperty(selectedWidget, 'label', $any($event.target).value)"
+            />
+          </mat-form-field>
+
+          @if (selectedWidget.type === 'text_input' || selectedWidget.type === 'textarea') {
+            <mat-form-field appearance="outline">
+              <mat-label>Texte indicatif</mat-label>
+              <input
+                matInput
+                [value]="selectedWidget.placeholder || ''"
+                (input)="updateWidgetProperty(selectedWidget, 'placeholder', $any($event.target).value)"
+              />
+            </mat-form-field>
+          }
+        </div>
+
+        <!-- Size Properties -->
+        <div class="property-section">
+          <h4>Taille sur la grille</h4>
+          <div class="size-controls">
+            <mat-form-field appearance="outline" class="size-field">
+              <mat-label>Largeur</mat-label>
+              <mat-select
+                [value]="selectedWidget.gridPosition?.w || 4"
+                (selectionChange)="resizeWidget(selectedWidget, $event.value, selectedWidget.gridPosition?.h || 2)"
+              >
+                @for (w of [1,2,3,4,5,6,7,8,9,10,11,12]; track w) {
+                  <mat-option [value]="w">{{ w }} col</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="size-field">
+              <mat-label>Hauteur</mat-label>
+              <mat-select
+                [value]="selectedWidget.gridPosition?.h || 2"
+                (selectionChange)="resizeWidget(selectedWidget, selectedWidget.gridPosition?.w || 4, $event.value)"
+              >
+                @for (h of [1,2,3,4,5,6]; track h) {
+                  <mat-option [value]="h">{{ h }} ligne(s)</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Chart-specific Properties -->
+        @if (isChartType(selectedWidget.type)) {
+          <div class="property-section chart-section">
+            <h4>
+              <mat-icon>bar_chart</mat-icon>
+              Configuration graphique
+            </h4>
+
+            <div class="info-banner">
+              <mat-icon>tips_and_updates</mat-icon>
+              <span>L'IA formatera automatiquement les données pour ce graphique.</span>
+            </div>
+
+            <mat-slide-toggle
+              [checked]="selectedWidget.auto_bind_output || false"
+              (change)="updateWidgetProperty(selectedWidget, 'auto_bind_output', $event.checked)"
+              color="primary"
+            >
+              Liaison automatique des données
+            </mat-slide-toggle>
+
+            <mat-slide-toggle
+              [checked]="selectedWidget.chart_config?.show_legend !== false"
+              (change)="updateChartConfigProperty(selectedWidget, 'show_legend', $event.checked)"
+            >
+              Afficher la légende
+            </mat-slide-toggle>
+          </div>
+        }
+
+        <!-- Button-specific Properties -->
+        @if (selectedWidget.type === 'button') {
+          <div class="property-section trigger-section">
+            <h4>
+              <mat-icon>bolt</mat-icon>
+              Configuration du bouton
+            </h4>
+
+            <mat-slide-toggle
+              [checked]="selectedWidget.is_trigger_button || false"
+              (change)="updateWidgetProperty(selectedWidget, 'is_trigger_button', $event.checked); updateWidgetProperty(selectedWidget, 'button_action', $event.checked ? 'trigger_agent' : undefined)"
+              color="warn"
+            >
+              Bouton déclencheur de l'agent
+            </mat-slide-toggle>
+            <p class="hint">Active ce bouton pour lancer le traitement IA</p>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Style du bouton</mat-label>
+              <mat-select
+                [value]="selectedWidget.button_variant || 'primary'"
+                (selectionChange)="updateWidgetProperty(selectedWidget, 'button_variant', $event.value)"
+              >
+                <mat-option value="primary">Principal (bleu)</mat-option>
+                <mat-option value="success">Succès (vert)</mat-option>
+                <mat-option value="warning">Attention (orange)</mat-option>
+                <mat-option value="danger">Danger (rouge)</mat-option>
+                <mat-option value="secondary">Secondaire (gris)</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        }
+
+        <!-- Output display Properties -->
+        @if (selectedWidget.type === 'markdown_viewer' || selectedWidget.type === 'text_display') {
+          <div class="property-section">
+            <h4>Affichage des résultats</h4>
+
+            <mat-slide-toggle
+              [checked]="selectedWidget.auto_bind_output || false"
+              (change)="updateWidgetProperty(selectedWidget, 'auto_bind_output', $event.checked)"
+              color="primary"
+            >
+              Afficher automatiquement la réponse IA
+            </mat-slide-toggle>
+            <p class="hint">La réponse de l'agent s'affichera ici</p>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="no-selection">
+        <mat-icon>touch_app</mat-icon>
+        <p>Sélectionnez un widget pour voir ses propriétés</p>
+      </div>
+    }
+  </div>
+</div>

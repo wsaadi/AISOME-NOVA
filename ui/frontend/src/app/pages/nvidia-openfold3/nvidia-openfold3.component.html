@@ -1,0 +1,305 @@
+<div class="nvidia-openfold3-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="nvidia-logo">
+        <mat-icon class="logo-icon">science</mat-icon>
+        <div class="logo-text">
+          <h1>{{ 'nvidia_openfold3.title' | translate }}</h1>
+          <span class="subtitle">{{ 'nvidia_openfold3.subtitle' | translate }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="toggleSettings()" [matTooltip]="'nvidia_openfold3.settings' | translate"
+              [class.active]="showSettings">
+        <mat-icon>{{ showSettings ? 'close' : 'tune' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  @if (showSettings) {
+    <div class="settings-panel">
+      <div class="settings-grid">
+        <mat-form-field appearance="outline" class="api-key-field">
+          <mat-label>{{ 'nvidia_openfold3.api_key' | translate }}</mat-label>
+          <input matInput type="password" [(ngModel)]="apiKey" (change)="saveConfig()"
+                 placeholder="nvapi-...">
+          <mat-icon matSuffix>vpn_key</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="stack-info">
+        <span class="stack-badge model">
+          <mat-icon>science</mat-icon> OpenFold3
+        </span>
+        <span class="stack-badge algorithm">
+          <mat-icon>hub</mat-icon> {{ 'nvidia_openfold3.deep_learning' | translate }}
+        </span>
+        <span class="stack-badge format">
+          <mat-icon>data_object</mat-icon> PDB
+        </span>
+        <span class="stack-badge limit">
+          <mat-icon>straighten</mat-icon> Max 2000 aa
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <!-- Left: Configuration Panel -->
+    <div class="config-panel">
+      <!-- Sequence Input -->
+      <div class="section">
+        <div class="section-header">
+          <mat-icon>biotech</mat-icon>
+          <span>{{ 'nvidia_openfold3.sequence_input' | translate }}</span>
+          @if (sequenceLength > 0) {
+            <span class="seq-count">{{ sequenceLength }} aa</span>
+          }
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width sequence-field">
+          <mat-label>{{ 'nvidia_openfold3.sequence_placeholder' | translate }}</mat-label>
+          <textarea matInput [(ngModel)]="sequenceInput"
+                    rows="6"
+                    placeholder="MVLSPADKTNVKAAWGKVGA..."
+                    class="sequence-textarea"></textarea>
+          <mat-icon matSuffix>text_snippet</mat-icon>
+        </mat-form-field>
+
+        <div class="input-hint">
+          <mat-icon>info_outline</mat-icon>
+          <span>{{ 'nvidia_openfold3.input_hint' | translate }}</span>
+        </div>
+      </div>
+
+      <!-- Sample Sequences -->
+      <div class="section">
+        <div class="section-header">
+          <mat-icon>science</mat-icon>
+          <span>{{ 'nvidia_openfold3.sample_sequences' | translate }}</span>
+        </div>
+        <div class="samples-grid">
+          @for (sample of sampleSequences; track sample.id) {
+            <button mat-stroked-button class="sample-btn"
+                    (click)="loadSample(sample)"
+                    [matTooltip]="sample.description">
+              <div class="sample-info">
+                <span class="sample-name">{{ sample.name }}</span>
+                <span class="sample-length">{{ sample.length }} aa</span>
+              </div>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Run Button -->
+      <div class="run-section">
+        <button mat-flat-button
+                class="run-button"
+                (click)="runInference()"
+                [disabled]="!canRun">
+          @if (isProcessing) {
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>{{ processingStage }}</span>
+          } @else {
+            <mat-icon>play_arrow</mat-icon>
+            <span>{{ 'nvidia_openfold3.run_inference' | translate }}</span>
+          }
+        </button>
+
+        @if (!apiKey) {
+          <div class="api-key-hint">
+            <mat-icon>info_outline</mat-icon>
+            {{ 'nvidia_openfold3.api_key_hint' | translate }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right: Results Panel -->
+    <div class="results-panel">
+      <!-- Error Banner -->
+      @if (errorMessage) {
+        <div class="error-banner">
+          <mat-icon>warning_amber</mat-icon>
+          <span [innerHTML]="errorMessage"></span>
+          <button mat-icon-button (click)="errorMessage = ''">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+
+      <!-- Processing Indicator -->
+      @if (isProcessing) {
+        <div class="processing-card">
+          <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+          <div class="processing-info">
+            <mat-spinner diameter="24"></mat-spinner>
+            <div class="processing-text">
+              <span class="processing-title">{{ 'nvidia_openfold3.processing_title' | translate }}</span>
+              <span class="processing-stage">{{ processingStage }}</span>
+            </div>
+          </div>
+          <div class="processing-detail">
+            <mat-icon>info_outline</mat-icon>
+            {{ 'nvidia_openfold3.processing_hint' | translate }}
+          </div>
+        </div>
+      }
+
+      <!-- Current Result: 3D Protein Viewer -->
+      @if (currentResult && currentResult.success && currentResult.atoms) {
+        <div class="result-card">
+          <div class="result-header">
+            <mat-icon class="success-icon">check_circle</mat-icon>
+            <span class="result-title">{{ currentResult.message }}</span>
+            @if (currentResult.demo_mode) {
+              <span class="demo-badge">DEMO</span>
+            }
+          </div>
+
+          <!-- 3D Protein Viewer -->
+          <div class="protein-viewer">
+            <div class="viewer-canvas-wrapper">
+              <canvas #proteinCanvas class="protein-canvas"></canvas>
+              <!-- Overlay info -->
+              <div class="viewer-overlay-badge">
+                {{ currentResult.num_residues }} {{ 'nvidia_openfold3.residues' | translate }}
+              </div>
+              <div class="viewer-controls-hint">
+                <mat-icon>3d_rotation</mat-icon>
+                {{ 'nvidia_openfold3.viewer_hint' | translate }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Residue Detail Panel (on click) -->
+          @if (selectedAtom) {
+            <div class="residue-detail">
+              <div class="detail-header">
+                <div class="residue-circle" [style.backgroundColor]="'rgb(' + selectedAtom.color[0] + ',' + selectedAtom.color[1] + ',' + selectedAtom.color[2] + ')'">
+                  {{ selectedAtom.one_letter }}
+                </div>
+                <div class="detail-info">
+                  <span class="detail-name">{{ selectedAtom.name }}</span>
+                  <span class="detail-abbr">{{ selectedAtom.abbr }} ({{ selectedAtom.one_letter }}) - {{ 'nvidia_openfold3.residue' | translate }} #{{ selectedAtom.index }}</span>
+                </div>
+                <button mat-icon-button (click)="selectedAtom = null" class="close-detail">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">{{ 'nvidia_openfold3.detail_type' | translate }}</span>
+                  <span class="detail-value type-badge" [style.color]="getResidueTypeColor(selectedAtom.type)">
+                    {{ getResidueTypeLabel(selectedAtom.type) }}
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">{{ 'nvidia_openfold3.detail_chain' | translate }}</span>
+                  <span class="detail-value">{{ selectedAtom.chain }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">{{ 'nvidia_openfold3.detail_position' | translate }}</span>
+                  <span class="detail-value mono">{{ selectedAtom.x }}, {{ selectedAtom.y }}, {{ selectedAtom.z }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">{{ 'nvidia_openfold3.detail_bfactor' | translate }}</span>
+                  <span class="detail-value">{{ selectedAtom.b_factor }}</span>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Sequence overview with color -->
+          <div class="sequence-overview">
+            <div class="section-header">
+              <mat-icon>view_comfy</mat-icon>
+              <span>{{ 'nvidia_openfold3.sequence_map' | translate }}</span>
+            </div>
+            <div class="sequence-map">
+              @for (atom of currentResult.atoms; track atom.index) {
+                <span class="seq-residue"
+                      [style.backgroundColor]="'rgba(' + atom.color[0] + ',' + atom.color[1] + ',' + atom.color[2] + ',0.3)'"
+                      [style.color]="'rgb(' + atom.color[0] + ',' + atom.color[1] + ',' + atom.color[2] + ')'"
+                      [matTooltip]="atom.name + ' (' + atom.abbr + ') #' + atom.index"
+                      [class.highlighted]="selectedAtom?.index === atom.index">
+                  {{ atom.one_letter }}
+                </span>
+              }
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-color" style="background: #4caf50;"></span> {{ 'nvidia_openfold3.legend_nonpolar' | translate }}</span>
+              <span class="legend-item"><span class="legend-color" style="background: #00bcd4;"></span> {{ 'nvidia_openfold3.legend_polar' | translate }}</span>
+              <span class="legend-item"><span class="legend-color" style="background: #2196f3;"></span> {{ 'nvidia_openfold3.legend_positive' | translate }}</span>
+              <span class="legend-item"><span class="legend-color" style="background: #f44336;"></span> {{ 'nvidia_openfold3.legend_negative' | translate }}</span>
+              <span class="legend-item"><span class="legend-color" style="background: #ff9800;"></span> {{ 'nvidia_openfold3.legend_special' | translate }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if (!isProcessing && !currentResult) {
+        <div class="empty-state">
+          <div class="empty-illustration">
+            <mat-icon>science</mat-icon>
+          </div>
+          <h2>{{ 'nvidia_openfold3.empty_title' | translate }}</h2>
+          <p>{{ 'nvidia_openfold3.empty_description' | translate }}</p>
+
+          <div class="features-grid">
+            <div class="feature-card">
+              <mat-icon>biotech</mat-icon>
+              <span class="feature-title">{{ 'nvidia_openfold3.feature_prediction_title' | translate }}</span>
+              <span class="feature-desc">{{ 'nvidia_openfold3.feature_prediction' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>3d_rotation</mat-icon>
+              <span class="feature-title">{{ 'nvidia_openfold3.feature_3d_title' | translate }}</span>
+              <span class="feature-desc">{{ 'nvidia_openfold3.feature_3d' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>touch_app</mat-icon>
+              <span class="feature-title">{{ 'nvidia_openfold3.feature_interactive_title' | translate }}</span>
+              <span class="feature-desc">{{ 'nvidia_openfold3.feature_interactive' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>speed</mat-icon>
+              <span class="feature-title">{{ 'nvidia_openfold3.feature_speed_title' | translate }}</span>
+              <span class="feature-desc">{{ 'nvidia_openfold3.feature_speed' | translate }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- History -->
+      @if (history.length > 0) {
+        <div class="history-section">
+          <div class="history-header">
+            <mat-icon>history</mat-icon>
+            <span>{{ 'nvidia_openfold3.history' | translate }}</span>
+            <button mat-icon-button (click)="clearHistory()" matTooltip="Effacer l'historique" class="clear-btn">
+              <mat-icon>delete_sweep</mat-icon>
+            </button>
+          </div>
+
+          @for (entry of history; track entry.id) {
+            <div class="history-entry">
+              <div class="entry-header">
+                <mat-icon class="entry-icon">check_circle</mat-icon>
+                <span class="entry-time">{{ entry.timestamp | date:'HH:mm:ss' }}</span>
+                <span class="entry-classes">{{ entry.numResidues }} residus</span>
+              </div>
+              <div class="entry-url">{{ entry.sequence }}</div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

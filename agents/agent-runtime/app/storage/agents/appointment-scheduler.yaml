@@ -1,0 +1,455 @@
+# Agent Descriptor Language (ADL) v1.0.0
+# Appointment Scheduler Agent - Sales meeting preparation
+
+metadata:
+  adl_version: "1.0.0"
+  schema_url: "https://agent-pf.io/schemas/adl/v1"
+  version: "1.0.0"
+  tags:
+    - sales
+    - appointment
+    - meeting
+    - preparation
+    - powerpoint
+  changelog:
+    - "1.0.0: Initial ADL conversion"
+
+identity:
+  id: "appointment-scheduler"
+  name: "Appointment Scheduler"
+  slug: "appointment-scheduler"
+  description: "Préparation intelligente de rendez-vous commerciaux"
+  long_description: |
+    Agent spécialisé dans la préparation de rendez-vous commerciaux.
+
+    ## Fonctionnalités
+    - Recherche d'actualités sur l'entreprise cible
+    - Analyse du profil de l'interlocuteur
+    - Génération de recommandations stratégiques
+    - Création de présentation PowerPoint
+
+    ## Éléments fournis
+    - Analyse de marché et position de l'entreprise
+    - Profil détaillé de l'interlocuteur
+    - Points de discussion clés
+    - Questions stratégiques à poser
+    - Propositions de valeur personnalisées
+  icon: "fa fa-calendar-check"
+  category: "sales"
+  status: "active"
+
+business_logic:
+  system_prompt: |
+    Tu es un expert en préparation de rendez-vous commerciaux B2B.
+
+    Ta mission est d'analyser les informations fournies sur l'entreprise cible et l'interlocuteur
+    pour générer une synthèse complète et des recommandations stratégiques.
+
+    Format de réponse obligatoire:
+
+    ## Analyse de l'entreprise
+    ### Position sur le marché
+    [Analyse de la position, des forces et faiblesses]
+
+    ### Actualités récentes
+    [Résumé des actualités pertinentes]
+
+    ### Opportunités identifiées
+    [Liste des opportunités pour votre proposition]
+
+    ## Profil de l'interlocuteur
+    ### Parcours professionnel
+    [Résumé du parcours]
+
+    ### Centres d'intérêt professionnels
+    [Sujets qui l'intéressent]
+
+    ### Style de communication recommandé
+    [Conseils pour adapter votre approche]
+
+    ## Recommandations stratégiques
+    ### Points de discussion (5 maximum)
+    1. [Point 1]
+    2. [Point 2]
+    ...
+
+    ### Questions à poser (5 maximum)
+    1. [Question 1]
+    2. [Question 2]
+    ...
+
+    ### Propositions de valeur
+    [Comment positionner votre offre]
+
+    ### Points d'attention
+    [Risques ou sujets à éviter]
+
+  user_prompt_template: |
+    Prépare un rendez-vous commercial avec les informations suivantes:
+
+    **Date du rendez-vous:** {{appointment_date}}
+    **Entreprise:** {{company_name}}
+    **Contact:** {{contact_name}} - {{contact_position}}
+    **Objectif:** {{appointment_objective}}
+
+    {{#if company_news}}
+    **Actualités de l'entreprise:**
+    {{company_news}}
+    {{/if}}
+
+    {{#if contact_info}}
+    **Informations sur le contact:**
+    {{contact_info}}
+    {{/if}}
+
+    {{#if additional_context}}
+    **Contexte additionnel:**
+    {{additional_context}}
+    {{/if}}
+
+  personality_traits:
+    - name: "strategic"
+      intensity: 1.7
+    - name: "analytical"
+      intensity: 1.5
+    - name: "business-oriented"
+      intensity: 1.6
+
+  tone: "professional"
+  language: "fr"
+
+  llm_provider: "mistral"
+  llm_model: "mistral-large-latest"
+  temperature: 0.5
+  max_tokens: 6000
+
+  context_window_messages: 3
+  include_system_context: true
+  streaming_enabled: false
+
+  moderation:
+    enabled: false
+
+  classification:
+    enabled: false
+
+  instructions:
+    - "Toujours rechercher des informations récentes"
+    - "Personnaliser les recommandations selon le contexte"
+    - "Proposer des questions ouvertes et stratégiques"
+
+  constraints:
+    - "Ne pas inventer d'informations non vérifiées"
+    - "Indiquer clairement les hypothèses"
+
+tools:
+  tools:
+    - tool_id: "web-search"
+      name: "Recherche Web"
+      enabled: true
+      description: "Recherche d'actualités et d'informations"
+      parameters:
+        - name: "query"
+          source: "variable"
+          value: "search_query"
+      output_variable: "search_results"
+      on_error: "continue"
+      timeout_ms: 30000
+
+    - tool_id: "pptx-crud"
+      name: "Générateur PowerPoint"
+      enabled: true
+      description: "Génère la présentation de préparation"
+      parameters:
+        - name: "title"
+          source: "variable"
+          value: "presentation_title"
+        - name: "slides"
+          source: "variable"
+          value: "presentation_slides"
+      output_variable: "pptx_file"
+      on_error: "continue"
+      timeout_ms: 60000
+
+    - tool_id: "file-upload"
+      name: "Stockage fichier"
+      enabled: true
+      description: "Stocke la présentation générée"
+      parameters:
+        - name: "file"
+          source: "previous_output"
+      output_variable: "file_id"
+      on_error: "continue"
+
+  default_error_handling: "continue"
+  parallel_execution: false
+
+ui:
+  show_header: true
+  header_title: "Préparation de Rendez-vous"
+  header_subtitle: "Analyse intelligente pour vos rendez-vous commerciaux"
+  header_icon: "fa fa-calendar-check"
+
+  sections:
+    - name: "appointment_info"
+      title: "Informations du rendez-vous"
+      layout_type: "grid"
+      grid_columns: 2
+      gap: "16px"
+      components:
+        - type: "date_picker"
+          name: "appointment_date"
+          label: "Date du rendez-vous"
+          required: true
+
+        - type: "text_input"
+          name: "company_name"
+          label: "Nom de l'entreprise"
+          placeholder: "Ex: Acme Corporation"
+          required: true
+
+        - type: "text_input"
+          name: "contact_name"
+          label: "Nom du contact"
+          placeholder: "Ex: Jean Dupont"
+          required: true
+
+        - type: "text_input"
+          name: "contact_position"
+          label: "Poste du contact"
+          placeholder: "Ex: Directeur Commercial"
+          required: true
+
+    - name: "objective_section"
+      title: "Objectif et contexte"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "textarea"
+          name: "appointment_objective"
+          label: "Objectif du rendez-vous"
+          placeholder: "Décrivez l'objectif principal de ce rendez-vous..."
+          required: true
+          style:
+            min_height: "100px"
+
+        - type: "textarea"
+          name: "additional_context"
+          label: "Contexte additionnel"
+          placeholder: "Informations supplémentaires utiles..."
+          required: false
+          style:
+            min_height: "80px"
+
+    - name: "options_section"
+      title: "Options"
+      layout_type: "row"
+      gap: "16px"
+      components:
+        - type: "checkbox"
+          name: "generate_pptx"
+          label: "Générer une présentation PowerPoint"
+          default_value: true
+
+        - type: "checkbox"
+          name: "search_news"
+          label: "Rechercher les actualités récentes"
+          default_value: true
+
+    - name: "results_section"
+      title: "Synthèse de préparation"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "markdown_viewer"
+          name: "preparation_result"
+          label: "Analyse et recommandations"
+          auto_bind_output: true
+          style:
+            min_height: "500px"
+            border: "1px solid #e5e7eb"
+            border_radius: "8px"
+            padding: "20px"
+
+        - type: "button"
+          name: "download_pptx"
+          label: "Télécharger la présentation"
+          button_action: "custom"
+          button_variant: "success"
+          custom_action: "downloadPresentation"
+          visible_when:
+            field: "pptx_file_id"
+            operator: "is_not_empty"
+
+  show_sidebar: false
+  show_footer: false
+
+  show_actions: true
+  actions:
+    - type: "button"
+      name: "reset_button"
+      label: "Nouveau rendez-vous"
+      button_action: "reset_form"
+      button_variant: "secondary"
+
+    - type: "button"
+      name: "prepare_button"
+      label: "Préparer le rendez-vous"
+      button_action: "trigger_agent"
+      button_variant: "primary"
+      is_trigger_button: true
+
+  actions_position: "right"
+  theme: "auto"
+  primary_color: "#6366F1"
+
+connectors:
+  default_connector: "mistral-scheduler"
+  connectors:
+    - id: "mistral-scheduler"
+      provider: "mistral"
+      name: "Mistral Large"
+      description: "Analyse et recommandations"
+      model: "mistral-large-latest"
+      default_temperature: 0.5
+      default_max_tokens: 6000
+      retry_on_error: true
+      max_retries: 2
+      timeout_ms: 120000
+      priority: 0
+
+    - id: "openai-scheduler"
+      provider: "openai"
+      name: "GPT-4"
+      description: "Alternative OpenAI"
+      model: "gpt-4"
+      default_temperature: 0.5
+      default_max_tokens: 6000
+      retry_on_error: true
+      max_retries: 2
+      timeout_ms: 120000
+      priority: 1
+
+  enable_fallback: true
+  fallback_order:
+    - "mistral-scheduler"
+    - "openai-scheduler"
+
+workflows:
+  workflows:
+    - name: "Appointment Preparation Flow"
+      description: "Préparation complète d'un rendez-vous"
+      trigger: "button_click"
+      trigger_config:
+        button: "prepare_button"
+      enabled: true
+      steps:
+        - id: "search_company"
+          name: "Rechercher l'entreprise"
+          type: "condition"
+          condition:
+            variable: "search_news"
+            operator: "eq"
+            value: true
+          on_true: "do_company_search"
+          on_false: "search_contact"
+
+        - id: "do_company_search"
+          name: "Recherche actualités entreprise"
+          type: "tool_call"
+          tool_config_id: "web-search"
+          parameters:
+            query: "{{company_name}} actualités récentes"
+          output_variable: "company_news"
+          on_error: "continue"
+          next_step: "search_contact"
+
+        - id: "search_contact"
+          name: "Rechercher le contact"
+          type: "condition"
+          condition:
+            variable: "search_news"
+            operator: "eq"
+            value: true
+          on_true: "do_contact_search"
+          on_false: "analyze"
+
+        - id: "do_contact_search"
+          name: "Recherche infos contact"
+          type: "tool_call"
+          tool_config_id: "web-search"
+          parameters:
+            query: "{{contact_name}} {{company_name}} LinkedIn"
+          output_variable: "contact_info"
+          on_error: "continue"
+          next_step: "analyze"
+
+        - id: "analyze"
+          name: "Analyser et recommander"
+          type: "llm_call"
+          prompt_template: |
+            {{system_prompt}}
+
+            {{user_prompt_template}}
+          output_variable: "analysis"
+          next_step: "check_pptx"
+
+        - id: "check_pptx"
+          name: "Vérifier génération PPTX"
+          type: "condition"
+          condition:
+            variable: "generate_pptx"
+            operator: "eq"
+            value: true
+          on_true: "generate_pptx"
+          on_false: "complete"
+
+        - id: "generate_pptx"
+          name: "Générer la présentation"
+          type: "tool_call"
+          tool_config_id: "pptx-crud"
+          output_variable: "pptx_bytes"
+          on_error: "continue"
+          next_step: "upload_pptx"
+
+        - id: "upload_pptx"
+          name: "Sauvegarder la présentation"
+          type: "tool_call"
+          tool_config_id: "file-upload"
+          output_variable: "pptx_file_id"
+          on_error: "continue"
+          next_step: "complete"
+
+        - id: "complete"
+          name: "Terminer"
+          type: "set_variable"
+          variable_name: "preparation_complete"
+          variable_value: true
+
+      entry_step: "search_company"
+      initial_variables:
+        company_news: null
+        contact_info: null
+        analysis: null
+        pptx_file_id: null
+        preparation_complete: false
+
+      timeout_ms: 300000
+
+  default_workflow: "appointment-preparation"
+
+security:
+  requires_auth: false
+  rate_limit_enabled: true
+  requests_per_minute: 10
+  requests_per_hour: 50
+  sanitize_inputs: true
+  max_input_length: 10000
+  audit_logging: true
+
+deployment:
+  auto_route: true
+  environment: "production"
+  min_instances: 1
+  max_instances: 2
+  health_check_enabled: true

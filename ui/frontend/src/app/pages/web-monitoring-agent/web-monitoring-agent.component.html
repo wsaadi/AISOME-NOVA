@@ -1,0 +1,216 @@
+<div class="web-monitoring-agent">
+  <!-- En-tête -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <i class="fa fa-globe header-icon"></i>
+        <div>
+          <h1>Agent de Veille Technologique et Marché</h1>
+          <p class="subtitle">Analyse automatisée du web sur une thématique donnée</p>
+        </div>
+      </div>
+      <app-custom-button
+        label="Configuration"
+        icon="fa fa-cog"
+        variant="secondary"
+        (click)="openConfigDialog()">
+      </app-custom-button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Formulaire de veille -->
+    <div class="monitoring-form card">
+      <h2><i class="fa fa-search"></i> Paramètres de veille</h2>
+
+      <div class="form-group">
+        <label for="topic">Thématique à surveiller *</label>
+        <input
+          type="text"
+          id="topic"
+          [(ngModel)]="topic"
+          placeholder="Ex: Intelligence Artificielle Générative, Cybersécurité Cloud, Blockchain et Web3..."
+          [disabled]="isAnalyzing"
+          class="form-control">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="timeRange">Période de recherche</label>
+          <select
+            id="timeRange"
+            [(ngModel)]="timeRange"
+            [disabled]="isAnalyzing"
+            class="form-control">
+            <option *ngFor="let option of timeRangeOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="languageFilter">Filtrer par langue</label>
+          <select
+            id="languageFilter"
+            [(ngModel)]="languageFilter"
+            [disabled]="isAnalyzing"
+            class="form-control">
+            <option *ngFor="let option of languageOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <app-custom-button
+          label="Lancer la veille"
+          icon="fa fa-play"
+          variant="primary"
+          [disabled]="!canAnalyze()"
+          (click)="analyze()">
+        </app-custom-button>
+        <app-custom-button
+          label="Réinitialiser"
+          icon="fa fa-redo"
+          variant="secondary"
+          [disabled]="isAnalyzing"
+          (click)="reset()">
+        </app-custom-button>
+      </div>
+
+      <!-- Barre de progression -->
+      <div *ngIf="isAnalyzing" class="progress-section">
+        <app-progress-bar [value]="progress"></app-progress-bar>
+        <p class="progress-text">Analyse en cours... Cette opération peut prendre quelques minutes.</p>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div *ngIf="errorMessage" class="error-message">
+        <i class="fa fa-exclamation-circle"></i>
+        {{ errorMessage }}
+      </div>
+    </div>
+
+    <!-- Résultats -->
+    <ng-container *ngIf="monitoringResult?.success && monitoringResult?.summary as summary">
+    <div class="results-section">
+      <!-- Résumé exécutif -->
+      <div class="card result-card">
+        <div class="card-header">
+          <h2><i class="fa fa-file-alt"></i> Résumé exécutif</h2>
+          <div class="metadata">
+            <span><i class="fa fa-calendar"></i> {{ summary.analysis_date | date:'dd/MM/yyyy HH:mm' }}</span>
+            <span><i class="fa fa-link"></i> {{ summary.total_sources_analyzed }} sources analysées</span>
+            <span *ngIf="monitoringResult?.metadata as metadata"><i class="fa fa-clock"></i> {{ metadata.processing_time_seconds | number:'1.0-1' }}s</span>
+          </div>
+        </div>
+        <div class="executive-summary">
+          <app-markdown-viewer [content]="summary.executive_summary"></app-markdown-viewer>
+        </div>
+      </div>
+
+      <!-- Insights clés -->
+      <div class="card result-card">
+        <h2><i class="fa fa-lightbulb"></i> Insights clés</h2>
+        <div class="insights-grid">
+          <div *ngFor="let insight of summary.key_insights"
+               class="insight-card"
+               [ngClass]="getCategoryClass(insight.category)">
+            <div class="insight-header">
+              <i class="fa" [ngClass]="getCategoryIcon(insight.category)"></i>
+              <span class="insight-category">{{ insight.category }}</span>
+              <span class="insight-importance">{{ insight.importance }}</span>
+            </div>
+            <p class="insight-description">{{ insight.description }}</p>
+            <div class="insight-sources" *ngIf="insight.sources.length > 0">
+              <strong>Sources:</strong>
+              <ul>
+                <li *ngFor="let source of insight.sources">
+                  <a [href]="source" target="_blank">{{ source }}</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analyse de marché -->
+      <div class="card result-card">
+        <h2><i class="fa fa-chart-pie"></i> Analyse de marché</h2>
+        <div class="market-analysis">
+          <div class="market-section" *ngIf="summary.market_analysis.key_players.length > 0">
+            <h3><i class="fa fa-users"></i> Acteurs clés</h3>
+            <ul>
+              <li *ngFor="let player of summary.market_analysis.key_players">{{ player }}</li>
+            </ul>
+          </div>
+          <div class="market-section" *ngIf="summary.market_analysis.market_trends.length > 0">
+            <h3><i class="fa fa-chart-line"></i> Tendances du marché</h3>
+            <ul>
+              <li *ngFor="let trend of summary.market_analysis.market_trends">{{ trend }}</li>
+            </ul>
+          </div>
+          <div class="market-section" *ngIf="summary.market_analysis.opportunities.length > 0">
+            <h3><i class="fa fa-star"></i> Opportunités</h3>
+            <ul>
+              <li *ngFor="let opportunity of summary.market_analysis.opportunities">{{ opportunity }}</li>
+            </ul>
+          </div>
+          <div class="market-section" *ngIf="summary.market_analysis.challenges.length > 0">
+            <h3><i class="fa fa-exclamation-triangle"></i> Défis</h3>
+            <ul>
+              <li *ngFor="let challenge of summary.market_analysis.challenges">{{ challenge }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Évolution technologique -->
+      <div class="card result-card">
+        <h2><i class="fa fa-microchip"></i> Évolution technologique</h2>
+        <div class="technology-evolution">
+          <app-markdown-viewer [content]="summary.technology_evolution"></app-markdown-viewer>
+        </div>
+      </div>
+
+      <!-- Recommandations -->
+      <div class="card result-card" *ngIf="summary.recommendations.length > 0">
+        <h2><i class="fa fa-tasks"></i> Recommandations stratégiques</h2>
+        <ul class="recommendations-list">
+          <li *ngFor="let recommendation of summary.recommendations">
+            <i class="fa fa-check-circle"></i>
+            {{ recommendation }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Vue d'ensemble complète (formatted output) -->
+      <div class="card result-card" *ngIf="summary.formatted_output">
+        <h2><i class="fa fa-file-alt"></i> Vue d'ensemble complète</h2>
+        <div class="formatted-output">
+          <app-markdown-viewer [content]="summary.formatted_output"></app-markdown-viewer>
+        </div>
+      </div>
+
+      <!-- Sources -->
+      <div class="card result-card">
+        <h2><i class="fa fa-link"></i> Sources ({{ summary.sources.length }})</h2>
+        <div class="sources-list">
+          <div *ngFor="let source of summary.sources" class="source-item">
+            <div class="source-header">
+              <a [href]="source.url" target="_blank" class="source-title">
+                <i class="fa fa-external-link-alt"></i>
+                {{ source.title }}
+              </a>
+              <span class="source-language">{{ source.language.toUpperCase() }}</span>
+              <span class="source-score">{{ source.relevance_score | number:'1.0-2' }}</span>
+            </div>
+            <p class="source-snippet">{{ source.snippet }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    </ng-container>
+  </div>
+</div>

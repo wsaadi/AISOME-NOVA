@@ -1,0 +1,210 @@
+<div class="document-analyzer">
+  <!-- Header -->
+  <div class="document-analyzer__header">
+    <div class="document-analyzer__header-content">
+      <div class="document-analyzer__icon">
+        <i class="fa fa-file-contract"></i>
+      </div>
+      <div>
+        <h1 class="document-analyzer__title">{{ 'agents.document_analyzer.title' | translate }}</h1>
+        <p class="document-analyzer__subtitle">
+          {{ 'agents.document_analyzer.subtitle' | translate }}
+        </p>
+      </div>
+    </div>
+    <button class="document-analyzer__config-btn" (click)="openConfigDialog()" [title]="'settings.title' | translate">
+      <i class="fa fa-cog"></i>
+    </button>
+  </div>
+
+  <!-- Upload de fichiers -->
+  <div class="document-analyzer__section">
+    <h2 class="document-analyzer__section-title">
+      <i class="fa fa-upload"></i>
+      {{ 'agents.document_analyzer.documents_to_analyze' | translate }}
+    </h2>
+
+    <app-file-upload
+      [accept]="'.pdf,.docx,.doc,.xlsx,.xls'"
+      [multiple]="true"
+      [maxSize]="50"
+      [maxFiles]="10"
+      [label]="'agents.document_analyzer.drop_documents_here' | translate"
+      [hint]="'agents.document_analyzer.formats_hint' | translate"
+      (filesSelected)="onFilesSelected($event)"
+      (filesRemoved)="onFilesRemoved($event)"
+      (error)="errorMessage = $event">
+    </app-file-upload>
+  </div>
+
+  <!-- Boutons d'action -->
+  <div class="document-analyzer__actions">
+    <app-custom-button
+      [label]="'agents.document_analyzer.analyze_documents' | translate"
+      variant="primary"
+      size="large"
+      icon="fa fa-brain"
+      [disabled]="!canAnalyze"
+      [loading]="isAnalyzing"
+      (onClick)="analyzeDocuments()">
+    </app-custom-button>
+
+    @if (analysisResult) {
+      <app-custom-button
+        [label]="'agents.document_analyzer.new_analysis' | translate"
+        variant="secondary"
+        size="large"
+        icon="fa fa-redo"
+        (onClick)="resetAnalysis()">
+      </app-custom-button>
+    }
+  </div>
+
+  <!-- Message d'erreur -->
+  @if (errorMessage) {
+    <div class="document-analyzer__error">
+      <i class="fa fa-exclamation-triangle"></i>
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- Progression -->
+  @if (isAnalyzing) {
+    <div class="document-analyzer__section">
+      <h2 class="document-analyzer__section-title">
+        <i class="fa fa-spinner fa-spin"></i>
+        {{ 'agents.document_analyzer.analysis_in_progress' | translate }}
+      </h2>
+
+      <app-progress-bar
+        [value]="progress"
+        [max]="100"
+        variant="primary"
+        size="large"
+        [showLabel]="true"
+        [animated]="true"
+        [striped]="true"
+        labelPosition="outside">
+      </app-progress-bar>
+
+      <p class="document-analyzer__progress-text">
+        {{ 'agents.document_analyzer.extraction_progress' | translate }}
+      </p>
+    </div>
+  }
+
+  <!-- Résultats -->
+  @if (analysisResult && analysisResult.success) {
+    <div class="document-analyzer__section">
+      <h2 class="document-analyzer__section-title">
+        <i class="fa fa-check-circle"></i>
+        {{ 'agents.document_analyzer.analysis_results' | translate }}
+      </h2>
+
+      <div class="document-analyzer__results">
+        <!-- Métadonnées -->
+        <div class="document-analyzer__metadata">
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-clock"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">{{ 'agents.document_analyzer.processing_time' | translate }}</div>
+              <div class="metadata-card__value">
+                {{ analysisResult.processing_time_seconds }} {{ 'agents.document_analyzer.seconds' | translate }}
+              </div>
+            </div>
+          </div>
+
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-file"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">{{ 'agents.document_analyzer.documents_analyzed' | translate }}</div>
+              <div class="metadata-card__value">
+                {{ uploadedFiles.length }} {{ 'agents.document_analyzer.files' | translate }}
+              </div>
+            </div>
+          </div>
+
+          <div class="metadata-card">
+            <div class="metadata-card__icon">
+              <i class="fa fa-fingerprint"></i>
+            </div>
+            <div class="metadata-card__content">
+              <div class="metadata-card__label">{{ 'agents.document_analyzer.analysis_id' | translate }}</div>
+              <div class="metadata-card__value metadata-card__value--small">
+                {{ analysisResult.analysis_id.substring(0, 8) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Synthèse -->
+        @if (analysisResult.synthesis) {
+          <div class="document-analyzer__synthesis">
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">{{ 'agents.document_analyzer.deadline' | translate }}</h3>
+              <p class="synthesis-section__content">
+                {{ analysisResult.synthesis.deadline || ('agents.document_analyzer.not_specified' | translate) }}
+              </p>
+            </div>
+
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">{{ 'agents.document_analyzer.response_method' | translate }}</h3>
+              <p class="synthesis-section__content">
+                {{ analysisResult.synthesis.response_method || ('agents.document_analyzer.not_specified' | translate) }}
+              </p>
+            </div>
+
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">{{ 'agents.document_analyzer.lots_summary' | translate }}</h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.lots_summary || ('agents.document_analyzer.no_lots' | translate)">
+              </app-markdown-viewer>
+            </div>
+
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">{{ 'agents.document_analyzer.specifications_analysis' | translate }}</h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.specifications_analysis || ('agents.document_analyzer.no_analysis' | translate)">
+              </app-markdown-viewer>
+            </div>
+
+            <div class="synthesis-section">
+              <h3 class="synthesis-section__title">{{ 'agents.document_analyzer.clauses_analysis' | translate }}</h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.clauses_analysis || ('agents.document_analyzer.no_clauses' | translate)">
+              </app-markdown-viewer>
+            </div>
+
+            <!-- Synthèse complète -->
+            <div class="synthesis-section synthesis-section--full">
+              <h3 class="synthesis-section__title">{{ 'agents.document_analyzer.full_synthesis' | translate }}</h3>
+              <app-markdown-viewer
+                [content]="analysisResult.synthesis.formatted_output || analysisResult.synthesis.full_synthesis"
+                [showLineNumbers]="false"
+                maxHeight="600px">
+              </app-markdown-viewer>
+            </div>
+          </div>
+
+          <!-- Téléchargement -->
+          @if (analysisResult.synthesis_word_file_id) {
+            <div class="document-analyzer__download">
+              <app-custom-button
+                [label]="'agents.document_analyzer.download_word' | translate"
+                variant="success"
+                size="large"
+                icon="fa fa-download"
+                [fullWidth]="true"
+                (onClick)="downloadWordSynthesis()">
+              </app-custom-button>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

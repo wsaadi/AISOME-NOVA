@@ -1,0 +1,122 @@
+<div class="agent-settings">
+  <div class="agent-settings__header">
+    <button class="agent-settings__back-btn" (click)="goBack()">
+      <i class="fa fa-arrow-left"></i>
+      Retour
+    </button>
+
+    <div>
+      <h1 class="agent-settings__title">
+        <i class="fa fa-cog"></i>
+        Paramètres de l'Agent
+      </h1>
+      <p class="agent-settings__subtitle">
+        Configurez les paramètres par défaut de l'analyseur de documents
+      </p>
+    </div>
+  </div>
+
+  <div class="agent-settings__content">
+    <!-- Message de succès -->
+    @if (isSaved) {
+      <div class="agent-settings__success">
+        <i class="fa fa-check-circle"></i>
+        Paramètres sauvegardés avec succès
+      </div>
+    }
+
+    <!-- Message d'erreur -->
+    @if (errorMessage) {
+      <div class="agent-settings__error">
+        <i class="fa fa-exclamation-triangle"></i>
+        {{ errorMessage }}
+      </div>
+    }
+
+    <!-- Section API -->
+    <div class="agent-settings__section">
+      <h2 class="agent-settings__section-title">
+        <i class="fa fa-key"></i>
+        Configuration API
+      </h2>
+
+      <div class="agent-settings__field">
+        <label>Clé API Mistral</label>
+        <input
+          type="password"
+          [(ngModel)]="settings.mistralApiKey"
+          placeholder="sk-..."
+          class="agent-settings__input">
+        <p class="agent-settings__hint">
+          Votre clé API Mistral sera stockée localement dans votre navigateur
+        </p>
+      </div>
+    </div>
+
+    <!-- Section Modèle -->
+    <div class="agent-settings__section">
+      <h2 class="agent-settings__section-title">
+        <i class="fa fa-brain"></i>
+        Paramètres du modèle
+      </h2>
+
+      <div class="agent-settings__field">
+        <label>Modèle par défaut</label>
+        <select
+          [(ngModel)]="settings.defaultModel"
+          class="agent-settings__select">
+          @for (option of modelOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="agent-settings__field">
+        <label>Température ({{ settings.defaultTemperature }})</label>
+        <input
+          type="range"
+          [(ngModel)]="settings.defaultTemperature"
+          min="0"
+          max="1"
+          step="0.1"
+          class="agent-settings__range">
+        <p class="agent-settings__hint">
+          Contrôle la créativité du modèle (0 = précis, 1 = créatif)
+        </p>
+      </div>
+
+      <div class="agent-settings__field">
+        <label>Tokens maximum</label>
+        <input
+          type="number"
+          [(ngModel)]="settings.defaultMaxTokens"
+          min="1024"
+          max="8192"
+          step="512"
+          class="agent-settings__input">
+        <p class="agent-settings__hint">
+          Nombre maximum de tokens générés par le modèle
+        </p>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="agent-settings__actions">
+      <app-custom-button
+        label="Sauvegarder"
+        variant="primary"
+        size="large"
+        icon="fa fa-save"
+        (onClick)="saveSettings()">
+      </app-custom-button>
+
+      <app-custom-button
+        label="Réinitialiser"
+        variant="danger"
+        size="large"
+        icon="fa fa-redo"
+        (onClick)="resetSettings()">
+      </app-custom-button>
+    </div>
+  </div>
+</div>

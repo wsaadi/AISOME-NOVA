@@ -1,0 +1,165 @@
+<div class="info-editor">
+  <form [formGroup]="form" class="info-form">
+    <!-- Basic Information Card -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'agent_builder.info.basic_info' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'agent_builder.info.name' | translate }}</mat-label>
+            <input matInput formControlName="name" [placeholder]="'agent_builder.info.name_placeholder' | translate" />
+            @if (form.get('name')?.hasError('required')) {
+              <mat-error>{{ 'agent_builder.info.name_required' | translate }}</mat-error>
+            }
+            @if (form.get('name')?.hasError('maxlength')) {
+              <mat-error>{{ 'agent_builder.info.name_maxlength' | translate }}</mat-error>
+            }
+            <mat-hint align="end">{{ form.get('name')?.value?.length || 0 }} / 100</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'agent_builder.info.description' | translate }}</mat-label>
+            <textarea
+              matInput
+              formControlName="description"
+              [placeholder]="'agent_builder.info.description_placeholder' | translate"
+              rows="3"
+            ></textarea>
+            @if (form.get('description')?.hasError('required')) {
+              <mat-error>{{ 'agent_builder.info.description_required' | translate }}</mat-error>
+            }
+            @if (form.get('description')?.hasError('maxlength')) {
+              <mat-error>{{ 'agent_builder.info.description_maxlength' | translate }}</mat-error>
+            }
+            <mat-hint align="end">{{ characterCount }} / 500</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'agent_builder.info.long_description' | translate }}</mat-label>
+            <textarea
+              matInput
+              formControlName="long_description"
+              [placeholder]="'agent_builder.info.long_description_placeholder' | translate"
+              rows="6"
+            ></textarea>
+            <mat-hint>{{ 'agent_builder.info.long_description_hint' | translate }}</mat-hint>
+            <mat-hint align="end">{{ longDescriptionCount }} / 2000</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'agent_builder.info.category' | translate }}</mat-label>
+            <mat-select formControlName="category">
+              @for (category of categories; track category.id) {
+                <mat-option [value]="category.id">
+                  <i [class]="category.icon" class="category-icon"></i>
+                  {{ category.name }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Icon Selection Card -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'agent_builder.info.icon_selection' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="current-icon">
+          <div class="icon-preview">
+            <i [class]="form.get('icon')?.value" class="preview-icon"></i>
+          </div>
+          <span class="icon-label">{{ 'agent_builder.info.current_icon' | translate }}</span>
+        </div>
+
+        <div class="icon-grid">
+          @for (icon of icons; track icon) {
+            <button
+              type="button"
+              class="icon-button"
+              [class.selected]="form.get('icon')?.value === icon"
+              (click)="selectIcon(icon)"
+            >
+              <i [class]="icon"></i>
+            </button>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Tags Card -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'agent_builder.info.tags' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="tags-input">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'agent_builder.info.add_tag' | translate }}</mat-label>
+            <input matInput [(ngModel)]="newTag" [ngModelOptions]="{ standalone: true }" (keyup.enter)="addTag()" />
+            <button mat-icon-button matSuffix (click)="addTag()" [disabled]="!newTag.trim()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+
+        <mat-chip-set class="tags-list">
+          @for (tag of agent.metadata.tags; track tag) {
+            <mat-chip (removed)="removeTag(tag)">
+              {{ tag }}
+              <button matChipRemove>
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip>
+          }
+          @if (agent.metadata.tags.length === 0) {
+            <span class="no-tags">{{ 'agent_builder.info.no_tags' | translate }}</span>
+          }
+        </mat-chip-set>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Metadata Card (Read-only) -->
+    <mat-card class="info-card metadata-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'agent_builder.info.metadata' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="metadata-grid">
+          <div class="metadata-item">
+            <span class="metadata-label">{{ 'agent_builder.info.id' | translate }}</span>
+            <span class="metadata-value">{{ agent.id }}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">{{ 'agent_builder.info.version' | translate }}</span>
+            <span class="metadata-value">{{ agent.metadata.version }}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">{{ 'agent_builder.info.created_at' | translate }}</span>
+            <span class="metadata-value">{{ agent.metadata.created_at | date : 'medium' }}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">{{ 'agent_builder.info.updated_at' | translate }}</span>
+            <span class="metadata-value">{{ agent.metadata.updated_at | date : 'medium' }}</span>
+          </div>
+          @if (agent.route) {
+            <div class="metadata-item full-width">
+              <span class="metadata-label">{{ 'agent_builder.info.route' | translate }}</span>
+              <span class="metadata-value route-value">{{ agent.route }}</span>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </form>
+</div>

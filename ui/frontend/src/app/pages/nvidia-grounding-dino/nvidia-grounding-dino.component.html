@@ -1,0 +1,308 @@
+<div class="nvidia-grounding-dino-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="nvidia-logo">
+        <mat-icon class="logo-icon">center_focus_strong</mat-icon>
+        <div class="logo-text">
+          <h1>{{ 'nvidia_grounding_dino.title' | translate }}</h1>
+          <span class="subtitle">{{ 'nvidia_grounding_dino.subtitle' | translate }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="toggleSettings()" [matTooltip]="'nvidia_grounding_dino.settings' | translate"
+              [class.active]="showSettings">
+        <mat-icon>{{ showSettings ? 'close' : 'tune' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  @if (showSettings) {
+    <div class="settings-panel">
+      <div class="settings-grid">
+        <mat-form-field appearance="outline" class="api-key-field">
+          <mat-label>{{ 'nvidia_grounding_dino.api_key' | translate }}</mat-label>
+          <input matInput type="password" [(ngModel)]="apiKey" (change)="saveConfig()"
+                 placeholder="nvapi-...">
+          <mat-icon matSuffix>vpn_key</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="stack-info">
+        <span class="stack-badge model">
+          <mat-icon>center_focus_strong</mat-icon> Grounding DINO
+        </span>
+        <span class="stack-badge algorithm">
+          <mat-icon>hub</mat-icon> {{ 'nvidia_grounding_dino.zero_shot' | translate }}
+        </span>
+        <span class="stack-badge format">
+          <mat-icon>image</mat-icon> JPEG / PNG
+        </span>
+        <span class="stack-badge limit">
+          <mat-icon>straighten</mat-icon> Max 5 MB
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <!-- Left: Configuration Panel -->
+    <div class="config-panel">
+      <!-- Image Upload -->
+      <div class="section">
+        <div class="section-header">
+          <mat-icon>image</mat-icon>
+          <span>{{ 'nvidia_grounding_dino.image_input' | translate }}</span>
+        </div>
+
+        <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)" hidden>
+
+        @if (!imagePreview) {
+          <div class="drop-zone" (click)="triggerFileInput()"
+               (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+            <mat-icon>cloud_upload</mat-icon>
+            <span class="drop-text">{{ 'nvidia_grounding_dino.drop_zone' | translate }}</span>
+            <span class="drop-hint">{{ 'nvidia_grounding_dino.drop_hint' | translate }}</span>
+          </div>
+        } @else {
+          <div class="image-preview-container">
+            <img [src]="imagePreview" class="image-preview" alt="Preview">
+            <button mat-icon-button class="clear-image-btn" (click)="clearImage()"
+                    matTooltip="Remove image">
+              <mat-icon>close</mat-icon>
+            </button>
+            <span class="image-name">{{ imageName }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Detection Prompt -->
+      <div class="section">
+        <div class="section-header">
+          <mat-icon>search</mat-icon>
+          <span>{{ 'nvidia_grounding_dino.prompt_input' | translate }}</span>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'nvidia_grounding_dino.prompt_placeholder' | translate }}</mat-label>
+          <input matInput [(ngModel)]="promptInput"
+                 placeholder="car . person . dog . tree">
+          <mat-icon matSuffix>text_fields</mat-icon>
+        </mat-form-field>
+
+        <div class="input-hint">
+          <mat-icon>info_outline</mat-icon>
+          <span>{{ 'nvidia_grounding_dino.prompt_hint' | translate }}</span>
+        </div>
+      </div>
+
+      <!-- Threshold -->
+      <div class="section">
+        <div class="section-header">
+          <mat-icon>tune</mat-icon>
+          <span>{{ 'nvidia_grounding_dino.threshold' | translate }}</span>
+          <span class="threshold-value">{{ formatThreshold(threshold) }}</span>
+        </div>
+        <mat-slider min="0.05" max="0.95" step="0.05" class="full-width">
+          <input matSliderThumb [(ngModel)]="threshold">
+        </mat-slider>
+      </div>
+
+      <!-- Sample Images -->
+      @if (sampleImages.length > 0) {
+        <div class="section">
+          <div class="section-header">
+            <mat-icon>photo_library</mat-icon>
+            <span>{{ 'nvidia_grounding_dino.sample_images' | translate }}</span>
+          </div>
+          <div class="samples-grid">
+            @for (sample of sampleImages; track sample.id) {
+              <button mat-stroked-button class="sample-btn"
+                      (click)="loadSample(sample)"
+                      [matTooltip]="sample.description">
+                <div class="sample-info">
+                  <span class="sample-name">{{ sample.name }}</span>
+                  <span class="sample-prompt">{{ sample.prompt }}</span>
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Run Button -->
+      <div class="run-section">
+        <button mat-flat-button
+                class="run-button"
+                (click)="runInference()"
+                [disabled]="!canRun">
+          @if (isProcessing) {
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>{{ processingStage }}</span>
+          } @else {
+            <mat-icon>center_focus_strong</mat-icon>
+            <span>{{ 'nvidia_grounding_dino.run_inference' | translate }}</span>
+          }
+        </button>
+
+        @if (!apiKey) {
+          <div class="api-key-hint">
+            <mat-icon>info_outline</mat-icon>
+            {{ 'nvidia_grounding_dino.api_key_hint' | translate }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right: Results Panel -->
+    <div class="results-panel">
+      <!-- Error Banner -->
+      @if (errorMessage) {
+        <div class="error-banner">
+          <mat-icon>warning_amber</mat-icon>
+          <span [innerHTML]="errorMessage"></span>
+          <button mat-icon-button (click)="errorMessage = ''">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+
+      <!-- Processing Indicator -->
+      @if (isProcessing) {
+        <div class="processing-card">
+          <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+          <div class="processing-info">
+            <mat-spinner diameter="24"></mat-spinner>
+            <div class="processing-text">
+              <span class="processing-title">{{ 'nvidia_grounding_dino.processing_title' | translate }}</span>
+              <span class="processing-stage">{{ processingStage }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Current Result: Detection Viewer -->
+      @if (currentResult && currentResult.success && currentResult.detections) {
+        <div class="result-card">
+          <div class="result-header">
+            <mat-icon class="success-icon">check_circle</mat-icon>
+            <span class="result-title">{{ currentResult.message }}</span>
+            @if (currentResult.demo_mode) {
+              <span class="demo-badge">DEMO</span>
+            }
+          </div>
+
+          <!-- Detection Canvas -->
+          <div class="detection-viewer">
+            <div class="viewer-canvas-wrapper">
+              <canvas #detectionCanvas class="detection-canvas"></canvas>
+              <div class="viewer-overlay-badge">
+                {{ currentResult.detections.length }} {{ 'nvidia_grounding_dino.objects_detected' | translate }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Detection Legend -->
+          <div class="detection-legend">
+            <div class="section-header">
+              <mat-icon>label</mat-icon>
+              <span>{{ 'nvidia_grounding_dino.detected_objects' | translate }}</span>
+            </div>
+            <div class="legend-chips">
+              @for (item of uniqueLabels; track item.label) {
+                <span class="legend-chip" [style.borderColor]="item.color">
+                  <span class="legend-dot" [style.backgroundColor]="item.color"></span>
+                  {{ item.label }}
+                  <span class="legend-count">{{ item.count }}</span>
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Detection Table -->
+          <div class="detection-table">
+            <div class="section-header">
+              <mat-icon>list</mat-icon>
+              <span>{{ 'nvidia_grounding_dino.detection_details' | translate }}</span>
+            </div>
+            <div class="table-body">
+              @for (det of currentResult.detections; track $index) {
+                <div class="detection-row" (click)="selectDetection(det)"
+                     [class.selected]="selectedDetection === det">
+                  <span class="det-color" [style.backgroundColor]="det.color"></span>
+                  <span class="det-label">{{ det.label }}</span>
+                  <span class="det-score">{{ (det.score * 100).toFixed(1) }}%</span>
+                  <span class="det-bbox">
+                    [{{ det.bbox[0] | number:'1.2-2' }}, {{ det.bbox[1] | number:'1.2-2' }},
+                     {{ det.bbox[2] | number:'1.2-2' }}, {{ det.bbox[3] | number:'1.2-2' }}]
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if (!isProcessing && !currentResult) {
+        <div class="empty-state">
+          <div class="empty-illustration">
+            <mat-icon>center_focus_strong</mat-icon>
+          </div>
+          <h2>{{ 'nvidia_grounding_dino.empty_title' | translate }}</h2>
+          <p>{{ 'nvidia_grounding_dino.empty_description' | translate }}</p>
+
+          <div class="features-grid">
+            <div class="feature-card">
+              <mat-icon>image_search</mat-icon>
+              <span class="feature-title">{{ 'nvidia_grounding_dino.feature_detection_title' | translate }}</span>
+              <span class="feature-desc">{{ 'nvidia_grounding_dino.feature_detection' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>text_fields</mat-icon>
+              <span class="feature-title">{{ 'nvidia_grounding_dino.feature_text_title' | translate }}</span>
+              <span class="feature-desc">{{ 'nvidia_grounding_dino.feature_text' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>visibility_off</mat-icon>
+              <span class="feature-title">{{ 'nvidia_grounding_dino.feature_zeroshot_title' | translate }}</span>
+              <span class="feature-desc">{{ 'nvidia_grounding_dino.feature_zeroshot' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>speed</mat-icon>
+              <span class="feature-title">{{ 'nvidia_grounding_dino.feature_speed_title' | translate }}</span>
+              <span class="feature-desc">{{ 'nvidia_grounding_dino.feature_speed' | translate }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- History -->
+      @if (history.length > 0) {
+        <div class="history-section">
+          <div class="history-header">
+            <mat-icon>history</mat-icon>
+            <span>{{ 'nvidia_grounding_dino.history' | translate }}</span>
+            <button mat-icon-button (click)="clearHistory()" matTooltip="Clear history" class="clear-btn">
+              <mat-icon>delete_sweep</mat-icon>
+            </button>
+          </div>
+
+          @for (entry of history; track entry.id) {
+            <div class="history-entry">
+              <div class="entry-header">
+                <mat-icon class="entry-icon">check_circle</mat-icon>
+                <span class="entry-time">{{ entry.timestamp | date:'HH:mm:ss' }}</span>
+                <span class="entry-count">{{ entry.detectionCount }} objects</span>
+              </div>
+              <div class="entry-prompt">{{ entry.prompt }}</div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

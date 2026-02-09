@@ -1,0 +1,266 @@
+<div class="webgpu-agent-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <mat-icon class="logo-icon">visibility</mat-icon>
+        <div class="logo-text">
+          <h1>Vision IA Locale</h1>
+          <span class="subtitle">Description visuelle en temps réel — 100% local via WebGPU</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="showSettings = !showSettings"
+              [class.active]="showSettings" matTooltip="Paramètres">
+        <mat-icon>tune</mat-icon>
+      </button>
+      <button mat-icon-button (click)="clearDescriptions()" matTooltip="Effacer l'historique"
+              [disabled]="descriptions.length === 0">
+        <mat-icon>delete_sweep</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  @if (showSettings) {
+    <div class="settings-panel">
+      <div class="settings-grid">
+        <!-- Model selector -->
+        <div class="setting-group model-selector-group">
+          <label class="setting-label">Modèle VLM</label>
+          <mat-form-field appearance="outline" class="model-select-field">
+            <mat-select [(value)]="selectedModelId">
+              @for (m of availableModels; track m.id) {
+                <mat-option [value]="m.id">
+                  {{ m.name }} <span class="option-size">({{ m.size }})</span>
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <span class="model-desc">{{ selectedModel.description }}</span>
+          @if (needsReload) {
+            <span class="reload-hint">
+              <mat-icon>info</mat-icon> Rechargez le modèle pour appliquer
+            </span>
+          }
+        </div>
+
+        <!-- Auto interval -->
+        <div class="setting-group">
+          <label class="setting-label">Intervalle auto</label>
+          <mat-form-field appearance="outline" class="interval-select-field">
+            <mat-select [(value)]="autoIntervalSec">
+              <mat-option [value]="2">2 secondes</mat-option>
+              <mat-option [value]="4">4 secondes</mat-option>
+              <mat-option [value]="6">6 secondes</mat-option>
+              <mat-option [value]="10">10 secondes</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Camera selector -->
+        @if (availableCameras.length > 1) {
+          <div class="setting-group">
+            <label class="setting-label">Caméra</label>
+            <mat-form-field appearance="outline" class="camera-select-field">
+              <mat-select [value]="selectedCameraId" (selectionChange)="switchCamera($event.value)">
+                @for (cam of availableCameras; track cam.deviceId) {
+                  <mat-option [value]="cam.deviceId">
+                    {{ cam.label || 'Caméra ' + ($index + 1) }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        }
+      </div>
+
+      <div class="stack-info">
+        <span class="stack-badge webgpu"><mat-icon>memory</mat-icon> WebGPU</span>
+        <span class="stack-badge local"><mat-icon>lock</mat-icon> 100% Local</span>
+        <span class="stack-badge privacy"><mat-icon>shield</mat-icon> Privé</span>
+        <span class="stack-badge hf"><mat-icon>smart_toy</mat-icon> Transformers.js</span>
+        @if (gpuAdapterInfo) {
+          <span class="stack-badge gpu"><mat-icon>developer_board</mat-icon> {{ gpuAdapterInfo }}</span>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- WebGPU Error Banner -->
+  @if (!webgpuSupported && modelStatus === 'error') {
+    <div class="error-banner">
+      <mat-icon>error</mat-icon>
+      <div>
+        <strong>WebGPU non disponible</strong>
+        <p>{{ modelError }}</p>
+        <p class="hint">Utilisez Chrome 113+, Edge 113+ ou un navigateur compatible WebGPU.</p>
+      </div>
+    </div>
+  }
+
+  <!-- Main Content -->
+  @if (webgpuSupported) {
+    <div class="main-content">
+      <!-- Left: Camera -->
+      <div class="camera-panel">
+        <!-- Model Loading -->
+        @if (modelStatus !== 'ready') {
+          <div class="model-card">
+            <div class="model-card-header">
+              <mat-icon>smart_toy</mat-icon>
+              <span class="model-card-title">{{ selectedModel.name }}</span>
+              <span class="model-card-size">{{ selectedModel.size }}</span>
+            </div>
+            <p class="model-card-desc">{{ selectedModel.description }}</p>
+
+            @if (modelStatus === 'idle' || modelStatus === 'error' || modelStatus === 'checking') {
+              <button mat-raised-button class="load-model-btn" (click)="loadModel()"
+                      [disabled]="modelStatus === 'checking'">
+                <mat-icon>download</mat-icon>
+                Charger le modèle
+              </button>
+              @if (modelError) {
+                <p class="error-text">{{ modelError }}</p>
+              }
+            }
+
+            @if (modelStatus === 'downloading' || modelStatus === 'loading') {
+              <div class="progress-section">
+                <p class="progress-label">{{ modelLoadStep }}</p>
+                <mat-progress-bar mode="determinate" [value]="modelLoadProgress"></mat-progress-bar>
+                <span class="progress-pct">{{ modelLoadProgress | number: '1.0-0' }}%</span>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Model Ready Indicator -->
+        @if (modelStatus === 'ready') {
+          <div class="model-ready-bar">
+            <mat-icon>check_circle</mat-icon>
+            <span class="model-ready-name">{{ selectedModel.name }}</span>
+            <span class="model-ready-label">prêt</span>
+            @if (needsReload) {
+              <button mat-button class="reload-btn" (click)="loadModel()">
+                <mat-icon>refresh</mat-icon> Recharger
+              </button>
+            }
+          </div>
+        }
+
+        <!-- Video Feed -->
+        <div class="video-container" [class.active]="cameraActive">
+          <video #videoElement autoplay playsinline muted [class.hidden]="!cameraActive"></video>
+          <canvas #canvasElement class="hidden-canvas"></canvas>
+
+          @if (!cameraActive) {
+            <div class="camera-placeholder">
+              <mat-icon>videocam_off</mat-icon>
+              <p>Caméra inactive</p>
+              <button mat-raised-button class="start-cam-btn" (click)="startCamera()"
+                      [disabled]="modelStatus !== 'ready'">
+                <mat-icon>play_arrow</mat-icon>
+                Démarrer la caméra
+              </button>
+              @if (modelStatus !== 'ready') {
+                <p class="hint">Chargez d'abord le modèle</p>
+              }
+            </div>
+          }
+
+          @if (cameraActive && isAnalyzing) {
+            <div class="analyzing-overlay">
+              <mat-spinner diameter="24"></mat-spinner>
+              <span>Analyse...</span>
+            </div>
+          }
+        </div>
+
+        @if (cameraError) {
+          <div class="camera-error">
+            <mat-icon>error_outline</mat-icon>
+            {{ cameraError }}
+          </div>
+        }
+
+        <!-- Controls Bar -->
+        @if (cameraActive) {
+          <div class="controls-bar">
+            <button mat-raised-button class="capture-btn" (click)="analyzeFrame()"
+                    [disabled]="isAnalyzing">
+              <mat-icon>camera</mat-icon>
+              Capturer
+            </button>
+
+            <mat-slide-toggle [checked]="autoMode" (change)="toggleAutoMode()" color="primary">
+              Auto ({{ autoIntervalSec }}s)
+            </mat-slide-toggle>
+
+            <span class="spacer"></span>
+
+            @if (avgInferenceTime > 0) {
+              <span class="stats-chip" matTooltip="Temps moyen d'inférence">
+                <mat-icon>speed</mat-icon> {{ avgInferenceTime }}ms
+              </span>
+            }
+            @if (totalInferences > 0) {
+              <span class="stats-chip">{{ totalInferences }} capture(s)</span>
+            }
+
+            <button mat-icon-button class="stop-btn" (click)="stopCamera()" matTooltip="Arrêter la caméra">
+              <mat-icon>stop_circle</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Right: Descriptions Feed -->
+      <div class="descriptions-panel">
+        <div class="descriptions-header">
+          <mat-icon>description</mat-icon>
+          <span>Descriptions en direct</span>
+        </div>
+
+        <div class="descriptions-list" #descriptionsContainer>
+          @if (descriptions.length === 0) {
+            <div class="empty-state">
+              <mat-icon>auto_awesome</mat-icon>
+              <p>Les descriptions apparaîtront ici</p>
+              <p class="hint">Chargez le modèle, démarrez la caméra puis capturez une image</p>
+            </div>
+          }
+
+          @for (desc of descriptions; track desc.timestamp) {
+            <div class="description-card" [class.latest]="$first">
+              <div class="card-meta">
+                <span class="card-time">{{ formatTime(desc.timestamp) }}</span>
+                <span class="card-model">{{ desc.modelName }}</span>
+                <span class="card-speed">{{ desc.inferenceTimeMs }}ms</span>
+              </div>
+              <div class="card-content">
+                @if (desc.imageDataUrl) {
+                  <img [src]="desc.imageDataUrl" class="card-thumb" alt="Capture">
+                }
+                <p class="card-text">{{ desc.text }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Info Bar -->
+    <div class="info-bar">
+      <div class="info-item">
+        <mat-icon>security</mat-icon>
+        <span>Aucune donnée envoyée — tout reste dans votre navigateur</span>
+      </div>
+      <div class="info-item">
+        <mat-icon>bolt</mat-icon>
+        <span>Transformers.js + WebGPU</span>
+      </div>
+    </div>
+  }
+</div>

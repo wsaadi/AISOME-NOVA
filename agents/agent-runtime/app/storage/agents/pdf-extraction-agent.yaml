@@ -1,0 +1,410 @@
+# Agent Descriptor Language (ADL) v1.0.0
+# PDF Extraction Agent - Extract structured data from PDF files
+
+metadata:
+  adl_version: "1.0.0"
+  schema_url: "https://agent-pf.io/schemas/adl/v1"
+  version: "1.0.0"
+  tags:
+    - pdf
+    - extraction
+    - ocr
+    - data
+    - structured
+    - export
+  changelog:
+    - "1.0.0: Initial release - PDF extraction with CSV/JSON export"
+
+identity:
+  id: "pdf-extraction-agent"
+  name: "PDF Data Extractor"
+  slug: "pdf-extraction-agent"
+  description: "Extraction de données structurées depuis des fichiers PDF avec export CSV/JSON"
+  long_description: |
+    Agent spécialisé dans l'extraction de données structurées depuis des PDF.
+
+    ## Cas d'usage
+    - Extraction de tableaux depuis des factures PDF
+    - Récupération de données depuis des formulaires
+    - Analyse de documents scannés (OCR)
+    - Export en CSV et JSON pour traitement ultérieur
+
+    ## Fonctionnalités
+    - Upload de fichier PDF unique
+    - Extraction automatique avec Mistral Large
+    - Structuration intelligente des données
+    - Visualisation en tableau markdown
+    - Téléchargement ZIP (CSV + JSON)
+  icon: "fa fa-file-pdf"
+  category: "document_processing"
+  status: "active"
+
+business_logic:
+  system_prompt: |
+    Tu es un expert en extraction de données structurées depuis des documents PDF.
+
+    Ta mission est d'analyser le contenu du PDF fourni et d'extraire les informations sous forme de données structurées.
+
+    IMPORTANT: Tu dois retourner UNIQUEMENT un objet JSON valide avec le format suivant:
+
+    ```json
+    {
+      "data": [
+        {"colonne1": "valeur1", "colonne2": "valeur2"},
+        {"colonne1": "valeur3", "colonne2": "valeur4"}
+      ],
+      "metadata": {
+        "nombre_lignes": 2,
+        "colonnes": ["colonne1", "colonne2"],
+        "type_document": "facture",
+        "description": "Description du contenu"
+      }
+    }
+    ```
+
+    Règles strictes:
+    - Retourner UNIQUEMENT le JSON, aucun texte avant ou après
+    - Tous les objets dans "data" doivent avoir exactement les mêmes clés
+    - Utiliser des noms de colonnes descriptifs et en français
+    - Si tu détectes un tableau, extrait chaque ligne comme un objet
+    - Si c'est un formulaire, chaque champ devient un objet avec clé/valeur
+    - Ne pas inventer de données qui ne sont pas dans le PDF
+    - JSON valide et bien formaté
+
+  user_prompt_template: |
+    Voici le contenu extrait du fichier PDF:
+
+    {{pdf_content}}
+
+    {{#if extraction_hints}}
+    Instructions supplémentaires: {{extraction_hints}}
+    {{/if}}
+
+    Analyse ce contenu et extrais les données structurées au format JSON spécifié ci-dessus.
+
+  personality_traits:
+    - name: "analytical"
+      intensity: 2.0
+    - name: "precise"
+      intensity: 1.8
+    - name: "structured"
+      intensity: 2.0
+
+  tone: "professional"
+  language: "fr"
+
+  llm_provider: "mistral"
+  llm_model: "mistral-ocr-latest"
+  temperature: 0.1
+  max_tokens: 8192
+
+  context_window_messages: 3
+  include_system_context: true
+  streaming_enabled: false
+
+  moderation:
+    enabled: false
+
+  classification:
+    enabled: false
+
+  instructions:
+    - "Toujours retourner un JSON valide"
+    - "Extraire toutes les données pertinentes du PDF"
+    - "Structurer les données de manière cohérente"
+
+  constraints:
+    - "Ne pas inventer de données absentes du PDF"
+    - "Respecter strictement le format JSON de sortie"
+
+tools:
+  tools:
+    - tool_id: "document-extractor"
+      name: "Extracteur PDF"
+      enabled: true
+      description: "Extrait le contenu textuel du PDF"
+      parameters:
+        - name: "file"
+          source: "input"
+          input_component: "pdf_upload"
+          required: true
+      output_variable: "pdf_content"
+      on_error: "stop"
+      timeout_ms: 60000
+
+    - tool_id: "data-export"
+      name: "Générateur ZIP"
+      enabled: true
+      description: "Génère le fichier ZIP avec CSV et JSON"
+      parameters:
+        - name: "data"
+          source: "variable"
+          value: "extracted_data"
+          required: true
+        - name: "filename_prefix"
+          source: "constant"
+          value: "pdf_extraction"
+      output_variable: "export_result"
+      on_error: "continue"
+      timeout_ms: 30000
+
+  default_error_handling: "continue"
+  parallel_execution: false
+
+ui:
+  show_header: true
+  header_title: "Extracteur PDF Intelligent"
+  header_subtitle: "Extraction de données structurées depuis PDF avec export CSV/JSON/ZIP"
+  header_icon: "fa fa-file-pdf"
+
+  sections:
+    - name: "input_section"
+      title: "Document PDF à analyser"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "document_upload"
+          name: "pdf_upload"
+          label: "Déposez votre fichier PDF"
+          help_text: "Format accepté: PDF uniquement. Taille max: 25 MB"
+          accept: ".pdf"
+          multiple: false
+          max_size_mb: 25
+          required: true
+          style:
+            min_height: "200px"
+
+        - type: "textarea"
+          name: "extraction_hints"
+          label: "Instructions supplémentaires (optionnel)"
+          placeholder: "Ex: Extraire uniquement les lignes de facturation, ignorer l'en-tête..."
+          help_text: "Précisez des instructions spécifiques pour l'extraction"
+          required: false
+          style:
+            min_height: "80px"
+
+    - name: "progress_section"
+      title: "Progression"
+      layout_type: "column"
+      gap: "8px"
+      components:
+        - type: "progress_bar"
+          name: "extraction_progress"
+          label: "Extraction en cours..."
+
+    - name: "output_section"
+      title: "Données extraites"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "markdown_viewer"
+          name: "data_preview"
+          label: "Aperçu des données"
+          auto_bind_output: true
+          style:
+            min_height: "300px"
+            border: "1px solid #e5e7eb"
+            border_radius: "8px"
+            padding: "16px"
+            background: "#f9fafb"
+
+        - type: "card"
+          name: "stats_card"
+          title: "📊 Statistiques"
+          visible_when:
+            field: "stats_text"
+            operator: "is_not_empty"
+          components:
+            - type: "text"
+              name: "stats_display"
+              data_source: "stats_text"
+
+        - type: "button"
+          name: "download_zip_btn"
+          label: "📥 Télécharger ZIP (CSV + JSON)"
+          button_action: "download"
+          button_variant: "primary"
+          icon: "fa fa-download"
+          download_url_variable: "zip_download_url"
+          visible_when:
+            field: "zip_download_url"
+            operator: "is_not_empty"
+          style:
+            margin_top: "16px"
+
+  show_sidebar: false
+  show_footer: true
+  footer_text: "Powered by Mistral AI • AIsome Platform"
+
+  show_actions: true
+  actions:
+    - type: "button"
+      name: "reset_button"
+      label: "Réinitialiser"
+      button_action: "reset_form"
+      button_variant: "secondary"
+
+    - type: "button"
+      name: "extract_button"
+      label: "🔍 Analyser et Extraire"
+      button_action: "trigger_agent"
+      button_variant: "primary"
+      icon: "fa fa-magic"
+      is_trigger_button: true
+
+  actions_position: "right"
+  theme: "auto"
+  primary_color: "#10B981"
+
+connectors:
+  default_connector: "mistral-extraction"
+  connectors:
+    - id: "mistral-extraction"
+      provider: "mistral"
+      name: "Mistral OCR"
+      description: "Modèle OCR natif pour extraction de PDF"
+      model: "mistral-ocr-latest"
+      default_temperature: 0.1
+      default_max_tokens: 8192
+      retry_on_error: true
+      max_retries: 2
+      timeout_ms: 120000
+      priority: 0
+
+  enable_fallback: false
+
+workflows:
+  workflows:
+    - name: "PDF Extraction Flow"
+      description: "Flux complet d'extraction de données PDF avec export"
+      trigger: "button_click"
+      trigger_config:
+        button: "extract_button"
+      enabled: true
+      steps:
+        - id: "extract_pdf"
+          name: "Extraire le contenu du PDF"
+          type: "tool_call"
+          tool_config_id: "document-extractor"
+          output_variable: "pdf_content"
+          on_error: "stop"
+          next_step: "check_content"
+
+        - id: "check_content"
+          name: "Vérifier le contenu extrait"
+          type: "condition"
+          condition:
+            variable: "pdf_content"
+            operator: "is_not_empty"
+          on_true: "structure_data"
+          on_false: "extraction_error"
+
+        - id: "structure_data"
+          name: "Structurer les données avec IA"
+          type: "llm_call"
+          prompt_template: |
+            {{system_prompt}}
+
+            Contenu du PDF:
+            {{pdf_content}}
+
+            {{#if extraction_hints}}
+            Instructions supplémentaires: {{extraction_hints}}
+            {{/if}}
+          output_variable: "json_response"
+          next_step: "parse_json"
+
+        - id: "parse_json"
+          name: "Parser la réponse JSON"
+          type: "set_variable"
+          variable_name: "extracted_data"
+          variable_value: "{{json_response}}"
+          next_step: "generate_markdown"
+
+        - id: "generate_markdown"
+          name: "Générer l'aperçu markdown"
+          type: "set_variable"
+          variable_name: "analysis_result"
+          variable_value: |
+            # Données extraites du PDF
+
+            Voici les données structurées extraites :
+
+            ```json
+            {{json_response}}
+            ```
+
+            **📊 Prêt pour l'export** : Cliquez sur le bouton ci-dessous pour télécharger les données en CSV et JSON.
+          next_step: "call_export_tool"
+
+        - id: "call_export_tool"
+          name: "Générer le fichier ZIP"
+          type: "tool_call"
+          tool_config_id: "data-export"
+          output_variable: "export_result"
+          on_error: "skip_export"
+          next_step: "set_download_url"
+
+        - id: "set_download_url"
+          name: "Définir l'URL de téléchargement"
+          type: "set_variable"
+          variable_name: "zip_download_url"
+          variable_value: "{{export_result.download_url}}"
+          next_step: "generate_stats"
+
+        - id: "skip_export"
+          name: "Ignorer l'export si erreur"
+          type: "set_variable"
+          variable_name: "zip_download_url"
+          variable_value: ""
+          next_step: "generate_stats"
+
+        - id: "generate_stats"
+          name: "Générer les statistiques"
+          type: "set_variable"
+          variable_name: "stats_text"
+          variable_value: "Extraction terminée avec succès ! Téléchargez le ZIP pour récupérer vos données."
+          next_step: "complete"
+
+        - id: "complete"
+          name: "Terminer"
+          type: "set_variable"
+          variable_name: "extraction_complete"
+          variable_value: true
+
+        - id: "extraction_error"
+          name: "Erreur d'extraction"
+          type: "set_variable"
+          variable_name: "error_message"
+          variable_value: "❌ Impossible d'extraire le contenu du PDF. Vérifiez que le fichier n'est pas corrompu ou protégé par mot de passe."
+
+      entry_step: "extract_pdf"
+      initial_variables:
+        pdf_content: null
+        json_response: ""
+        extracted_data: null
+        analysis_result: ""
+        export_result: null
+        zip_download_url: ""
+        stats_text: ""
+        extraction_complete: false
+
+      timeout_ms: 300000
+
+  default_workflow: "pdf-extraction"
+
+security:
+  requires_auth: false
+  rate_limit_enabled: true
+  requests_per_minute: 10
+  requests_per_hour: 50
+  sanitize_inputs: true
+  max_input_length: 50000000
+  audit_logging: true
+
+deployment:
+  auto_route: true
+  environment: "production"
+  min_instances: 1
+  max_instances: 3
+  health_check_enabled: true

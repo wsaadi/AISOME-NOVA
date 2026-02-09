@@ -1,0 +1,170 @@
+{
+  "id": "b2389faa-c9ca-40e1-bd10-ea0826857212",
+  "name": "Strat\u00e8ge Num\u00e9rique Public",
+  "description": "Expert en transformation num\u00e9rique du secteur public : analyse des directives, r\u00e9glementations, financements et innovations pour l'\u00e9ducation, la sant\u00e9, les collectivit\u00e9s et les organismes publics.",
+  "long_description": "Agent sp\u00e9cialis\u00e9 pour les d\u00e9cideurs publics (\u00e9lus, directeurs d'\u00e9tablissements, responsables num\u00e9riques). Fournit des analyses approfondies et sectoris\u00e9es des enjeux du num\u00e9rique, bas\u00e9es sur les textes officiels, rapports institutionnels et retours d'exp\u00e9rience. R\u00e9ponses structur\u00e9es par secteur/th\u00e8me avec r\u00e9f\u00e9rences juridiques et exemples concrets. Export possible en PDF/Word.",
+  "icon": "fa fa-university",
+  "category": "strat\u00e9gie publique",
+  "status": "active",
+  "metadata": {
+    "created_at": "2026-01-29 13:58:45.944332",
+    "updated_at": "2026-01-29 13:58:45.944829",
+    "created_by": "anonymous",
+    "version": "1.0.0",
+    "tags": [
+      "num\u00e9rique public",
+      "strat\u00e9gie",
+      "r\u00e9glementation",
+      "financement",
+      "secteur public"
+    ]
+  },
+  "tools": [
+    {
+      "id": "0e9a4570-abd7-48d3-8e48-fc3a4cb619cc",
+      "tool_id": "pdf-crud",
+      "tool_name": "Export PDF",
+      "enabled": true,
+      "parameters": [],
+      "output_variable": null,
+      "output_transform": null,
+      "on_error": "continue",
+      "retry_count": 0,
+      "fallback_value": null
+    },
+    {
+      "id": "445ae8ed-ed3e-4ab3-9dbb-d0fb49eb109e",
+      "tool_id": "word-crud",
+      "tool_name": "Export Word",
+      "enabled": true,
+      "parameters": [],
+      "output_variable": null,
+      "output_transform": null,
+      "on_error": "continue",
+      "retry_count": 0,
+      "fallback_value": null
+    },
+    {
+      "id": "08a6b900-4444-4771-90cd-126c6de7f057",
+      "tool_id": "document-extractor",
+      "tool_name": "Document Extractor",
+      "enabled": true,
+      "parameters": [],
+      "output_variable": null,
+      "output_transform": null,
+      "on_error": "continue",
+      "retry_count": 0,
+      "fallback_value": null
+    }
+  ],
+  "ui_layout": {
+    "layout_mode": "sections",
+    "show_header": true,
+    "header_title": "Strat\u00e8ge Num\u00e9rique Public",
+    "header_subtitle": "Expert en transformation num\u00e9rique du secteur public : analyse des directives, r\u00e9glementations, financements et innovations pour l'\u00e9ducation, la sant\u00e9, les collectivit\u00e9s et les organismes publics.",
+    "header_icon": "fa fa-university",
+    "dashboard_config": {
+      "columns": 12,
+      "rowHeight": 80,
+      "gap": 12
+    },
+    "widgets": [],
+    "sections": [
+      {
+        "id": "a0913901-f8e9-41ac-8bdf-ab5b5a92d366",
+        "name": "chat_section",
+        "title": null,
+        "description": null,
+        "layout_type": "column",
+        "grid_columns": null,
+        "gap": "16px",
+        "components": [
+          {
+            "id": "49e2babe-8985-4186-a539-0ef78fef5424",
+            "type": "chat_interface",
+            "name": "main_chat",
+            "label": "Conversation",
+            "placeholder": null,
+            "help_text": null,
+            "default_value": null,
+            "required": false,
+            "validation_rules": [],
+            "options": [],
+            "accept": null,
+            "max_size_mb": null,
+            "multiple": false,
+            "grid_column": null,
+            "grid_row": null,
+            "order": 0,
+            "style": {
+              "width": null,
+              "height": "calc(100vh - 200px)",
+              "margin": null,
+              "padding": null,
+              "background_color": null,
+              "text_color": null,
+              "border_radius": null,
+              "custom_css": null
+            },
+            "visible_when": null,
+            "children": [],
+            "data_source": null,
+            "auto_bind_output": true,
+            "output_key": null,
+            "on_change_action": null,
+            "button_action": null,
+            "button_variant": null,
+            "is_trigger_button": false,
+            "gridPosition": null,
+            "chart_config": null
+          }
+        ],
+        "visible_when": null,
+        "style": {
+          "width": null,
+          "height": null,
+          "margin": null,
+          "padding": null,
+          "background_color": null,
+          "text_color": null,
+          "border_radius": null,
+          "custom_css": null
+        }
+      }
+    ],
+    "show_sidebar": false,
+    "sidebar_sections": [],
+    "sidebar_position": "left",
+    "sidebar_width": "300px",
+    "show_footer": false,
+    "footer_content": null,
+    "show_actions": false,
+    "actions": [],
+    "primary_color": null,
+    "secondary_color": null,
+    "custom_css": null
+  },
+  "ai_behavior": {
+    "system_prompt": "**MISSION** : Tu es un expert en politiques num\u00e9riques du secteur public... [le reste du prompt syst\u00e8me inchang\u00e9]",
+    "user_prompt": "**Demande** : Analysez les enjeux du num\u00e9rique pour... [le reste du template inchang\u00e9]",
+    "personality_traits": [],
+    "tone": "professional",
+    "default_provider": "mistral",
+    "default_model": null,
+    "temperature": 0.7,
+    "max_tokens": 4096,
+    "response_format": null,
+    "include_sources": false,
+    "include_confidence": false,
+    "context_window": 10,
+    "include_system_context": true,
+    "enable_moderation": true,
+    "enable_classification": true,
+    "content_filters": [],
+    "task_prompts": {}
+  },
+  "workflows": [],
+  "route": "/custom-agent/stratge-numrique-public-b2389faa",
+  "requires_auth": false,
+  "allowed_roles": []
+}

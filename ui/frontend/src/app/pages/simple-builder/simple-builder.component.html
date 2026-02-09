@@ -1,0 +1,244 @@
+<div class="simple-builder-container">
+  <!-- Header -->
+  <header class="builder-header">
+    <div class="header-left">
+      <mat-icon class="header-icon">smart_toy</mat-icon>
+      <div class="header-text">
+        <h1>Créateur d'Agents IA</h1>
+        <p>Décrivez l'agent que vous souhaitez créer</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="toggleAgentsList()">
+        <mat-icon>list</mat-icon>
+        Mes Agents ({{ agents.length }})
+      </button>
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="startNewConversation()"
+        *ngIf="conversation"
+      >
+        <mat-icon>add</mat-icon>
+        Nouveau
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="builder-content" [class.with-sidebar]="showAgentsList">
+    <!-- Chat Area -->
+    <div class="chat-area">
+      <!-- Welcome State -->
+      <div class="welcome-state" *ngIf="!conversation">
+        <mat-icon class="welcome-icon">auto_awesome</mat-icon>
+        <h2>Bienvenue dans le Créateur d'Agents IA</h2>
+        <p class="welcome-description">
+          Je vais vous aider à créer un agent IA personnalisé pour vos besoins.
+          L'agent pourra recevoir du texte, des images et des documents,
+          et répondre en Markdown formaté avec des options d'export.
+        </p>
+
+        <div class="capabilities">
+          <div class="capability">
+            <mat-icon>chat</mat-icon>
+            <span>Réponses textuelles en Markdown</span>
+          </div>
+          <div class="capability">
+            <mat-icon>image</mat-icon>
+            <span>Accepte texte, images et documents</span>
+          </div>
+          <div class="capability">
+            <mat-icon>download</mat-icon>
+            <span>Export Excel, Word, PowerPoint, PDF</span>
+          </div>
+        </div>
+
+        <button
+          mat-raised-button
+          color="primary"
+          class="start-button"
+          (click)="startNewConversation()"
+          [disabled]="isLoading"
+        >
+          <mat-icon>play_arrow</mat-icon>
+          Commencer la création
+        </button>
+      </div>
+
+      <!-- Chat Interface -->
+      <div class="chat-interface" *ngIf="conversation">
+        <!-- Messages -->
+        <div class="messages-container" #chatContainer>
+          <div
+            *ngFor="let message of conversation.messages"
+            class="message"
+            [class.user]="message.role === 'user'"
+            [class.assistant]="message.role === 'assistant'"
+          >
+            <div class="message-avatar">
+              <mat-icon *ngIf="message.role === 'user'">person</mat-icon>
+              <mat-icon *ngIf="message.role === 'assistant'">smart_toy</mat-icon>
+            </div>
+            <div class="message-content">
+              <app-markdown-viewer [content]="message.content"></app-markdown-viewer>
+            </div>
+          </div>
+
+          <!-- Loading indicator -->
+          <div class="message assistant loading" *ngIf="isLoading">
+            <div class="message-avatar">
+              <mat-icon>smart_toy</mat-icon>
+            </div>
+            <div class="message-content">
+              <mat-spinner diameter="24"></mat-spinner>
+              <span class="typing-indicator">En train de réfléchir...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Bar (when agent is ready) -->
+        <div
+          class="action-bar"
+          *ngIf="conversation.status === 'ready_to_create' && conversation.generated_agent"
+        >
+          <div class="agent-preview">
+            <mat-icon>{{ conversation.generated_agent.icon }}</mat-icon>
+            <div class="agent-info">
+              <strong>{{ conversation.generated_agent.name }}</strong>
+              <span>{{ conversation.generated_agent.description }}</span>
+            </div>
+          </div>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="confirmCreateAgent()"
+            [disabled]="isLoading"
+          >
+            <mat-icon>check</mat-icon>
+            Créer cet agent
+          </button>
+          <button mat-stroked-button (click)="resetConversation()">
+            <mat-icon>refresh</mat-icon>
+            Recommencer
+          </button>
+        </div>
+
+        <!-- Out of Scope Notice -->
+        <div
+          class="out-of-scope-notice"
+          *ngIf="conversation.status === 'out_of_scope' && conversation.out_of_scope_summary"
+        >
+          <mat-icon>warning</mat-icon>
+          <div class="notice-content">
+            <strong>Demande hors périmètre</strong>
+            <p>Cette demande nécessite des fonctionnalités avancées. Transmettez le résumé ci-dessous aux administrateurs IA.</p>
+            <button mat-stroked-button (click)="copyOutOfScopeSummary()">
+              <mat-icon>content_copy</mat-icon>
+              Copier le résumé
+            </button>
+          </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+          <mat-form-field appearance="outline" class="message-field">
+            <textarea
+              matInput
+              #messageInput
+              [(ngModel)]="userMessage"
+              (keydown)="onKeydown($event)"
+              placeholder="Décrivez votre agent ou répondez aux questions..."
+              rows="2"
+              [disabled]="isLoading || conversation.status === 'completed'"
+            ></textarea>
+          </mat-form-field>
+          <button
+            mat-fab
+            color="primary"
+            (click)="sendMessage()"
+            [disabled]="!userMessage.trim() || isLoading || conversation.status === 'completed'"
+          >
+            <mat-icon>send</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agents Sidebar -->
+    <aside class="agents-sidebar" *ngIf="showAgentsList">
+      <div class="sidebar-header">
+        <h3>Mes Agents</h3>
+        <button mat-icon-button (click)="toggleAgentsList()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="agents-list" *ngIf="agents.length > 0">
+        <mat-card
+          *ngFor="let agent of agents"
+          class="agent-card"
+          [class.active]="agent.status === 'active'"
+          [class.draft]="agent.status === 'draft'"
+          [class.disabled]="agent.status === 'disabled'"
+          (click)="navigateToAgent(agent)"
+        >
+          <div class="agent-card-header">
+            <mat-icon class="agent-icon">{{ agent.icon }}</mat-icon>
+            <div class="agent-details">
+              <span class="agent-name">{{ agent.name }}</span>
+              <span class="agent-category">{{ agent.category }}</span>
+            </div>
+            <mat-icon
+              class="status-icon"
+              [color]="getStatusColor(agent.status)"
+              [matTooltip]="agent.status"
+            >
+              {{ getStatusIcon(agent.status) }}
+            </mat-icon>
+          </div>
+
+          <p class="agent-description">{{ agent.description }}</p>
+
+          <div class="agent-actions">
+            <button
+              mat-icon-button
+              *ngIf="agent.status !== 'active'"
+              (click)="activateAgent(agent, $event)"
+              matTooltip="Activer"
+            >
+              <mat-icon>play_arrow</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              *ngIf="agent.status === 'active'"
+              (click)="deactivateAgent(agent, $event)"
+              matTooltip="Désactiver"
+            >
+              <mat-icon>pause</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="deleteAgent(agent, $event)"
+              matTooltip="Supprimer"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+
+          <div class="agent-tags" *ngIf="agent.export_formats?.length">
+            <mat-chip-listbox>
+              <mat-chip *ngFor="let fmt of agent.export_formats">{{ fmt }}</mat-chip>
+            </mat-chip-listbox>
+          </div>
+        </mat-card>
+      </div>
+
+      <div class="empty-agents" *ngIf="agents.length === 0">
+        <mat-icon>folder_open</mat-icon>
+        <p>Aucun agent créé</p>
+        <span>Utilisez le chat pour créer votre premier agent.</span>
+      </div>
+    </aside>
+  </div>
+</div>

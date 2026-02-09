@@ -1,0 +1,145 @@
+{
+  "id": "7b839663-127e-478a-9cd5-470ee5870c75",
+  "name": "Extracteur de Devis Universel",
+  "description": "Extrait et structure toutes les donn\u00e9es d'un devis PDF en JSON, avec d\u00e9tection de synonymes et validation des montants.",
+  "long_description": "Cet agent analyse un devis PDF (quel que soit son format) et extrait l'int\u00e9gralit\u00e9 des informations dans un JSON g\u00e9n\u00e9rique. Il g\u00e8re les variations de libell\u00e9s (synonymes), valide les calculs (HT/TTC/TVA), et signale les incoh\u00e9rences. Id\u00e9al pour automatiser le traitement des devis entrants.",
+  "icon": "fa fa-file-invoice-dollar",
+  "category": "finance",
+  "status": "active",
+  "metadata": {
+    "created_at": "2026-01-28 17:32:50.240036",
+    "updated_at": "2026-01-28 17:32:50.241528",
+    "created_by": "anonymous",
+    "version": "1.0.0",
+    "tags": [
+      "devis",
+      "extraction",
+      "finance",
+      "json"
+    ]
+  },
+  "tools": [
+    {
+      "id": "b375055f-9d01-40eb-a09b-1352beec11e9",
+      "tool_id": "document-extractor",
+      "tool_name": "Document Extractor",
+      "enabled": true,
+      "parameters": [],
+      "output_variable": null,
+      "output_transform": null,
+      "on_error": "continue",
+      "retry_count": 0,
+      "fallback_value": null
+    }
+  ],
+  "ui_layout": {
+    "layout_mode": "sections",
+    "show_header": true,
+    "header_title": "Extracteur de Devis Universel",
+    "header_subtitle": "Extrait et structure toutes les donn\u00e9es d'un devis PDF en JSON, avec d\u00e9tection de synonymes et validation des montants.",
+    "header_icon": "fa fa-file-invoice-dollar",
+    "dashboard_config": {
+      "columns": 12,
+      "rowHeight": 80,
+      "gap": 12
+    },
+    "widgets": [],
+    "sections": [
+      {
+        "id": "90006e5d-07eb-4af4-9e8a-2be52944daaa",
+        "name": "chat_section",
+        "title": null,
+        "description": null,
+        "layout_type": "column",
+        "grid_columns": null,
+        "gap": "16px",
+        "components": [
+          {
+            "id": "3b113edb-c9da-47ba-a183-52ad36e3305c",
+            "type": "chat_interface",
+            "name": "main_chat",
+            "label": "Conversation",
+            "placeholder": null,
+            "help_text": null,
+            "default_value": null,
+            "required": false,
+            "validation_rules": [],
+            "options": [],
+            "accept": null,
+            "max_size_mb": null,
+            "multiple": false,
+            "grid_column": null,
+            "grid_row": null,
+            "order": 0,
+            "style": {
+              "width": null,
+              "height": "calc(100vh - 200px)",
+              "margin": null,
+              "padding": null,
+              "background_color": null,
+              "text_color": null,
+              "border_radius": null,
+              "custom_css": null
+            },
+            "visible_when": null,
+            "children": [],
+            "data_source": null,
+            "auto_bind_output": true,
+            "output_key": null,
+            "on_change_action": null,
+            "button_action": null,
+            "button_variant": null,
+            "is_trigger_button": false,
+            "gridPosition": null,
+            "chart_config": null
+          }
+        ],
+        "visible_when": null,
+        "style": {
+          "width": null,
+          "height": null,
+          "margin": null,
+          "padding": null,
+          "background_color": null,
+          "text_color": null,
+          "border_radius": null,
+          "custom_css": null
+        }
+      }
+    ],
+    "show_sidebar": false,
+    "sidebar_sections": [],
+    "sidebar_position": "left",
+    "sidebar_width": "300px",
+    "show_footer": false,
+    "footer_content": null,
+    "show_actions": false,
+    "actions": [],
+    "primary_color": null,
+    "secondary_color": null,
+    "custom_css": null
+  },
+  "ai_behavior": {
+    "system_prompt": "**R\u00d4LE**\nTu es un expert en extraction et structuration de donn\u00e9es de devis. Ton objectif est de transformer un devis PDF en un JSON g\u00e9n\u00e9rique complet, en respectant les r\u00e8gles suivantes :\n\n**R\u00c8GLES D'EXTRACTION**\n1. **Compl\u00e9tude** : Extrais TOUTES les donn\u00e9es visibles dans le devis (m\u00eame les champs non standard).\n2. **Synonymes** : D\u00e9tecte les variations de libell\u00e9s (ex : \"Montant HT\" = \"Total hors taxes\" = \"Sous-total\"). Utilise les cl\u00e9s g\u00e9n\u00e9riques suivantes :\n   - `numero_devis` (ou `reference`, `id`)\n   - `date_emission` (ou `date`, `date_devis`)\n   - `fournisseur` (objet avec `nom`, `adresse`, `siret`, `contact`)\n   - `client` (m\u00eame structure que `fournisseur`)\n   - `lignes` (liste d'objets avec `description`, `quantite`, `prix_unitaire`, `montant_ht`)\n   - `montant_ht` (total hors taxes)\n   - `tva` (taux en %, ex : 20)\n   - `montant_ttc` (total TTC)\n   - `conditions_paiement` (ou `modalites`, `echeance`)\n   - `validite` (dur\u00e9e de validit\u00e9 du devis)\n   - `notes` (champ libre pour les mentions diverses).\n3. **Normalisation** : \n   - Convertis les dates en format `AAAA-MM-JJ`.\n   - Convertis les montants en nombres d\u00e9cimaux (ex : 1 234,56 \u2192 1234.56).\n   - Ignore les espaces/majuscules dans les libell\u00e9s (ex : \"Prix Unitaire\" = \"prixunitaire\").\n\n**VALIDATION DES DONN\u00c9ES**\n1. **Calculs** : V\u00e9rifie que `montant_ht + (montant_ht * tva/100) = montant_ttc`. Si incoh\u00e9rence, ajoute un champ `alertes` dans le JSON avec le d\u00e9tail.\n2. **Champs obligatoires** : Si un champ critique est manquant (ex : `montant_ht`), ajoute-le \u00e0 `alertes` avec la mention \"Champ manquant\".\n3. **TVA** : Si le taux de TVA n'est pas indiqu\u00e9 mais que `montant_ttc` est pr\u00e9sent, calcule-le et ajoute une alerte \"TVA d\u00e9duite automatiquement\".\n\n**FORMAT DE SORTIE**\n- Structure JSON g\u00e9n\u00e9rique (exemple ci-dessous).\n- Les cl\u00e9s doivent \u00eatre en **snake_case**.\n- Les valeurs doivent \u00eatre typ\u00e9es (nombres, cha\u00eenes, bool\u00e9ens).\n- Si un champ est absent, omets-le (sauf pour les alertes).\n\n**EXEMPLE DE SORTIE ATTENDUE**\n```json\n{\n  \"devis\": {\n    \"numero_devis\": \"DEV-2024-056\",\n    \"date_emission\": \"2024-05-20\",\n    \"fournisseur\": {\n      \"nom\": \"Soci\u00e9t\u00e9 Exemple\",\n      \"adresse\": \"123 Rue des Devis, 75000 Paris\",\n      \"siret\": \"12345678901234\"\n    },\n    \"client\": {\n      \"nom\": \"Client B\",\n      \"adresse\": \"456 Avenue des Tests, 69000 Lyon\"\n    },\n    \"lignes\": [\n      {\n        \"description\": \"Prestation technique\",\n        \"quantite\": 5,\n        \"prix_unitaire\": 100.00,\n        \"montant_ht\": 500.00\n      }\n    ],\n    \"montant_ht\": 500.00,\n    \"tva\": 20,\n    \"montant_ttc\": 600.00,\n    \"conditions_paiement\": \"30 jours net\",\n    \"validite\": \"30 jours\"\n  },\n  \"alertes\": [\n    \"Le calcul de la TVA est coh\u00e9rent (500 * 1.20 = 600)\"\n  ]\n}\n```\n\n**INSTRUCTIONS POUR L'UTILISATEUR**\n- T\u00e9l\u00e9charge un devis PDF dans le chat.\n- L'agent extraira automatiquement les donn\u00e9es et affichera le JSON.\n- Les alertes signalent les incoh\u00e9rences ou donn\u00e9es manquantes.\n\n**LIMITES**\n- Ne g\u00e8re pas les devis scann\u00e9s (images) ou manuscrits.\n- Pour les devis tr\u00e8s complexes (ex : multi-pages avec tableaux imbriqu\u00e9s), certaines donn\u00e9es peuvent n\u00e9cessiter une v\u00e9rification manuelle.",
+    "user_prompt": "Analyse ce devis PDF et extrais toutes les donn\u00e9es en JSON g\u00e9n\u00e9rique. Voici le fichier : {{user_input}}",
+    "personality_traits": [],
+    "tone": "professional",
+    "default_provider": "mistral",
+    "default_model": null,
+    "temperature": 0.7,
+    "max_tokens": 4096,
+    "response_format": null,
+    "include_sources": false,
+    "include_confidence": false,
+    "context_window": 10,
+    "include_system_context": true,
+    "enable_moderation": true,
+    "enable_classification": true,
+    "content_filters": [],
+    "task_prompts": {}
+  },
+  "workflows": [],
+  "route": "/custom-agent/extracteur-de-devis-universel-7b839663",
+  "requires_auth": false,
+  "allowed_roles": []
+}

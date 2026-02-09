@@ -1,0 +1,377 @@
+<h2 mat-dialog-title>
+  <i class="fa fa-cog"></i>
+  Configuration - {{ agentName }}
+</h2>
+
+<mat-dialog-content>
+  <div class="config-form">
+    <!-- Message pour les utilisateurs non-admin -->
+    @if (!isAdmin) {
+      <div class="info-banner">
+        <mat-icon>info</mat-icon>
+        <span>{{ 'agent_config.user_info_banner' | translate }}</span>
+      </div>
+    }
+
+    <!-- Sélection du Provider -->
+    <div class="form-group">
+      <label class="form-label">
+        <i class="fa fa-robot"></i>
+        {{ 'agent_config.provider' | translate }}
+        @if (!canChangeProvider()) {
+          <mat-icon class="locked-icon" [matTooltip]="getProviderHint()">lock</mat-icon>
+        }
+      </label>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-select [(ngModel)]="config.provider" [disabled]="!canChangeProvider()">
+          @for (provider of getAvailableProviders(); track provider.value) {
+            <mat-option [value]="provider.value">{{ provider.label }}</mat-option>
+          }
+        </mat-select>
+        @if (!canChangeProvider()) {
+          <mat-hint>{{ 'agent_config.provider_locked' | translate }}</mat-hint>
+        }
+      </mat-form-field>
+    </div>
+
+    <!-- Configuration Mistral -->
+    @if (config.provider === 'mistral') {
+      <div class="provider-section">
+        <h3 class="provider-title">
+          <i class="fa fa-key"></i>
+          Configuration Mistral AI
+        </h3>
+
+        <!-- Clé API - Admin uniquement -->
+        @if (canEditApiKeys()) {
+          <div class="form-group">
+            <label class="form-label">{{ 'agent_config.api_key' | translate }}</label>
+            <mat-form-field appearance="outline" class="full-width">
+              <input
+                matInput
+                type="password"
+                [(ngModel)]="config.mistralApiKey"
+                [placeholder]="'agent_config.api_key_placeholder' | translate"
+              />
+              <mat-hint>{{ 'agent_config.api_key_hint' | translate }}</mat-hint>
+            </mat-form-field>
+          </div>
+        } @else {
+          <div class="info-message">
+            <mat-icon>vpn_key</mat-icon>
+            <span>{{ 'agent_config.api_key_managed_by_admin' | translate }}</span>
+          </div>
+        }
+
+        <!-- Modèle -->
+        <div class="form-group">
+          <label class="form-label">
+            {{ 'agent_config.model' | translate }}
+            @if (!canChangeModel()) {
+              <mat-icon class="locked-icon" [matTooltip]="'agent_config.model_locked_hint' | translate">lock</mat-icon>
+            }
+          </label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-select [(ngModel)]="config.mistralModel" [disabled]="!canChangeModel()">
+              @for (model of mistralModels; track model.value) {
+                <mat-option [value]="model.value">{{ model.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    }
+
+    <!-- Configuration OpenAI -->
+    @if (config.provider === 'openai') {
+      <div class="provider-section">
+        <h3 class="provider-title">
+          <i class="fa fa-key"></i>
+          Configuration OpenAI
+        </h3>
+
+        @if (canEditApiKeys()) {
+          <div class="form-group">
+            <label class="form-label">{{ 'agent_config.api_key' | translate }}</label>
+            <mat-form-field appearance="outline" class="full-width">
+              <input
+                matInput
+                type="password"
+                [(ngModel)]="config.openaiApiKey"
+                [placeholder]="'agent_config.api_key_placeholder' | translate"
+              />
+              <mat-hint>{{ 'agent_config.api_key_hint' | translate }}</mat-hint>
+            </mat-form-field>
+          </div>
+        } @else {
+          <div class="info-message">
+            <mat-icon>vpn_key</mat-icon>
+            <span>{{ 'agent_config.api_key_managed_by_admin' | translate }}</span>
+          </div>
+        }
+
+        <div class="form-group">
+          <label class="form-label">
+            {{ 'agent_config.model' | translate }}
+            @if (!canChangeModel()) {
+              <mat-icon class="locked-icon">lock</mat-icon>
+            }
+          </label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-select [(ngModel)]="config.openaiModel" [disabled]="!canChangeModel()">
+              @for (model of openaiModels; track model.value) {
+                <mat-option [value]="model.value">{{ model.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    }
+
+    <!-- Configuration Anthropic -->
+    @if (config.provider === 'anthropic') {
+      <div class="provider-section">
+        <h3 class="provider-title">
+          <i class="fa fa-key"></i>
+          Configuration Anthropic
+        </h3>
+
+        @if (canEditApiKeys()) {
+          <div class="form-group">
+            <label class="form-label">{{ 'agent_config.api_key' | translate }}</label>
+            <mat-form-field appearance="outline" class="full-width">
+              <input
+                matInput
+                type="password"
+                [(ngModel)]="config.anthropicApiKey"
+                [placeholder]="'agent_config.api_key_placeholder' | translate"
+              />
+              <mat-hint>{{ 'agent_config.api_key_hint' | translate }}</mat-hint>
+            </mat-form-field>
+          </div>
+        } @else {
+          <div class="info-message">
+            <mat-icon>vpn_key</mat-icon>
+            <span>{{ 'agent_config.api_key_managed_by_admin' | translate }}</span>
+          </div>
+        }
+
+        <div class="form-group">
+          <label class="form-label">
+            {{ 'agent_config.model' | translate }}
+            @if (!canChangeModel()) {
+              <mat-icon class="locked-icon">lock</mat-icon>
+            }
+          </label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-select [(ngModel)]="config.anthropicModel" [disabled]="!canChangeModel()">
+              @for (model of anthropicModels; track model.value) {
+                <mat-option [value]="model.value">{{ model.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    }
+
+    <!-- Configuration Gemini -->
+    @if (config.provider === 'gemini') {
+      <div class="provider-section">
+        <h3 class="provider-title">
+          <i class="fa fa-key"></i>
+          Configuration Google Gemini
+        </h3>
+
+        @if (canEditApiKeys()) {
+          <div class="form-group">
+            <label class="form-label">{{ 'agent_config.api_key' | translate }}</label>
+            <mat-form-field appearance="outline" class="full-width">
+              <input
+                matInput
+                type="password"
+                [(ngModel)]="config.geminiApiKey"
+                [placeholder]="'agent_config.api_key_placeholder' | translate"
+              />
+              <mat-hint>{{ 'agent_config.api_key_hint' | translate }}</mat-hint>
+            </mat-form-field>
+          </div>
+        } @else {
+          <div class="info-message">
+            <mat-icon>vpn_key</mat-icon>
+            <span>{{ 'agent_config.api_key_managed_by_admin' | translate }}</span>
+          </div>
+        }
+
+        <div class="form-group">
+          <label class="form-label">
+            {{ 'agent_config.model' | translate }}
+            @if (!canChangeModel()) {
+              <mat-icon class="locked-icon">lock</mat-icon>
+            }
+          </label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-select [(ngModel)]="config.geminiModel" [disabled]="!canChangeModel()">
+              @for (model of geminiModels; track model.value) {
+                <mat-option [value]="model.value">{{ model.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    }
+
+    <!-- Configuration Perplexity -->
+    @if (config.provider === 'perplexity') {
+      <div class="provider-section">
+        <h3 class="provider-title">
+          <i class="fa fa-key"></i>
+          Configuration Perplexity AI
+        </h3>
+
+        @if (canEditApiKeys()) {
+          <div class="form-group">
+            <label class="form-label">{{ 'agent_config.api_key' | translate }}</label>
+            <mat-form-field appearance="outline" class="full-width">
+              <input
+                matInput
+                type="password"
+                [(ngModel)]="config.perplexityApiKey"
+                [placeholder]="'agent_config.api_key_placeholder' | translate"
+              />
+              <mat-hint>{{ 'agent_config.api_key_hint' | translate }}</mat-hint>
+            </mat-form-field>
+          </div>
+        } @else {
+          <div class="info-message">
+            <mat-icon>vpn_key</mat-icon>
+            <span>{{ 'agent_config.api_key_managed_by_admin' | translate }}</span>
+          </div>
+        }
+
+        <div class="form-group">
+          <label class="form-label">
+            {{ 'agent_config.model' | translate }}
+            @if (!canChangeModel()) {
+              <mat-icon class="locked-icon">lock</mat-icon>
+            }
+          </label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-select [(ngModel)]="config.perplexityModel" [disabled]="!canChangeModel()">
+              @for (model of perplexityModels; track model.value) {
+                <mat-option [value]="model.value">{{ model.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    }
+
+    <!-- Configuration NVIDIA NIM -->
+    @if (config.provider === 'nvidia-nim') {
+      <div class="provider-section">
+        <h3 class="provider-title">
+          <i class="fa fa-key"></i>
+          Configuration NVIDIA NIM
+        </h3>
+
+        @if (canEditApiKeys()) {
+          <div class="form-group">
+            <label class="form-label">{{ 'agent_config.api_key' | translate }}</label>
+            <mat-form-field appearance="outline" class="full-width">
+              <input
+                matInput
+                type="password"
+                [(ngModel)]="config.nvidiaNimApiKey"
+                [placeholder]="'agent_config.api_key_placeholder' | translate"
+              />
+              <mat-hint>{{ 'agent_config.api_key_hint' | translate }}</mat-hint>
+            </mat-form-field>
+          </div>
+        } @else {
+          <div class="info-message">
+            <mat-icon>vpn_key</mat-icon>
+            <span>{{ 'agent_config.api_key_managed_by_admin' | translate }}</span>
+          </div>
+        }
+
+        <div class="form-group">
+          <label class="form-label">
+            {{ 'agent_config.model' | translate }}
+            @if (!canChangeModel()) {
+              <mat-icon class="locked-icon">lock</mat-icon>
+            }
+          </label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-select [(ngModel)]="config.nvidiaNimModel" [disabled]="!canChangeModel()">
+              @for (model of nvidiaNimModels; track model.value) {
+                <mat-option [value]="model.value">{{ model.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    }
+
+    <!-- Paramètres avancés -->
+    <div class="advanced-section">
+      <h3 class="section-title">
+        <i class="fa fa-sliders"></i>
+        {{ 'agent_config.advanced_settings' | translate }}
+      </h3>
+
+      <div class="form-group">
+        <label class="form-label">
+          {{ 'agent_config.temperature' | translate }} ({{ formatTemperature(config.temperature) }})
+          @if (!isAdmin && maxTemperature < 2.0) {
+            <span class="limit-info">(max: {{ formatTemperature(maxTemperature) }})</span>
+          }
+        </label>
+        <mat-slider
+          min="0"
+          [max]="getTemperatureMax()"
+          step="0.1"
+          discrete
+          [displayWith]="formatTemperature">
+          <input matSliderThumb [(ngModel)]="config.temperature" />
+        </mat-slider>
+        <p class="param-hint">
+          {{ 'agent_config.temperature_hint' | translate }}
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          {{ 'agent_config.max_tokens' | translate }} ({{ formatMaxTokens(config.maxTokens) }})
+          @if (!isAdmin && maxTokensLimit < 32000) {
+            <span class="limit-info">(max: {{ formatMaxTokens(maxTokensLimit) }})</span>
+          }
+        </label>
+        <mat-slider
+          min="1"
+          [max]="getMaxTokensMax()"
+          step="1000"
+          discrete
+          [displayWith]="formatMaxTokens">
+          <input matSliderThumb [(ngModel)]="config.maxTokens" />
+        </mat-slider>
+        <p class="param-hint">
+          {{ 'agent_config.max_tokens_hint' | translate }}
+        </p>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <app-custom-button
+    [label]="'common.cancel' | translate"
+    variant="secondary"
+    (onClick)="onCancel()">
+  </app-custom-button>
+  <app-custom-button
+    [label]="'common.save' | translate"
+    variant="primary"
+    icon="fa fa-save"
+    (onClick)="onSave()">
+  </app-custom-button>
+</mat-dialog-actions>

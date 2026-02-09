@@ -1,0 +1,121 @@
+<form
+  [formGroup]="form"
+  (ngSubmit)="handleSubmit()"
+  [class]="'custom-form custom-form--' + (config.layout || 'vertical')">
+
+  @for (field of config.fields; track field.name) {
+    <div class="custom-form__field">
+      <label [for]="field.name" class="custom-form__label">
+        {{ field.label }}
+        @if (field.required) {
+          <span class="custom-form__required">*</span>
+        }
+      </label>
+
+      <!-- Text, Email, Password, Number, Tel, URL, Date -->
+      @if (['text', 'email', 'password', 'number', 'tel', 'url', 'date'].includes(field.type)) {
+        <input
+          [id]="field.name"
+          [type]="field.type"
+          [formControlName]="field.name"
+          [placeholder]="field.placeholder || ''"
+          [min]="field.min"
+          [max]="field.max"
+          [attr.pattern]="field.pattern || null"
+          class="custom-form__input"
+          [class.custom-form__input--error]="getFieldError(field.name)">
+      }
+
+      <!-- Textarea -->
+      @if (field.type === 'textarea') {
+        <textarea
+          [id]="field.name"
+          [formControlName]="field.name"
+          [placeholder]="field.placeholder || ''"
+          [rows]="field.rows || 4"
+          class="custom-form__textarea"
+          [class.custom-form__textarea--error]="getFieldError(field.name)">
+        </textarea>
+      }
+
+      <!-- Select -->
+      @if (field.type === 'select') {
+        <select
+          [id]="field.name"
+          [formControlName]="field.name"
+          class="custom-form__select"
+          [class.custom-form__select--error]="getFieldError(field.name)">
+          <option value="">Sélectionnez...</option>
+          @for (option of field.options; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      }
+
+      <!-- Checkbox -->
+      @if (field.type === 'checkbox') {
+        <div class="custom-form__checkbox">
+          <input
+            [id]="field.name"
+            type="checkbox"
+            [formControlName]="field.name"
+            class="custom-form__checkbox-input">
+          <label [for]="field.name" class="custom-form__checkbox-label">
+            {{ field.placeholder || '' }}
+          </label>
+        </div>
+      }
+
+      <!-- Radio -->
+      @if (field.type === 'radio') {
+        <div class="custom-form__radio-group">
+          @for (option of field.options; track option.value) {
+            <div class="custom-form__radio">
+              <input
+                [id]="field.name + '_' + option.value"
+                type="radio"
+                [name]="field.name"
+                [formControlName]="field.name"
+                [value]="option.value"
+                class="custom-form__radio-input">
+              <label [for]="field.name + '_' + option.value" class="custom-form__radio-label">
+                {{ option.label }}
+              </label>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Help text -->
+      @if (field.helpText && !getFieldError(field.name)) {
+        <small class="custom-form__help">{{ field.helpText }}</small>
+      }
+
+      <!-- Error message -->
+      @if (getFieldError(field.name)) {
+        <small class="custom-form__error">{{ getFieldError(field.name) }}</small>
+      }
+    </div>
+  }
+
+  <div class="custom-form__actions">
+    <button
+      type="submit"
+      [disabled]="isSubmitting"
+      class="custom-form__button custom-form__button--submit">
+      @if (isSubmitting) {
+        <span class="custom-form__spinner"></span>
+      }
+      {{ config.submitLabel || 'Soumettre' }}
+    </button>
+
+    @if (config.showReset) {
+      <button
+        type="button"
+        (click)="handleReset()"
+        class="custom-form__button custom-form__button--reset">
+        {{ config.resetLabel || 'Réinitialiser' }}
+      </button>
+    }
+  </div>
+</form>

@@ -1,0 +1,24 @@
+<div class="progress-bar-wrapper">
+  @if (showLabel && labelPosition === 'outside') {
+    <div class="progress-bar__label-outside">
+      <span>{{ displayLabel }}</span>
+    </div>
+  }
+
+  <div
+    [class]="progressBarClasses"
+    role="progressbar"
+    [attr.aria-valuenow]="value"
+    [attr.aria-valuemin]="0"
+    [attr.aria-valuemax]="max">
+
+    <div
+      [class]="fillClasses"
+      [style.width.%]="percentage">
+
+      @if (showLabel && labelPosition === 'inside') {
+        <span class="progress-bar__label-inside">{{ displayLabel }}</span>
+      }
+    </div>
+  </div>
+</div>

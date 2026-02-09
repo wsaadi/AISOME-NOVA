@@ -1,0 +1,393 @@
+<div class="nvidia-vista3d-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="nvidia-logo">
+        <mat-icon class="logo-icon">biotech</mat-icon>
+        <div class="logo-text">
+          <h1>{{ 'nvidia_vista3d.title' | translate }}</h1>
+          <span class="subtitle">{{ 'nvidia_vista3d.subtitle' | translate }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="toggleSettings()" [matTooltip]="'nvidia_vista3d.settings' | translate"
+              [class.active]="showSettings">
+        <mat-icon>{{ showSettings ? 'close' : 'tune' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  @if (showSettings) {
+    <div class="settings-panel">
+      <div class="settings-grid">
+        <mat-form-field appearance="outline" class="api-key-field">
+          <mat-label>{{ 'nvidia_vista3d.api_key' | translate }}</mat-label>
+          <input matInput type="password" [(ngModel)]="apiKey" (change)="saveConfig()"
+                 placeholder="nvapi-...">
+          <mat-icon matSuffix>vpn_key</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="stack-info">
+        <span class="stack-badge model">
+          <mat-icon>biotech</mat-icon> Vista 3D NIM
+        </span>
+        <span class="stack-badge classes">
+          <mat-icon>category</mat-icon> {{ totalClasses || 127 }} classes
+        </span>
+        <span class="stack-badge format">
+          <mat-icon>view_in_ar</mat-icon> NIfTI / NRRD
+        </span>
+        <span class="stack-badge segmentation">
+          <mat-icon>layers</mat-icon> Segmentation 3D
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <!-- Left: Configuration Panel -->
+    <div class="config-panel">
+      <!-- Image Input -->
+      <div class="section">
+        <div class="section-header">
+          <mat-icon>image</mat-icon>
+          <span>{{ 'nvidia_vista3d.image_input' | translate }}</span>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'nvidia_vista3d.image_url' | translate }}</mat-label>
+          <input matInput [(ngModel)]="imageUrl"
+                 placeholder="https://.../*.nii.gz">
+          <mat-icon matSuffix>link</mat-icon>
+        </mat-form-field>
+
+        <!-- Sample Datasets -->
+        <div class="sample-datasets">
+          <span class="sample-label">{{ 'nvidia_vista3d.sample_datasets' | translate }}</span>
+          <div class="dataset-chips">
+            @for (ds of sampleDatasets; track ds.id) {
+              <button mat-stroked-button class="dataset-chip"
+                      (click)="useSampleDataset(ds)"
+                      [class.active]="imageUrl === ds.url"
+                      [matTooltip]="ds.description">
+                <mat-icon>science</mat-icon>
+                {{ ds.name }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Presets -->
+      <div class="section">
+        <div class="section-header">
+          <mat-icon>tune</mat-icon>
+          <span>{{ 'nvidia_vista3d.presets' | translate }}</span>
+        </div>
+        <div class="presets-grid">
+          @for (preset of presets; track preset.label) {
+            <button mat-stroked-button class="preset-btn"
+                    (click)="applyPreset(preset)"
+                    [matTooltip]="preset.classes.length ? preset.classes.length + ' classes' : 'Tout segmenter'">
+              <mat-icon>{{ preset.icon }}</mat-icon>
+              {{ preset.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Anatomy Classes Selection -->
+      <div class="section classes-section">
+        <div class="section-header">
+          <mat-icon>category</mat-icon>
+          <span>{{ 'nvidia_vista3d.classes_selection' | translate }}</span>
+          @if (selectedClasses.length > 0) {
+            <span class="class-count">{{ selectedClasses.length }} {{ 'nvidia_vista3d.selected' | translate }}</span>
+            <button mat-icon-button (click)="clearSelection()" matTooltip="Effacer la selection" class="clear-btn">
+              <mat-icon>clear_all</mat-icon>
+            </button>
+          }
+        </div>
+
+        @if (selectedClasses.length === 0) {
+          <div class="all-mode-hint">
+            <mat-icon>info_outline</mat-icon>
+            <span>{{ 'nvidia_vista3d.all_mode_hint' | translate }}</span>
+          </div>
+        }
+
+        <mat-accordion multi>
+          @for (groupKey of anatomyGroupKeys; track groupKey) {
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>{{ anatomyGroups[groupKey].icon }}</mat-icon>
+                  {{ anatomyGroups[groupKey].label }}
+                </mat-panel-title>
+                <mat-panel-description>
+                  {{ anatomyGroups[groupKey].classes.length }} classes
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+
+              <div class="class-chips">
+                @for (cls of anatomyGroups[groupKey].classes; track cls) {
+                  <button mat-stroked-button
+                          class="class-chip"
+                          [class.selected]="isClassSelected(cls)"
+                          (click)="toggleClass(cls)">
+                    @if (isClassSelected(cls)) {
+                      <mat-icon>check</mat-icon>
+                    }
+                    {{ formatClassName(cls) }}
+                  </button>
+                }
+              </div>
+
+              <div class="group-actions">
+                <button mat-button (click)="selectGroup(groupKey)" class="select-all-btn">
+                  <mat-icon>select_all</mat-icon>
+                  {{ 'nvidia_vista3d.select_group' | translate }}
+                </button>
+              </div>
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
+      </div>
+
+      <!-- Run Button -->
+      <div class="run-section">
+        <button mat-flat-button
+                class="run-button"
+                (click)="runInference()"
+                [disabled]="!canRun">
+          @if (isProcessing) {
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>{{ processingStage }}</span>
+          } @else {
+            <mat-icon>play_arrow</mat-icon>
+            <span>{{ 'nvidia_vista3d.run_inference' | translate }}</span>
+          }
+        </button>
+
+        @if (!apiKey) {
+          <div class="api-key-hint">
+            <mat-icon>info_outline</mat-icon>
+            {{ 'nvidia_vista3d.api_key_hint' | translate }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right: Results Panel -->
+    <div class="results-panel">
+      <!-- Error Banner -->
+      @if (errorMessage) {
+        <div class="error-banner">
+          <mat-icon>warning_amber</mat-icon>
+          <span [innerHTML]="errorMessage"></span>
+          <button mat-icon-button (click)="errorMessage = ''">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+
+      <!-- Processing Indicator -->
+      @if (isProcessing) {
+        <div class="processing-card">
+          <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+          <div class="processing-info">
+            <mat-spinner diameter="24"></mat-spinner>
+            <div class="processing-text">
+              <span class="processing-title">{{ 'nvidia_vista3d.processing_title' | translate }}</span>
+              <span class="processing-stage">{{ processingStage }}</span>
+            </div>
+          </div>
+          <div class="processing-detail">
+            <mat-icon>info_outline</mat-icon>
+            {{ 'nvidia_vista3d.processing_hint' | translate }}
+          </div>
+        </div>
+      }
+
+      <!-- Current Result with Viewer -->
+      @if (currentResult && currentResult.success) {
+        <div class="result-card">
+          <div class="result-header">
+            <mat-icon class="success-icon">check_circle</mat-icon>
+            <span class="result-title">{{ currentResult.message }}</span>
+          </div>
+
+          <!-- Slice Viewer -->
+          @if (currentResult.previews && currentResult.previews.axial_slices?.length) {
+            <div class="viewer-container">
+              <!-- View Tabs -->
+              <div class="viewer-tabs">
+                <button mat-stroked-button
+                        class="view-tab"
+                        [class.active]="activeView === 'axial'"
+                        (click)="setView('axial')">
+                  <mat-icon>layers</mat-icon> Axial
+                </button>
+                <button mat-stroked-button
+                        class="view-tab"
+                        [class.active]="activeView === 'coronal'"
+                        (click)="setView('coronal')">
+                  <mat-icon>view_agenda</mat-icon> Coronal
+                </button>
+                <button mat-stroked-button
+                        class="view-tab"
+                        [class.active]="activeView === 'sagittal'"
+                        (click)="setView('sagittal')">
+                  <mat-icon>view_sidebar</mat-icon> Sagittal
+                </button>
+              </div>
+
+              <!-- Image Display -->
+              <div class="viewer-image-container">
+                @if (currentSlice) {
+                  <img [src]="'data:image/png;base64,' + currentSlice.image"
+                       alt="{{ activeView }} slice {{ currentSlice.index }}"
+                       class="viewer-image">
+                  <div class="slice-badge">
+                    {{ activeView | titlecase }} - Slice {{ currentSlice.index }}
+                  </div>
+                }
+              </div>
+
+              <!-- Slice Slider (all views) -->
+              @if (maxViewSliceIndex > 0) {
+                <div class="slice-slider">
+                  <mat-icon>swap_vert</mat-icon>
+                  <mat-slider [min]="0" [max]="maxViewSliceIndex" [step]="1" discrete class="slider-control">
+                    <input matSliderThumb [ngModel]="currentViewSliceIndex"
+                           (ngModelChange)="onSliceChange($event)">
+                  </mat-slider>
+                  <span class="slice-counter">{{ currentViewSliceIndex + 1 }} / {{ maxViewSliceIndex + 1 }}</span>
+                </div>
+              }
+
+              <!-- Volume Info -->
+              @if (currentResult.previews!.volume_shape) {
+                <div class="volume-info">
+                  <mat-icon>view_in_ar</mat-icon>
+                  Volume: {{ currentResult.previews!.volume_shape[0] }} x {{ currentResult.previews!.volume_shape[1] }} x {{ currentResult.previews!.volume_shape[2] }}
+                </div>
+              }
+            </div>
+
+            <!-- Legend -->
+            @if (currentResult.previews!.legend?.length) {
+              <div class="legend-section">
+                <span class="legend-title">Legende</span>
+                <div class="legend-items">
+                  @for (entry of currentResult.previews!.legend; track entry.class) {
+                    <div class="legend-item">
+                      <span class="legend-color" [style.background]="entry.color"></span>
+                      <span class="legend-label">{{ formatClassName(entry.class) }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          }
+
+          <!-- Classes found -->
+          @if (currentResult.classes_found && currentResult.classes_found.length > 0) {
+            <div class="result-classes">
+              <span class="result-label">{{ 'nvidia_vista3d.masks_generated' | translate }}</span>
+              <div class="result-chips">
+                @for (cls of currentResult.classes_found; track cls) {
+                  <span class="result-chip">
+                    <mat-icon>layers</mat-icon>
+                    {{ formatClassName(cls) }}
+                  </span>
+                }
+              </div>
+            </div>
+          }
+
+          <div class="result-actions">
+            <button mat-flat-button class="download-btn" (click)="downloadResult(currentResult)">
+              <mat-icon>download</mat-icon>
+              {{ 'nvidia_vista3d.download_zip' | translate }}
+            </button>
+            @if (currentResult.file_name) {
+              <span class="file-name">
+                <mat-icon>folder_zip</mat-icon>
+                {{ currentResult.file_name }}
+              </span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if (!isProcessing && !currentResult) {
+        <div class="empty-state">
+          <div class="empty-illustration">
+            <mat-icon>biotech</mat-icon>
+          </div>
+          <h2>{{ 'nvidia_vista3d.empty_title' | translate }}</h2>
+          <p>{{ 'nvidia_vista3d.empty_description' | translate }}</p>
+
+          <div class="features-grid">
+            <div class="feature-card">
+              <mat-icon>category</mat-icon>
+              <span class="feature-title">127 Classes</span>
+              <span class="feature-desc">{{ 'nvidia_vista3d.feature_classes' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>view_in_ar</mat-icon>
+              <span class="feature-title">3D CT Scan</span>
+              <span class="feature-desc">{{ 'nvidia_vista3d.feature_3d' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>layers</mat-icon>
+              <span class="feature-title">NIfTI / NRRD</span>
+              <span class="feature-desc">{{ 'nvidia_vista3d.feature_format' | translate }}</span>
+            </div>
+            <div class="feature-card">
+              <mat-icon>report_problem</mat-icon>
+              <span class="feature-title">{{ 'nvidia_vista3d.feature_lesions_title' | translate }}</span>
+              <span class="feature-desc">{{ 'nvidia_vista3d.feature_lesions' | translate }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- History -->
+      @if (history.length > 0) {
+        <div class="history-section">
+          <div class="history-header">
+            <mat-icon>history</mat-icon>
+            <span>{{ 'nvidia_vista3d.history' | translate }}</span>
+            <button mat-icon-button (click)="clearHistory()" matTooltip="Effacer l'historique" class="clear-btn">
+              <mat-icon>delete_sweep</mat-icon>
+            </button>
+          </div>
+
+          @for (entry of history; track entry.id) {
+            <div class="history-entry">
+              <div class="entry-header">
+                <mat-icon class="entry-icon">check_circle</mat-icon>
+                <span class="entry-time">{{ entry.timestamp | date:'HH:mm:ss' }}</span>
+                <span class="entry-classes">{{ entry.classes.length }} classe(s)</span>
+              </div>
+              <div class="entry-url">{{ entry.imageUrl }}</div>
+              <div class="entry-actions">
+                <button mat-stroked-button class="entry-download" (click)="downloadResult(entry.result)">
+                  <mat-icon>download</mat-icon>
+                  {{ entry.result.file_name }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

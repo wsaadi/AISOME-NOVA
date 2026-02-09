@@ -1,0 +1,944 @@
+services:
+  # ======================
+  #  Frontend Angular
+  # ======================
+  frontend:
+    build:
+      context: ./ui/frontend
+      dockerfile: Dockerfile
+    container_name: agent-pf-frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # ======================
+  #  Word CRUD Tool (API Backend)
+  # ======================
+  word-crud-tool:
+    build:
+      context: ./tools/word-crud-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-word-crud-tool
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      - ENVIRONMENT=${WORD_CRUD_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${WORD_CRUD_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Web Search Tool (API Backend)
+  # ======================
+  web-search-tool:
+    build:
+      context: ./tools/web-search-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-web-search-tool
+    restart: unless-stopped
+    ports:
+      - "8002:8000"
+    environment:
+      - ENVIRONMENT=${WEB_SEARCH_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${WEB_SEARCH_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  PDF CRUD Tool (API Backend)
+  # ======================
+  pdf-crud-tool:
+    build:
+      context: ./tools/pdf-crud-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-pdf-crud-tool
+    restart: unless-stopped
+    ports:
+      - "8003:8000"
+    environment:
+      - ENVIRONMENT=${PDF_CRUD_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${PDF_CRUD_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Excel CRUD Tool (API Backend)
+  # ======================
+  excel-crud-tool:
+    build:
+      context: ./tools/excel-crud-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-excel-crud-tool
+    restart: unless-stopped
+    ports:
+      - "8004:8000"
+    environment:
+      - ENVIRONMENT=${EXCEL_CRUD_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${EXCEL_CRUD_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Mistral AI Connector (Central Service)
+  # ======================
+  mistral-connector:
+    build:
+      context: ./core/mistral-connector
+      dockerfile: Dockerfile
+    container_name: agent-pf-mistral-connector
+    restart: unless-stopped
+    ports:
+      - "8005:8000"
+    environment:
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - ENVIRONMENT=${MISTRAL_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${MISTRAL_CORS_ORIGINS:-*}
+      - DEFAULT_MODEL=${MISTRAL_DEFAULT_MODEL:-mistral-small-latest}
+      - DEFAULT_MAX_TOKENS=${MISTRAL_DEFAULT_MAX_TOKENS:-1024}
+      - DEFAULT_TEMPERATURE=${MISTRAL_DEFAULT_TEMPERATURE:-0.7}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  File Upload Tool (API Backend)
+  # ======================
+  file-upload-tool:
+    build:
+      context: ./tools/file-upload-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-file-upload-tool
+    restart: unless-stopped
+    ports:
+      - "8007:8007"
+    environment:
+      - ENVIRONMENT=${FILE_UPLOAD_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${FILE_UPLOAD_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8007/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Document Extractor Tool (API Backend)
+  # ======================
+  document-extractor-tool:
+    build:
+      context: ./tools/document-extractor-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-document-extractor-tool
+    restart: unless-stopped
+    ports:
+      - "8008:8008"
+    environment:
+      - ENVIRONMENT=${DOCUMENT_EXTRACTOR_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${DOCUMENT_EXTRACTOR_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8008/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Data Export Tool (API Backend)
+  # ======================
+  data-export-tool:
+    build:
+      context: ./tools/data-export-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-data-export-tool
+    restart: unless-stopped
+    ports:
+      - "8027:8000"
+    environment:
+      - ENVIRONMENT=${DATA_EXPORT_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${DATA_EXPORT_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Agent Runtime Engine (Universal Agent Executor)
+  #  Replaces all individual agent services
+  # ======================
+  agent-runtime:
+    build:
+      context: ./agents/agent-runtime
+      dockerfile: Dockerfile
+    container_name: agent-pf-agent-runtime
+    restart: unless-stopped
+    ports:
+      - "8025:8022"
+    volumes:
+      - ./agents/agent-runtime/app/storage/agents:/app/storage/agents
+    environment:
+      - RUNTIME_ENVIRONMENT=${RUNTIME_ENVIRONMENT:-production}
+      - RUNTIME_CORS_ORIGINS=${RUNTIME_CORS_ORIGINS:-*}
+      - RUNTIME_AGENTS_STORAGE_PATH=/app/storage/agents
+      # Tool endpoints
+      - RUNTIME_TOOL_WORD_CRUD=http://word-crud-tool:8000
+      - RUNTIME_TOOL_WEB_SEARCH=http://web-search-tool:8000
+      - RUNTIME_TOOL_PDF_CRUD=http://pdf-crud-tool:8000
+      - RUNTIME_TOOL_EXCEL_CRUD=http://excel-crud-tool:8000
+      - RUNTIME_TOOL_FILE_UPLOAD=http://file-upload-tool:8007
+      - RUNTIME_TOOL_DOCUMENT_EXTRACTOR=http://document-extractor-tool:8008
+      - RUNTIME_TOOL_PPTX_CRUD=http://pptx-crud-tool:8011
+      - RUNTIME_TOOL_PROMPT_MODERATION=http://prompt-moderation-tool:8000
+      - RUNTIME_TOOL_CONTENT_CLASSIFICATION=http://content-classification-tool:8000
+      - RUNTIME_TOOL_DOLIBARR_CONNECTOR=http://dolibarr-connector:8015
+      - RUNTIME_TOOL_EML_PARSER=http://eml-parser-tool:8000
+      - RUNTIME_TOOL_DATA_EXPORT=http://data-export-tool:8000
+      - RUNTIME_TOOL_NEMO_GUARDRAILS=http://nemo-guardrails-tool:8000
+      - RUNTIME_TOOL_NVIDIA_MULTIMODAL=http://nvidia-multimodal-tool:8000
+      - RUNTIME_TOOL_MULTI_LLM_SEARCH=http://multi-llm-search-tool:8000
+      # NeMo Guardrails config
+      - NEMO_GUARDRAILS_CONFIG_PATH=/app/config/nemo_guardrails_config.json
+      # LLM connectors
+      - RUNTIME_LLM_MISTRAL_URL=http://mistral-connector:8000
+      - RUNTIME_LLM_OPENAI_URL=http://openai-connector:8000
+      - RUNTIME_LLM_ANTHROPIC_URL=http://anthropic-connector:8000
+      - RUNTIME_LLM_GEMINI_URL=http://gemini-connector:8000
+      - RUNTIME_LLM_PERPLEXITY_URL=http://perplexity-connector:8000
+      - RUNTIME_LLM_NVIDIA_NIM_URL=http://nvidia-nim-connector:8000
+    networks:
+      - agent-pf-network
+    depends_on:
+      - mistral-connector
+      - document-extractor-tool
+      - word-crud-tool
+      - web-search-tool
+      - prompt-moderation-tool
+      - content-classification-tool
+      - data-export-tool
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8022/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  PowerPoint CRUD Tool (API Backend)
+  # ======================
+  pptx-crud-tool:
+    build:
+      context: ./tools/pptx-crud-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-pptx-crud-tool
+    restart: unless-stopped
+    ports:
+      - "8011:8011"
+    environment:
+      - ENVIRONMENT=${PPTX_CRUD_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${PPTX_CRUD_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8011/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Prompt Moderation Tool (API Backend)
+  # ======================
+  prompt-moderation-tool:
+    build:
+      context: ./tools/prompt-moderation-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-prompt-moderation-tool
+    restart: unless-stopped
+    ports:
+      - "8013:8000"
+    environment:
+      - ENVIRONMENT=${PROMPT_MODERATION_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${PROMPT_MODERATION_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Content Classification Tool (API Backend)
+  # ======================
+  content-classification-tool:
+    build:
+      context: ./tools/content-classification-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-content-classification-tool
+    restart: unless-stopped
+    ports:
+      - "8014:8000"
+    environment:
+      - ENVIRONMENT=${CONTENT_CLASSIFICATION_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${CONTENT_CLASSIFICATION_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Dolibarr Connector (Central Service)
+  # ======================
+  dolibarr-connector:
+    build:
+      context: ./core/dolibarr-connector
+      dockerfile: Dockerfile
+    container_name: agent-pf-dolibarr-connector
+    restart: unless-stopped
+    ports:
+      - "8015:8015"
+    environment:
+      - DOLIBARR_URL=${DOLIBARR_URL:-http://localhost:8081}
+      - DOLIBARR_API_KEY=${DOLIBARR_API_KEY}
+      - ENVIRONMENT=${DOLIBARR_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${DOLIBARR_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8015/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  OpenAI Connector (Central Service)
+  # ======================
+  openai-connector:
+    build:
+      context: ./core/openai-connector
+      dockerfile: Dockerfile
+    container_name: agent-pf-openai-connector
+    restart: unless-stopped
+    ports:
+      - "8006:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENVIRONMENT=${OPENAI_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${OPENAI_CORS_ORIGINS:-*}
+      - DEFAULT_MODEL=${OPENAI_DEFAULT_MODEL:-gpt-4o-mini}
+      - DEFAULT_MAX_TOKENS=${OPENAI_DEFAULT_MAX_TOKENS:-1024}
+      - DEFAULT_TEMPERATURE=${OPENAI_DEFAULT_TEMPERATURE:-0.7}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Perplexity Connector (Central Service)
+  # ======================
+  perplexity-connector:
+    build:
+      context: ./core/perplexity-connector
+      dockerfile: Dockerfile
+    container_name: agent-pf-perplexity-connector
+    restart: unless-stopped
+    ports:
+      - "8022:8000"
+    environment:
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - ENVIRONMENT=${PERPLEXITY_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${PERPLEXITY_CORS_ORIGINS:-*}
+      - DEFAULT_MODEL=${PERPLEXITY_DEFAULT_MODEL:-sonar}
+      - DEFAULT_MAX_TOKENS=${PERPLEXITY_DEFAULT_MAX_TOKENS:-1024}
+      - DEFAULT_TEMPERATURE=${PERPLEXITY_DEFAULT_TEMPERATURE:-0.7}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Gemini Connector (Central Service)
+  # ======================
+  gemini-connector:
+    build:
+      context: ./core/gemini-connector
+      dockerfile: Dockerfile
+    container_name: agent-pf-gemini-connector
+    restart: unless-stopped
+    ports:
+      - "8023:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ENVIRONMENT=${GEMINI_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${GEMINI_CORS_ORIGINS:-*}
+      - DEFAULT_MODEL=${GEMINI_DEFAULT_MODEL:-gemini-2.0-flash-exp}
+      - DEFAULT_MAX_TOKENS=${GEMINI_DEFAULT_MAX_TOKENS:-1024}
+      - DEFAULT_TEMPERATURE=${GEMINI_DEFAULT_TEMPERATURE:-0.7}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Anthropic Connector (Central Service)
+  # ======================
+  anthropic-connector:
+    build:
+      context: ./core/anthropic-connector
+      dockerfile: Dockerfile
+    container_name: agent-pf-anthropic-connector
+    restart: unless-stopped
+    ports:
+      - "8024:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ENVIRONMENT=${ANTHROPIC_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${ANTHROPIC_CORS_ORIGINS:-*}
+      - DEFAULT_MODEL=${ANTHROPIC_DEFAULT_MODEL:-claude-3-5-sonnet-20241022}
+      - DEFAULT_MAX_TOKENS=${ANTHROPIC_DEFAULT_MAX_TOKENS:-1024}
+      - DEFAULT_TEMPERATURE=${ANTHROPIC_DEFAULT_TEMPERATURE:-0.7}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  EML Parser Tool (API Backend)
+  # ======================
+  eml-parser-tool:
+    build:
+      context: ./tools/eml-parser-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-eml-parser-tool
+    restart: unless-stopped
+    ports:
+      - "8020:8000"
+    environment:
+      - ENVIRONMENT=${EML_PARSER_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${EML_PARSER_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Agent Builder (AI Agent - Orchestrator)
+  # ======================
+  agent-builder:
+    build:
+      context: ./agents/agent-builder
+      dockerfile: Dockerfile
+    container_name: agent-pf-agent-builder
+    restart: unless-stopped
+    ports:
+      - "8026:8021"
+    volumes:
+      - ./agents/agent-builder/data:/app/data
+    environment:
+      - ENVIRONMENT=${AGENT_BUILDER_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${AGENT_BUILDER_CORS_ORIGINS:-*}
+      - AGENT_BUILDER_HOST=0.0.0.0
+      - AGENT_BUILDER_PORT=8021
+      - AGENT_STORAGE_DIR=/app/data/agents
+      # LLM connectors for agent generator
+      - LLM_MISTRAL_URL=http://mistral-connector:8000
+      - LLM_OPENAI_URL=http://openai-connector:8000
+      - LLM_ANTHROPIC_URL=http://anthropic-connector:8000
+      - LLM_GEMINI_URL=http://gemini-connector:8000
+      - LLM_PERPLEXITY_URL=http://perplexity-connector:8000
+      - LLM_NVIDIA_NIM_URL=http://nvidia-nim-connector:8000
+    networks:
+      - agent-pf-network
+    depends_on:
+      - mistral-connector
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8021/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  NVIDIA NIM Connector (Central Service)
+  # ======================
+  nvidia-nim-connector:
+    build:
+      context: ./core/nvidia-nim-connector
+      dockerfile: Dockerfile
+    container_name: agent-pf-nvidia-nim-connector
+    restart: unless-stopped
+    ports:
+      - "8028:8000"
+    environment:
+      - NVIDIA_NIM_API_KEY=${NVIDIA_NIM_API_KEY}
+      - NVIDIA_NIM_BASE_URL=${NVIDIA_NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      - ENVIRONMENT=${NVIDIA_NIM_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${NVIDIA_NIM_CORS_ORIGINS:-*}
+      - DEFAULT_MODEL=${NVIDIA_NIM_DEFAULT_MODEL:-meta/llama-3.1-8b-instruct}
+      - DEFAULT_MAX_TOKENS=${NVIDIA_NIM_DEFAULT_MAX_TOKENS:-1024}
+      - DEFAULT_TEMPERATURE=${NVIDIA_NIM_DEFAULT_TEMPERATURE:-0.7}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  NeMo Guardrails Tool (Safety API)
+  # ======================
+  nemo-guardrails-tool:
+    build:
+      context: ./tools/nemo-guardrails-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-nemo-guardrails-tool
+    restart: unless-stopped
+    ports:
+      - "8029:8000"
+    environment:
+      - NEMO_GUARDRAILS_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+      - NEMO_GUARDRAILS_NVIDIA_BASE_URL=${NVIDIA_NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      - NEMO_GUARDRAILS_ENVIRONMENT=${NEMO_GUARDRAILS_ENVIRONMENT:-production}
+      - NEMO_GUARDRAILS_CORS_ORIGINS=${NEMO_GUARDRAILS_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  NVIDIA Multimodal Tool (API Backend)
+  # ======================
+  nvidia-multimodal-tool:
+    build:
+      context: ./tools/nvidia-multimodal-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-nvidia-multimodal-tool
+    restart: unless-stopped
+    ports:
+      - "8030:8000"
+    environment:
+      - NVIDIA_MULTIMODAL_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+      - NVIDIA_MULTIMODAL_NVIDIA_BASE_URL=${NVIDIA_NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      - NVIDIA_MULTIMODAL_ENVIRONMENT=${NVIDIA_MULTIMODAL_ENVIRONMENT:-production}
+      - NVIDIA_MULTIMODAL_CORS_ORIGINS=${NVIDIA_MULTIMODAL_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Multi-LLM Search Tool (API Backend)
+  # ======================
+  multi-llm-search-tool:
+    build:
+      context: ./tools/multi-llm-search-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-multi-llm-search-tool
+    restart: unless-stopped
+    ports:
+      - "8032:8000"
+    environment:
+      - MULTI_LLM_SEARCH_ENVIRONMENT=${MULTI_LLM_SEARCH_ENVIRONMENT:-production}
+      - MULTI_LLM_SEARCH_CORS_ORIGINS=${MULTI_LLM_SEARCH_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  NVIDIA Vista 3D Tool (API Backend)
+  # ======================
+  nvidia-vista3d-tool:
+    build:
+      context: ./tools/nvidia-vista3d-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-nvidia-vista3d-tool
+    restart: unless-stopped
+    ports:
+      - "8031:8000"
+    environment:
+      - NVIDIA_VISTA3D_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+      - NVIDIA_VISTA3D_ENVIRONMENT=${NVIDIA_VISTA3D_ENVIRONMENT:-production}
+      - NVIDIA_VISTA3D_CORS_ORIGINS=${NVIDIA_VISTA3D_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  NVIDIA FourCastNet Tool (API Backend)
+  # ======================
+  nvidia-fourcastnet-tool:
+    build:
+      context: ./tools/nvidia-fourcastnet-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-nvidia-fourcastnet-tool
+    restart: unless-stopped
+    ports:
+      - "8033:8000"
+    environment:
+      - NVIDIA_FOURCASTNET_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+      - NVIDIA_FOURCASTNET_ENVIRONMENT=${NVIDIA_FOURCASTNET_ENVIRONMENT:-production}
+      - NVIDIA_FOURCASTNET_CORS_ORIGINS=${NVIDIA_FOURCASTNET_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  NVIDIA OpenFold3 Tool (API Backend)
+  # ======================
+  nvidia-openfold3-tool:
+    build:
+      context: ./tools/nvidia-openfold3-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-nvidia-openfold3-tool
+    restart: unless-stopped
+    ports:
+      - "8034:8000"
+    environment:
+      - NVIDIA_OPENFOLD3_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+      - NVIDIA_OPENFOLD3_ENVIRONMENT=${NVIDIA_OPENFOLD3_ENVIRONMENT:-production}
+      - NVIDIA_OPENFOLD3_CORS_ORIGINS=${NVIDIA_OPENFOLD3_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  NVIDIA Grounding DINO Tool (API Backend)
+  # ======================
+  nvidia-grounding-dino-tool:
+    build:
+      context: ./tools/nvidia-grounding-dino-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-nvidia-grounding-dino-tool
+    restart: unless-stopped
+    ports:
+      - "8035:8000"
+    environment:
+      - NVIDIA_GROUNDING_DINO_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+      - NVIDIA_GROUNDING_DINO_ENVIRONMENT=${NVIDIA_GROUNDING_DINO_ENVIRONMENT:-production}
+      - NVIDIA_GROUNDING_DINO_CORS_ORIGINS=${NVIDIA_GROUNDING_DINO_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  SECTION: EMAIL ANALYSIS AGENT & INFRASTRUCTURE
+  #  Local inference with Ollama + WeKan task management
+  # ======================
+
+  # ======================
+  #  Ollama (Local LLM Inference)
+  # ======================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: agent-pf-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ======================
+  #  Ollama Connector (API Wrapper)
+  # ======================
+  ollama-connector:
+    build:
+      context: ./core/ollama-connector
+      dockerfile: Dockerfile
+    container_name: agent-pf-ollama-connector
+    restart: unless-stopped
+    ports:
+      - "8040:8000"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - DEFAULT_MODEL=${OLLAMA_DEFAULT_MODEL:-gemma3:4b}
+      - DEFAULT_MAX_TOKENS=${OLLAMA_DEFAULT_MAX_TOKENS:-2048}
+      - DEFAULT_TEMPERATURE=${OLLAMA_DEFAULT_TEMPERATURE:-0.7}
+      - ENVIRONMENT=${OLLAMA_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${OLLAMA_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    depends_on:
+      - ollama
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  MongoDB (WeKan Database)
+  # ======================
+  wekan-db:
+    image: mongo:6
+    container_name: agent-pf-wekan-db
+    restart: unless-stopped
+    command: mongod --oplogSize 128
+    volumes:
+      - wekan-db-data:/data/db
+      - wekan-db-dump:/dump
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ======================
+  #  WeKan (Kanban Board)
+  # ======================
+  wekan:
+    image: quay.io/wekan/wekan:latest
+    container_name: agent-pf-wekan
+    restart: unless-stopped
+    ports:
+      - "8085:8080"
+    environment:
+      - WRITABLE_PATH=/data
+      - MONGO_URL=mongodb://wekan-db:27017/wekan
+      - ROOT_URL=http://localhost:8085
+      - WITH_API=true
+      - RICHER_CARD_COMMENT_EDITOR=false
+      - BROWSER_POLICY_ENABLED=true
+      # Disable email verification (no SMTP server)
+      - MAIL_URL=
+      - MAIL_FROM=noreply@localhost
+    volumes:
+      - wekan-files:/data
+    networks:
+      - agent-pf-network
+    depends_on:
+      - wekan-db
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ======================
+  #  WeKan Tool (API Backend)
+  # ======================
+  wekan-tool:
+    build:
+      context: ./tools/wekan-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-wekan-tool
+    restart: unless-stopped
+    ports:
+      - "8041:8000"
+    environment:
+      - WEKAN_URL=http://wekan:8080
+      - WEKAN_USERNAME=${WEKAN_USERNAME:-admin}
+      - WEKAN_PASSWORD=${WEKAN_PASSWORD:-admin}
+      - ENVIRONMENT=${WEKAN_TOOL_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${WEKAN_TOOL_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    depends_on:
+      - wekan
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  IMAP Tool (Email Reader)
+  # ======================
+  imap-tool:
+    build:
+      context: ./tools/imap-tool
+      dockerfile: Dockerfile
+    container_name: agent-pf-imap-tool
+    restart: unless-stopped
+    ports:
+      - "8042:8000"
+    environment:
+      - IMAP_SERVER=${IMAP_SERVER:-imap.gmail.com}
+      - IMAP_PORT=${IMAP_PORT:-993}
+      - IMAP_USERNAME=${IMAP_USERNAME}
+      - IMAP_PASSWORD=${IMAP_PASSWORD}
+      - IMAP_USE_SSL=${IMAP_USE_SSL:-true}
+      - ENVIRONMENT=${IMAP_TOOL_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${IMAP_TOOL_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ======================
+  #  Email Analysis Agent (Main Agent)
+  # ======================
+  email-analysis-agent:
+    build:
+      context: ./agents/email-analysis-agent
+      dockerfile: Dockerfile
+    container_name: agent-pf-email-analysis-agent
+    restart: unless-stopped
+    ports:
+      - "8043:8000"
+    volumes:
+      - email-agent-data:/app/data
+    environment:
+      # Services URLs
+      - OLLAMA_URL=http://ollama-connector:8000
+      - WEKAN_URL=http://wekan-tool:8000
+      - IMAP_URL=http://imap-tool:8000
+      # WeKan Configuration (to be set after WeKan setup)
+      - WEKAN_BOARD_ID=${EMAIL_AGENT_WEKAN_BOARD_ID}
+      - WEKAN_TODO_LIST_ID=${EMAIL_AGENT_WEKAN_TODO_LIST_ID}
+      # Polling Configuration
+      - POLLING_INTERVAL_SECONDS=${EMAIL_AGENT_POLLING_INTERVAL:-30}
+      - POLLING_ENABLED=${EMAIL_AGENT_POLLING_ENABLED:-true}
+      # LLM Configuration
+      - LLM_MODEL=${EMAIL_AGENT_LLM_MODEL:-gemma3:4b}
+      - LLM_TEMPERATURE=${EMAIL_AGENT_LLM_TEMPERATURE:-0.3}
+      - LLM_MAX_TOKENS=${EMAIL_AGENT_LLM_MAX_TOKENS:-2048}
+      # General
+      - ENVIRONMENT=${EMAIL_AGENT_ENVIRONMENT:-production}
+      - CORS_ORIGINS=${EMAIL_AGENT_CORS_ORIGINS:-*}
+    networks:
+      - agent-pf-network
+    depends_on:
+      - ollama-connector
+      - wekan-tool
+      - imap-tool
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+networks:
+  agent-pf-network:
+    driver: bridge
+
+volumes:
+  ollama-data:
+  wekan-db-data:
+  wekan-db-dump:
+  wekan-files:
+  email-agent-data:

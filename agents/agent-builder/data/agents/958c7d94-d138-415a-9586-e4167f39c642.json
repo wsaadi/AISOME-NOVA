@@ -1,0 +1,158 @@
+{
+  "id": "958c7d94-d138-415a-9586-e4167f39c642",
+  "name": "Analyseur d'Appels d'Offres (AO)",
+  "description": "Analyse automatique des documents d'un AO (CCTP, CCAP, RC, annexes) pour produire une synth\u00e8se d\u00e9taill\u00e9e facilitant l'arbitrage go/no-go.",
+  "long_description": "Cet agent extrait les dates cl\u00e9s, technologies, comp\u00e9tences, r\u00e9f\u00e9rences clients, et clauses \u00e0 risque des documents d'un AO. Il g\u00e9n\u00e8re une synth\u00e8se structur\u00e9e exportable en Word pour aider \u00e0 la d\u00e9cision de r\u00e9pondre ou non \u00e0 l'appel d'offres.",
+  "icon": "fa fa-file-contract",
+  "category": "analyse",
+  "status": "active",
+  "metadata": {
+    "created_at": "2026-01-26 23:01:47.301868",
+    "updated_at": "2026-01-27 18:00:42.018187",
+    "created_by": "anonymous",
+    "version": "1.0.0",
+    "tags": [
+      "AO",
+      "appel d'offres",
+      "analyse",
+      "IT",
+      "arbitrage"
+    ]
+  },
+  "tools": [
+    {
+      "id": "676bc524-9ce7-430b-940f-73ebeda140f8",
+      "tool_id": "word-crud",
+      "tool_name": "Export Word",
+      "enabled": true,
+      "parameters": [],
+      "output_variable": null,
+      "output_transform": null,
+      "on_error": "continue",
+      "retry_count": 0,
+      "fallback_value": null
+    },
+    {
+      "id": "509857d1-0982-4287-baa0-1a52563cfe22",
+      "tool_id": "document-extractor",
+      "tool_name": "Document Extractor",
+      "enabled": true,
+      "parameters": [],
+      "output_variable": null,
+      "output_transform": null,
+      "on_error": "continue",
+      "retry_count": 0,
+      "fallback_value": null
+    }
+  ],
+  "ui_layout": {
+    "layout_mode": "sections",
+    "show_header": true,
+    "header_title": "Analyseur d'Appels d'Offres (AO)",
+    "header_subtitle": "Analyse automatique des documents d'un AO (CCTP, CCAP, RC, annexes) pour produire une synth\u00e8se d\u00e9taill\u00e9e facilitant l'arbitrage go/no-go.",
+    "header_icon": "fa fa-file-contract",
+    "dashboard_config": {
+      "columns": 12,
+      "rowHeight": 80,
+      "gap": 12
+    },
+    "widgets": [],
+    "sections": [
+      {
+        "id": "f984ed3d-9049-494c-b290-afc02844480f",
+        "name": "chat_section",
+        "title": null,
+        "description": null,
+        "layout_type": "column",
+        "grid_columns": null,
+        "gap": "16px",
+        "components": [
+          {
+            "id": "3b3347f7-5cd6-4e8e-a684-685bff180cfe",
+            "type": "chat_interface",
+            "name": "main_chat",
+            "label": "Conversation",
+            "placeholder": null,
+            "help_text": null,
+            "default_value": null,
+            "required": false,
+            "validation_rules": [],
+            "options": [],
+            "accept": null,
+            "max_size_mb": null,
+            "multiple": false,
+            "grid_column": null,
+            "grid_row": null,
+            "order": 0,
+            "style": {
+              "width": null,
+              "height": "calc(100vh - 200px)",
+              "margin": null,
+              "padding": null,
+              "background_color": null,
+              "text_color": null,
+              "border_radius": null,
+              "custom_css": null
+            },
+            "visible_when": null,
+            "children": [],
+            "data_source": null,
+            "auto_bind_output": true,
+            "output_key": null,
+            "on_change_action": null,
+            "button_action": null,
+            "button_variant": null,
+            "is_trigger_button": false,
+            "gridPosition": null,
+            "chart_config": null
+          }
+        ],
+        "visible_when": null,
+        "style": {
+          "width": null,
+          "height": null,
+          "margin": null,
+          "padding": null,
+          "background_color": null,
+          "text_color": null,
+          "border_radius": null,
+          "custom_css": null
+        }
+      }
+    ],
+    "show_sidebar": false,
+    "sidebar_sections": [],
+    "sidebar_position": "left",
+    "sidebar_width": "300px",
+    "show_footer": false,
+    "footer_content": null,
+    "show_actions": false,
+    "actions": [],
+    "primary_color": null,
+    "secondary_color": null,
+    "custom_css": null
+  },
+  "ai_behavior": {
+    "system_prompt": "**R\u00f4le** :\nTu es un expert en analyse d'appels d'offres (AO) sp\u00e9cialis\u00e9 dans le domaine IT. Ton objectif est d'extraire et synth\u00e9tiser les informations cl\u00e9s des documents d'un AO (CCTP, CCAP, RC, annexes, etc.) pour aider \u00e0 l'arbitrage go/no-go.\n\n**R\u00e8gles strictes** :\n1. **Exhaustivit\u00e9** : Analyse tous les documents fournis, sans priorisation. Tout est important.\n2. **Pr\u00e9cision** :\n   - Extrais **toutes** les technologies, services, et comp\u00e9tences mentionn\u00e9s, m\u00eame implicites.\n   - Identifie **toutes** les clauses contractuelles \u00e0 risque (ex : p\u00e9nalit\u00e9s, garanties, obligations de r\u00e9sultat).\n   - Note syst\u00e9matiquement la pr\u00e9sence de r\u00e9f\u00e9rences clients requises et leur nombre (si pr\u00e9cis\u00e9).\n3. **Neutralit\u00e9** : Pas d'interpr\u00e9tation ou de jugement. Contente-toi de lister les \u00e9l\u00e9ments factuels.\n4. **Structure** : Organise la synth\u00e8se en sections claires et coh\u00e9rentes.\n5. **Vocabulaire** : Utilise le vocabulaire IT standard.\n\n**Format de la synth\u00e8se** :\n### 1. Contexte du projet\n- Description, objectifs, enjeux.\n\n### 2. Dates cl\u00e9s\n- Date limite de r\u00e9ponse, calendrier pr\u00e9visionnel.\n\n### 3. Technologies et services demand\u00e9s\n- Liste exhaustive des technologies et services.\n\n### 4. Comp\u00e9tences attendues\n- Comp\u00e9tences techniques et m\u00e9tiers requises.\n\n### 5. R\u00e9f\u00e9rences clients\n- Obligation de r\u00e9f\u00e9rences : Oui/Non.\n- Nombre de r\u00e9f\u00e9rences requises (si pr\u00e9cis\u00e9).\n\n### 6. Clauses \u00e0 risque\n- Liste des clauses contractuelles critiques.\n\n### 7. Points d'attention pour l'arbitrage\n- R\u00e9sum\u00e9 des \u00e9l\u00e9ments critiques pour la d\u00e9cision go/no-go.\n\n**Exemple de sortie** :\n```markdown\n### 1. Contexte du projet\nLe projet vise \u00e0 migrer l'infrastructure legacy vers le cloud AWS pour le client X.\n\n### 2. Dates cl\u00e9s\n- Date limite : 15/11/2024.\n\n### 3. Technologies et services demand\u00e9s\n- AWS (EC2, S3, RDS), Terraform, Docker.\n\n### 4. Comp\u00e9tences attendues\n- Expertise AWS, DevOps.\n\n### 5. R\u00e9f\u00e9rences clients\n- Obligation : Oui.\n- Nombre : 3 r\u00e9f\u00e9rences similaires.\n\n### 6. Clauses \u00e0 risque\n- P\u00e9nalit\u00e9s de retard : 0.5% par jour.\n\n### 7. Points d'attention\n- D\u00e9lai serr\u00e9 (3 mois pour la migration).\n```\n\n**Instructions pour l'export Word** :\n- G\u00e9n\u00e8re un document Word (.docx) avec la m\u00eame structure que la synth\u00e8se.\n- Utilise des titres hi\u00e9rarchis\u00e9s et des listes \u00e0 puces.\n- Pas de mise en page complexe.",
+    "user_prompt": "Analyse les documents suivants pour produire une synth\u00e8se d\u00e9taill\u00e9e de l'appel d'offres :\n\n{{user_input}}\n\nDocuments fournis :\n{{documents}}",
+    "personality_traits": [],
+    "tone": "professional",
+    "default_provider": "mistral",
+    "default_model": null,
+    "temperature": 0.7,
+    "max_tokens": 4096,
+    "response_format": null,
+    "include_sources": false,
+    "include_confidence": false,
+    "context_window": 10,
+    "include_system_context": true,
+    "enable_moderation": true,
+    "enable_classification": true,
+    "content_filters": [],
+    "task_prompts": {}
+  },
+  "workflows": [],
+  "route": "/custom-agent/analyseur-dappels-doffres-ao-958c7d94",
+  "requires_auth": false,
+  "allowed_roles": []
+}

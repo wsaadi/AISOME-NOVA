@@ -1,0 +1,330 @@
+# Agent Descriptor Language (ADL) v1.0.0
+# Web Monitoring Agent - Automated market and technology intelligence
+
+metadata:
+  adl_version: "1.0.0"
+  schema_url: "https://agent-pf.io/schemas/adl/v1"
+  version: "1.0.0"
+  tags:
+    - monitoring
+    - web
+    - intelligence
+    - market-watch
+    - technology
+  changelog:
+    - "1.0.0: Initial ADL conversion"
+
+identity:
+  name: "Web Monitoring Agent"
+  slug: "web-monitoring-agent"
+  description: "Agent de veille technologique et marché automatisé"
+  long_description: |
+    Agent de veille intelligent pour la surveillance du web.
+
+    ## Fonctionnalités
+    - Recherche web en temps réel
+    - Analyse de sources multilingues
+    - Synthèse structurée en français
+    - Sources citées et vérifiables
+
+    ## Cas d'usage
+    - Veille technologique
+    - Surveillance de marché
+    - Intelligence concurrentielle
+    - Suivi des tendances
+  icon: "fa fa-globe"
+  category: "monitoring"
+  status: "active"
+
+business_logic:
+  system_prompt: |
+    Tu es un expert en veille stratégique et intelligence économique.
+
+    Ta mission est d'analyser les informations web collectées et de produire
+    une synthèse structurée et pertinente.
+
+    Règles:
+    1. Analyse critique des sources
+    2. Identification des tendances clés
+    3. Mise en perspective des informations
+    4. Citation systématique des sources
+
+    Format de réponse:
+    ## Synthèse Exécutive
+    Résumé en 3-5 points clés
+
+    ## Analyse Détaillée
+    ### Tendances Identifiées
+    ### Acteurs Clés
+    ### Opportunités et Menaces
+
+    ## Sources
+    Liste des sources avec liens
+
+  user_prompt_template: |
+    Thématique de veille: {{topic}}
+
+    {{#if focus_areas}}
+    Domaines de focus: {{focus_areas}}
+    {{/if}}
+
+    {{#if time_range}}
+    Période: {{time_range}}
+    {{/if}}
+
+    Résultats de recherche web:
+    {{search_results}}
+
+    Génère une synthèse de veille structurée.
+
+  personality_traits:
+    - name: "analytical"
+      intensity: 1.7
+    - name: "objective"
+      intensity: 1.5
+    - name: "thorough"
+      intensity: 1.4
+
+  tone: "professional"
+  language: "fr"
+
+  llm_provider: "mistral"
+  llm_model: "mistral-large-latest"
+  temperature: 0.4
+  max_tokens: 6000
+
+  context_window_messages: 3
+  include_system_context: true
+  streaming_enabled: true
+  include_sources: true
+
+  moderation:
+    enabled: false
+
+  classification:
+    enabled: false
+
+  instructions:
+    - "Toujours vérifier la crédibilité des sources"
+    - "Distinguer les faits des opinions"
+    - "Identifier les biais potentiels"
+    - "Contextualiser les informations"
+
+  constraints:
+    - "Ne pas inclure de sources non vérifiables"
+    - "Ne pas faire de prédictions sans fondement"
+
+tools:
+  tools:
+    - tool_id: "web-search"
+      name: "Recherche Web"
+      enabled: true
+      description: "Effectue des recherches web sur la thématique"
+      parameters:
+        - name: "query"
+          source: "input"
+          input_component: "topic_input"
+          required: true
+        - name: "num_results"
+          source: "constant"
+          value: 20
+      output_variable: "search_results"
+      on_error: "stop"
+      timeout_ms: 30000
+
+  default_error_handling: "stop"
+  parallel_execution: false
+
+ui:
+  show_header: true
+  header_title: "Veille Web"
+  header_subtitle: "Intelligence technologique et marché"
+  header_icon: "fa fa-globe"
+
+  sections:
+    - name: "search_section"
+      title: "Configuration de la veille"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "text_input"
+          name: "topic_input"
+          label: "Thématique de veille"
+          placeholder: "Ex: Intelligence artificielle en santé"
+          required: true
+          validation_rules:
+            - type: "required"
+              message: "La thématique est requise"
+            - type: "minLength"
+              value: 5
+              message: "Minimum 5 caractères"
+
+        - type: "textarea"
+          name: "focus_areas"
+          label: "Domaines de focus"
+          placeholder: "Points spécifiques à surveiller (optionnel)"
+          help_text: "Listez les aspects particuliers à approfondir"
+          required: false
+
+        - type: "select"
+          name: "time_range"
+          label: "Période"
+          default_value: "week"
+          options:
+            - value: "day"
+              label: "Dernières 24h"
+            - value: "week"
+              label: "Dernière semaine"
+            - value: "month"
+              label: "Dernier mois"
+            - value: "year"
+              label: "Dernière année"
+
+        - type: "select"
+          name: "language_filter"
+          label: "Langues des sources"
+          default_value: "all"
+          options:
+            - value: "all"
+              label: "Toutes les langues"
+            - value: "fr"
+              label: "Français uniquement"
+            - value: "en"
+              label: "Anglais uniquement"
+            - value: "fr,en"
+              label: "Français et Anglais"
+
+    - name: "results_section"
+      title: "Synthèse de veille"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "progress_bar"
+          name: "search_progress"
+          label: "Recherche en cours..."
+          data_source: "progress"
+          visible_when:
+            field: "is_searching"
+            operator: "equals"
+            value: true
+
+        - type: "markdown_viewer"
+          name: "synthesis_output"
+          label: "Résultats"
+          auto_bind_output: true
+          style:
+            min_height: "500px"
+            border: "1px solid #e5e7eb"
+            border_radius: "8px"
+            padding: "20px"
+
+  show_sidebar: false
+  show_footer: false
+
+  show_actions: true
+  actions:
+    - type: "button"
+      name: "clear_button"
+      label: "Effacer"
+      button_action: "reset_form"
+      button_variant: "secondary"
+
+    - type: "button"
+      name: "search_button"
+      label: "Lancer la veille"
+      button_action: "trigger_agent"
+      button_variant: "primary"
+      is_trigger_button: true
+
+  actions_position: "right"
+  theme: "auto"
+  primary_color: "#6366F1"
+
+connectors:
+  default_connector: "mistral-veille"
+  connectors:
+    - id: "mistral-veille"
+      provider: "mistral"
+      name: "Mistral Large"
+      description: "Pour la synthèse de veille"
+      model: "mistral-large-latest"
+      default_temperature: 0.4
+      default_max_tokens: 6000
+      retry_on_error: true
+      max_retries: 2
+      timeout_ms: 90000
+      priority: 0
+
+  enable_fallback: false
+
+workflows:
+  workflows:
+    - name: "Web Monitoring Flow"
+      description: "Flux de veille web"
+      trigger: "button_click"
+      trigger_config:
+        button: "search_button"
+      enabled: true
+      steps:
+        - id: "search"
+          name: "Rechercher sur le web"
+          type: "tool_call"
+          tool_config_id: "web-search"
+          output_variable: "search_results"
+          on_error: "stop"
+          next_step: "check_results"
+
+        - id: "check_results"
+          name: "Vérifier les résultats"
+          type: "condition"
+          condition:
+            variable: "search_results.results"
+            operator: "is_not_empty"
+          on_true: "synthesize"
+          on_false: "no_results"
+
+        - id: "synthesize"
+          name: "Synthétiser les résultats"
+          type: "llm_call"
+          prompt_template: |
+            {{system_prompt}}
+
+            Thématique: {{topic_input}}
+            {{#if focus_areas}}Focus: {{focus_areas}}{{/if}}
+
+            Résultats de recherche:
+            {{search_results}}
+          output_variable: "synthesis"
+
+        - id: "no_results"
+          name: "Aucun résultat"
+          type: "set_variable"
+          variable_name: "synthesis"
+          variable_value: "Aucun résultat trouvé pour cette thématique. Essayez avec des termes différents."
+
+      entry_step: "search"
+      initial_variables:
+        search_results: null
+        synthesis: null
+        is_searching: false
+        progress: 0
+
+      timeout_ms: 120000
+
+  default_workflow: "web-monitoring"
+
+security:
+  requires_auth: false
+  rate_limit_enabled: true
+  requests_per_minute: 5
+  requests_per_hour: 50
+  sanitize_inputs: true
+  max_input_length: 1000
+  audit_logging: true
+
+deployment:
+  auto_route: true
+  environment: "production"
+  min_instances: 1
+  max_instances: 2
+  health_check_enabled: true

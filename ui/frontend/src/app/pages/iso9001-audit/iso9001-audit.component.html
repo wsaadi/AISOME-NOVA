@@ -1,0 +1,628 @@
+<div class="iso-audit">
+  <!-- Header -->
+  <div class="iso-audit__header">
+    <div class="iso-audit__header-content">
+      <div class="iso-audit__icon">
+        <i class="fa fa-clipboard-check"></i>
+      </div>
+      <div>
+        <h1 class="iso-audit__title">{{ 'agents.iso9001.title' | translate }}</h1>
+        <p class="iso-audit__subtitle">{{ 'agents.iso9001.subtitle' | translate }}</p>
+      </div>
+    </div>
+    <div class="iso-audit__header-actions">
+      <span class="iso-audit__provider-badge">{{ providerName }}</span>
+      <button class="iso-audit__config-btn" (click)="openConfigDialog()" title="Configuration LLM">
+        <i class="fa fa-cog"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Onglets principaux -->
+  <mat-tab-group
+    [(selectedIndex)]="activeTabIndex"
+    class="iso-audit__tabs"
+    animationDuration="200ms"
+    mat-stretch-tabs="false">
+
+    <!-- ==================== TAB 1: FRAMEWORK ISO 9001 ==================== -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <i class="fa fa-sitemap tab-icon"></i>
+        <span>{{ 'agents.iso9001.tab_framework' | translate }}</span>
+      </ng-template>
+
+      <div class="iso-audit__tab-content">
+        <!-- Recherche -->
+        <div class="iso-audit__search-bar">
+          <div class="search-input-wrapper">
+            <i class="fa fa-search"></i>
+            <input
+              type="text"
+              [(ngModel)]="frameworkSearchQuery"
+              (keyup.enter)="searchFramework()"
+              placeholder="{{ 'agents.iso9001.search_placeholder' | translate }}" />
+            <app-custom-button
+              label="{{ 'agents.iso9001.search_button' | translate }}"
+              variant="primary"
+              size="small"
+              icon="fa fa-search"
+              [disabled]="!frameworkSearchQuery.trim()"
+              (onClick)="searchFramework()">
+            </app-custom-button>
+          </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="iso-audit__filters">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>{{ 'agents.iso9001.sector_filter' | translate }}</mat-label>
+            <mat-select [(ngModel)]="sectorFilter" (selectionChange)="selectedChapter && loadFrameworkChapter()">
+              @for (sector of sectors; track sector.value) {
+                <mat-option [value]="sector.value">{{ sector.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>{{ 'agents.iso9001.company_size_filter' | translate }}</mat-label>
+            <mat-select [(ngModel)]="companySizeFilter" (selectionChange)="selectedChapter && loadFrameworkChapter()">
+              @for (size of companySizes; track size.value) {
+                <mat-option [value]="size.value">{{ size.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Chapitres ISO -->
+        <div class="iso-audit__chapters">
+          <h3 class="section-label">
+            <i class="fa fa-book"></i>
+            {{ 'agents.iso9001.chapters_title' | translate }}
+          </h3>
+          <div class="chapters-grid">
+            @for (chapter of isoChapters; track chapter.number) {
+              <div
+                class="chapter-card"
+                [class.chapter-card--active]="selectedChapter === chapter.number"
+                (click)="selectChapter(chapter)">
+                <div class="chapter-card__number">{{ chapter.number }}</div>
+                <div class="chapter-card__icon">
+                  <i class="fa {{ chapter.icon }}"></i>
+                </div>
+                <div class="chapter-card__title">{{ chapter.title }}</div>
+                <div class="chapter-card__subs">
+                  {{ chapter.subChapters.length }} sous-chapitres
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Contenu du chapitre -->
+        @if (isLoadingFramework) {
+          <div class="iso-audit__loading">
+            <div class="loading-spinner">
+              <i class="fa fa-spinner fa-spin fa-2x"></i>
+            </div>
+            <p>Chargement du chapitre {{ selectedChapter }}...</p>
+          </div>
+        }
+
+        @if (frameworkContent) {
+          <div class="iso-audit__framework-content">
+            <div class="framework-content-header">
+              <h3>
+                <i class="fa fa-file-alt"></i>
+                @if (selectedChapter) {
+                  Chapitre {{ selectedChapter }} - {{ isoChapters[+selectedChapter - 4]?.title }}
+                } @else {
+                  Résultats de recherche
+                }
+              </h3>
+            </div>
+            <app-markdown-viewer
+              [content]="frameworkContent"
+              [showLineNumbers]="false"
+              maxHeight="none">
+            </app-markdown-viewer>
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- ==================== TAB 2: ASSISTANT CONVERSATIONNEL ==================== -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <i class="fa fa-comments tab-icon"></i>
+        <span>{{ 'agents.iso9001.tab_assistant' | translate }}</span>
+        @if (totalMessages > 0) {
+          <span class="tab-badge">{{ totalMessages }}</span>
+        }
+      </ng-template>
+
+      <div class="iso-audit__tab-content iso-audit__chat-tab">
+        <!-- Mode de conversation -->
+        <div class="iso-audit__chat-modes">
+          @for (mode of conversationModes; track mode.value) {
+            <button
+              class="mode-btn"
+              [class.mode-btn--active]="conversationMode === mode.value"
+              (click)="conversationMode = mode.value"
+              [matTooltip]="mode.description">
+              <i class="fa {{ mode.icon }}"></i>
+              <span>{{ mode.label }}</span>
+            </button>
+          }
+
+          <div class="chat-actions">
+            <button class="icon-btn" (click)="clearChat()" matTooltip="Effacer la conversation">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Zone de messages -->
+        <div class="iso-audit__messages" #messagesContainer>
+          @for (message of messages; track $index) {
+            <div class="message" [class.message--user]="message.role === 'user'" [class.message--assistant]="message.role === 'assistant'" [class.message--error]="message.isError">
+              <div class="message__avatar">
+                @if (message.role === 'user') {
+                  <i class="fa fa-user"></i>
+                } @else {
+                  <i class="fa fa-clipboard-check"></i>
+                }
+              </div>
+              <div class="message__content">
+                <div class="message__role">
+                  {{ message.role === 'user' ? 'Vous' : 'Assistant ISO 9001' }}
+                  <span class="message__time">{{ message.timestamp | date:'HH:mm' }}</span>
+                </div>
+                @if (message.role === 'user') {
+                  <div class="message__text">{{ message.content }}</div>
+                } @else {
+                  <app-markdown-viewer [content]="message.content" [showLineNumbers]="false"></app-markdown-viewer>
+                }
+                @if (message.documents && message.documents.length > 0) {
+                  <div class="message__attachments">
+                    @for (doc of message.documents; track doc.name) {
+                      <span class="attachment-badge">
+                        <i class="fa fa-paperclip"></i> {{ doc.name }}
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          @if (isTyping) {
+            <div class="message message--assistant">
+              <div class="message__avatar">
+                <i class="fa fa-clipboard-check"></i>
+              </div>
+              <div class="message__content">
+                <div class="typing-indicator">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Upload de documents -->
+        @if (uploadedDocuments.length > 0) {
+          <div class="iso-audit__uploads-preview">
+            @for (doc of uploadedDocuments; track doc.file.name) {
+              <span class="upload-chip">
+                <i class="fa fa-file"></i>
+                {{ doc.file.name }}
+              </span>
+            }
+          </div>
+        }
+
+        <!-- Zone de saisie -->
+        <div class="iso-audit__input-container">
+          <div class="input-wrapper">
+            <label class="upload-btn" matTooltip="Joindre un document qualité">
+              <i class="fa fa-paperclip"></i>
+              <input type="file"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                multiple
+                hidden
+                (change)="onDocumentsSelected($any($event.target).files)" />
+            </label>
+            <textarea
+              [(ngModel)]="currentMessage"
+              (keypress)="onChatKeyPress($event)"
+              placeholder="{{ 'agents.iso9001.chat_placeholder' | translate }}"
+              rows="2"></textarea>
+            <app-custom-button
+              label=""
+              variant="primary"
+              size="medium"
+              icon="fa fa-paper-plane"
+              [disabled]="!canSendMessage"
+              (onClick)="sendMessage()">
+            </app-custom-button>
+          </div>
+          <div class="input-footer">
+            <span class="mode-indicator">
+              <i class="fa {{ currentModeIcon }}"></i>
+              Mode {{ currentModeLabel }}
+            </span>
+            <span class="msg-count">{{ messages.length }} messages</span>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- ==================== TAB 3: GÉNÉRATEUR DE DOCUMENTS ==================== -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <i class="fa fa-file-alt tab-icon"></i>
+        <span>{{ 'agents.iso9001.tab_generator' | translate }}</span>
+        @if (totalDocuments > 0) {
+          <span class="tab-badge">{{ totalDocuments }}</span>
+        }
+      </ng-template>
+
+      <div class="iso-audit__tab-content">
+        <!-- Sélection du type de document -->
+        <div class="iso-audit__doc-types">
+          <h3 class="section-label">
+            <i class="fa fa-file-alt"></i>
+            {{ 'agents.iso9001.select_doc_type' | translate }}
+          </h3>
+          <div class="doc-types-grid">
+            @for (type of documentTypes; track type.value) {
+              <div
+                class="doc-type-card"
+                [class.doc-type-card--active]="documentType === type.value"
+                (click)="documentType = type.value">
+                <div class="doc-type-card__icon">
+                  <i class="fa {{ type.icon }}"></i>
+                </div>
+                <div class="doc-type-card__label">{{ type.label }}</div>
+                <div class="doc-type-card__desc">{{ type.description }}</div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Formulaires dynamiques selon le type -->
+        @if (documentType) {
+          <div class="iso-audit__doc-form">
+
+            <!-- === PLAN D'AUDIT === -->
+            @if (documentType === 'audit_plan') {
+              <div class="form-section">
+                <h3 class="form-section__title">
+                  <i class="fa fa-calendar-alt"></i>
+                  Paramètres du plan d'audit
+                </h3>
+                <div class="form-grid">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nom de l'entreprise *</mat-label>
+                    <input matInput [(ngModel)]="planCompanyName" placeholder="Ex: ABC Industries" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Secteur d'activité *</mat-label>
+                    <mat-select [(ngModel)]="planSector">
+                      @for (sector of sectors; track sector.value) {
+                        @if (sector.value) {
+                          <mat-option [value]="sector.value">{{ sector.label }}</mat-option>
+                        }
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Effectif (employés) *</mat-label>
+                    <input matInput type="number" [(ngModel)]="planEmployeeCount" placeholder="150" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Type d'audit *</mat-label>
+                    <mat-select [(ngModel)]="planAuditType">
+                      @for (type of auditTypes; track type.value) {
+                        <mat-option [value]="type.value">{{ type.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Durée de l'audit (jours) *</mat-label>
+                    <input matInput type="number" [(ngModel)]="planAuditDuration" placeholder="2" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Périmètre de certification *</mat-label>
+                    <input matInput [(ngModel)]="planCertificationScope" placeholder="Ex: Conception et fabrication de pièces métalliques" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Exclusions de chapitres</mat-label>
+                    <textarea matInput [(ngModel)]="planExcludedClauses" placeholder="Ex: 8.3 (pas de conception)" rows="2"></textarea>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Focus particuliers</mat-label>
+                    <textarea matInput [(ngModel)]="planSpecificFocus" placeholder="Ex: Gestion fournisseurs, processus de conception" rows="2"></textarea>
+                  </mat-form-field>
+                </div>
+              </div>
+            }
+
+            <!-- === FICHE NC === -->
+            @if (documentType === 'nc_sheet') {
+              <div class="form-section">
+                <h3 class="form-section__title">
+                  <i class="fa fa-exclamation-triangle"></i>
+                  Saisie du constat
+                </h3>
+                <div class="form-grid">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Chapitre ISO concerné *</mat-label>
+                    <mat-select [(ngModel)]="ncIsoChapter">
+                      @for (chapter of ncChapters; track chapter.value) {
+                        <mat-option [value]="chapter.value">{{ chapter.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Notes brutes de l'auditeur *</mat-label>
+                    <textarea matInput [(ngModel)]="ncRawNotes" rows="6"
+                      placeholder="Saisissez vos notes telles quelles. L'IA les reformulera en constat professionnel.&#10;&#10;Ex: Manque attestations formation pour 3 gars en soudage. Vus Martin, Durand, Petit - pas de certifs dans dossiers.">
+                    </textarea>
+                    <mat-hint>L'IA transformera vos notes en fiche NC professionnelle</mat-hint>
+                  </mat-form-field>
+                </div>
+              </div>
+            }
+
+            <!-- === CHECKLIST === -->
+            @if (documentType === 'checklist') {
+              <div class="form-section">
+                <h3 class="form-section__title">
+                  <i class="fa fa-tasks"></i>
+                  Paramètres de la checklist
+                </h3>
+                <div class="form-grid">
+                  <div class="full-width">
+                    <label class="field-label">Chapitres à inclure *</label>
+                    <div class="checklist-chapters">
+                      @for (chapter of isoChapters; track chapter.number) {
+                        <button
+                          class="chapter-chip"
+                          [class.chapter-chip--active]="isChapterSelected(chapter.number)"
+                          (click)="toggleChecklistChapter(chapter.number)">
+                          <i class="fa {{ isChapterSelected(chapter.number) ? 'fa-check-square' : 'fa-square' }}"></i>
+                          Ch.{{ chapter.number }} - {{ chapter.title }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Secteur d'activité</mat-label>
+                    <mat-select [(ngModel)]="checklistSector">
+                      @for (sector of sectors; track sector.value) {
+                        <mat-option [value]="sector.value">{{ sector.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Taille de l'entreprise</mat-label>
+                    <mat-select [(ngModel)]="checklistCompanySize">
+                      @for (size of companySizes; track size.value) {
+                        <mat-option [value]="size.value">{{ size.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+            }
+
+            <!-- === RAPPORT D'AUDIT === -->
+            @if (documentType === 'audit_report') {
+              <div class="form-section">
+                <h3 class="form-section__title">
+                  <i class="fa fa-file-contract"></i>
+                  Données du rapport d'audit
+                </h3>
+                <div class="form-grid">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Entreprise auditée *</mat-label>
+                    <input matInput [(ngModel)]="reportCompanyName" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Identifiant audit *</mat-label>
+                    <input matInput [(ngModel)]="reportAuditId" placeholder="AUD-2026-001" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Dates de l'audit</mat-label>
+                    <input matInput [(ngModel)]="reportAuditDates" placeholder="20-21 février 2026" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Type d'audit</mat-label>
+                    <mat-select [(ngModel)]="reportAuditType">
+                      @for (type of auditTypes; track type.value) {
+                        <mat-option [value]="type.value">{{ type.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Recommandation *</mat-label>
+                    <mat-select [(ngModel)]="reportRecommendation">
+                      <mat-option value="certification">Certification / Maintien</mat-option>
+                      <mat-option value="certification_conditional">Sous réserve (NC majeures)</mat-option>
+                      <mat-option value="refusal">Refus / Non-maintien</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Constats (un par ligne) *</mat-label>
+                    <textarea matInput [(ngModel)]="reportFindings" rows="6"
+                      placeholder="NC mineure §7.2 : Preuves de compétence manquantes pour 3 opérateurs soudage&#10;Observation §6.2 : Objectifs qualité pas tous SMART&#10;Point fort : Culture qualité bien ancrée">
+                    </textarea>
+                    <mat-hint>L'IA structurera automatiquement vos constats</mat-hint>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Points forts</mat-label>
+                    <textarea matInput [(ngModel)]="reportPositivePoints" rows="3"
+                      placeholder="Culture qualité, digitalisation, implication direction...">
+                    </textarea>
+                  </mat-form-field>
+                </div>
+              </div>
+            }
+
+            <!-- === FEUILLE DE ROUTE === -->
+            @if (documentType === 'roadmap') {
+              <div class="form-section">
+                <h3 class="form-section__title">
+                  <i class="fa fa-route"></i>
+                  Données pour la feuille de route
+                </h3>
+                <div class="form-grid">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Non-conformités et observations *</mat-label>
+                    <textarea matInput [(ngModel)]="roadmapFindings" rows="8"
+                      placeholder="Listez les NC et observations issues de l'audit, une par ligne.">
+                    </textarea>
+                  </mat-form-field>
+                </div>
+              </div>
+            }
+
+            <!-- === SYNTHÈSE EXÉCUTIVE === -->
+            @if (documentType === 'executive_summary') {
+              <div class="form-section">
+                <h3 class="form-section__title">
+                  <i class="fa fa-file-lines"></i>
+                  Données pour la synthèse exécutive
+                </h3>
+                <div class="form-grid">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Entreprise *</mat-label>
+                    <input matInput [(ngModel)]="summaryCompany" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Résumé des constats *</mat-label>
+                    <textarea matInput [(ngModel)]="summaryFindings" rows="6"
+                      placeholder="Résumé des résultats de l'audit (constats, NC, points forts, recommandation)">
+                    </textarea>
+                  </mat-form-field>
+                </div>
+              </div>
+            }
+
+            <!-- Format d'export + Actions -->
+            <div class="iso-audit__gen-actions">
+              <mat-form-field appearance="outline" class="export-format-field">
+                <mat-label>Format d'export</mat-label>
+                <mat-select [(ngModel)]="exportFormat">
+                  <mat-option value="word">Word (.docx)</mat-option>
+                  <mat-option value="pdf">PDF</mat-option>
+                  <mat-option value="excel">Excel (.xlsx)</mat-option>
+                  <mat-option value="markdown">Markdown</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <div class="gen-buttons">
+                <app-custom-button
+                  label="Réinitialiser"
+                  variant="secondary"
+                  size="medium"
+                  icon="fa fa-redo"
+                  (onClick)="resetGenerator()">
+                </app-custom-button>
+
+                <app-custom-button
+                  label="{{ 'agents.iso9001.generate_button' | translate }}"
+                  variant="primary"
+                  size="large"
+                  icon="fa fa-magic"
+                  [disabled]="!canGenerate"
+                  [loading]="isGenerating"
+                  (onClick)="generateDocument()">
+                </app-custom-button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Erreur -->
+        @if (generationError) {
+          <div class="iso-audit__error">
+            <i class="fa fa-exclamation-triangle"></i>
+            {{ generationError }}
+          </div>
+        }
+
+        <!-- Progression -->
+        @if (isGenerating) {
+          <div class="iso-audit__section">
+            <h3 class="section-label">
+              <i class="fa fa-spinner fa-spin"></i>
+              Génération en cours...
+            </h3>
+            <app-progress-bar
+              [value]="generationProgress"
+              [max]="100"
+              variant="primary"
+              size="large"
+              [showLabel]="true"
+              [animated]="true"
+              [striped]="true"
+              labelPosition="outside">
+            </app-progress-bar>
+          </div>
+        }
+
+        <!-- Résultat généré -->
+        @if (generatedContent) {
+          <div class="iso-audit__generated">
+            <div class="generated-header">
+              <h3>
+                <i class="fa fa-check-circle"></i>
+                {{ getDocumentTitle() }}
+              </h3>
+              <div class="generated-actions">
+                <app-custom-button
+                  label="Télécharger"
+                  variant="success"
+                  size="medium"
+                  icon="fa fa-download"
+                  (onClick)="downloadGeneratedFile()">
+                </app-custom-button>
+              </div>
+            </div>
+            <app-markdown-viewer
+              [content]="generatedContent"
+              [showLineNumbers]="false"
+              maxHeight="none">
+            </app-markdown-viewer>
+          </div>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+
+  <!-- Footer disclaimer -->
+  <div class="iso-audit__footer">
+    <i class="fa fa-info-circle"></i>
+    {{ 'agents.iso9001.disclaimer' | translate }}
+  </div>
+</div>

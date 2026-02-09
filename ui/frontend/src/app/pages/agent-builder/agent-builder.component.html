@@ -1,0 +1,259 @@
+<div class="agent-builder-container">
+  <!-- Header Toolbar -->
+  <mat-toolbar class="agent-builder-toolbar" color="primary">
+    <div class="toolbar-left">
+      <button mat-icon-button (click)="openAgentList()" matTooltip="{{ 'agent_builder.toolbar.open_list' | translate }}">
+        <mat-icon>folder_open</mat-icon>
+      </button>
+
+      <button mat-icon-button (click)="createNewAgent()" matTooltip="{{ 'agent_builder.toolbar.new_agent' | translate }}">
+        <mat-icon>add</mat-icon>
+      </button>
+
+      <button mat-icon-button (click)="openAgentGenerator()" matTooltip="{{ 'agent_builder.generator.title' | translate }}" class="generator-button">
+        <mat-icon>auto_awesome</mat-icon>
+      </button>
+
+      <span class="toolbar-divider"></span>
+
+      @if (agent) {
+        <div class="agent-info">
+          <i [class]="agent.icon" class="agent-icon"></i>
+          <span class="agent-name">{{ agent.name }}</span>
+          <mat-chip [color]="getStatusColor(agent.status)" selected>
+            <mat-icon class="status-icon">{{ getStatusIcon(agent.status) }}</mat-icon>
+            {{ 'agent_builder.status.' + agent.status | translate }}
+          </mat-chip>
+          @if (isDirty) {
+            <mat-icon class="dirty-indicator" matTooltip="{{ 'agent_builder.toolbar.unsaved_changes' | translate }}">
+              fiber_manual_record
+            </mat-icon>
+          }
+        </div>
+      } @else {
+        <span class="no-agent-text">{{ 'agent_builder.toolbar.no_agent_selected' | translate }}</span>
+      }
+    </div>
+
+    <div class="toolbar-right">
+      @if (agent) {
+        <button mat-icon-button (click)="togglePreview()" [class.active]="showPreview" matTooltip="{{ 'agent_builder.toolbar.preview' | translate }}">
+          <mat-icon>visibility</mat-icon>
+        </button>
+
+        @if (canEdit()) {
+          <button mat-icon-button (click)="validateAgent()" matTooltip="{{ 'agent_builder.toolbar.validate' | translate }}">
+            <mat-icon>check_circle_outline</mat-icon>
+          </button>
+
+          <button mat-icon-button (click)="saveAgent()" [disabled]="!isDirty || isSaving" matTooltip="{{ 'agent_builder.toolbar.save' | translate }}">
+            @if (isSaving) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              <mat-icon>save</mat-icon>
+            }
+          </button>
+        } @else {
+          <mat-chip class="readonly-chip" matTooltip="{{ 'agent_builder.toolbar.readonly_hint' | translate }}">
+            <mat-icon>lock</mat-icon>
+            {{ 'agent_builder.toolbar.readonly' | translate }}
+          </mat-chip>
+        }
+
+        <button mat-icon-button [matMenuTriggerFor]="moreMenu" matTooltip="{{ 'agent_builder.toolbar.more' | translate }}">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+
+        <mat-menu #moreMenu="matMenu">
+          @if (canEdit()) {
+            @if (agent.status === 'draft' || agent.status === 'disabled') {
+              <button mat-menu-item (click)="activateAgent()">
+                <mat-icon>play_arrow</mat-icon>
+                <span>{{ 'agent_builder.actions.activate' | translate }}</span>
+              </button>
+            }
+            @if (agent.status === 'active' || agent.status === 'beta') {
+              <button mat-menu-item (click)="deactivateAgent()">
+                <mat-icon>pause</mat-icon>
+                <span>{{ 'agent_builder.actions.deactivate' | translate }}</span>
+              </button>
+            }
+          }
+          <button mat-menu-item (click)="duplicateAgent()">
+            <mat-icon>content_copy</mat-icon>
+            <span>{{ 'agent_builder.actions.duplicate' | translate }}</span>
+          </button>
+          <button mat-menu-item (click)="exportAgent()">
+            <mat-icon>download</mat-icon>
+            <span>{{ 'agent_builder.actions.export' | translate }}</span>
+          </button>
+          @if (canEdit()) {
+            <button mat-menu-item (click)="fileInput.click()">
+              <mat-icon>upload</mat-icon>
+              <span>{{ 'agent_builder.actions.import' | translate }}</span>
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="deleteAgent()" class="delete-action">
+              <mat-icon color="warn">delete</mat-icon>
+              <span>{{ 'agent_builder.actions.delete' | translate }}</span>
+            </button>
+          }
+        </mat-menu>
+
+        <input #fileInput type="file" accept=".json,.zip" (change)="importAgent($event)" hidden />
+      }
+    </div>
+  </mat-toolbar>
+
+  <!-- Main Content -->
+  <div class="agent-builder-content" [class.with-preview]="showPreview && agent">
+    <!-- Loading State -->
+    @if (isLoading) {
+      <div class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>{{ 'agent_builder.loading' | translate }}</p>
+      </div>
+    }
+
+    <!-- No Agent Selected -->
+    @else if (!agent) {
+      <div class="empty-state">
+        <mat-icon class="empty-icon">smart_toy</mat-icon>
+        <h2>{{ 'agent_builder.empty.title' | translate }}</h2>
+        <p>{{ 'agent_builder.empty.description' | translate }}</p>
+
+        <!-- AI Generator Card -->
+        <div class="generator-card" (click)="openAgentGenerator()">
+          <mat-icon class="generator-card-icon">auto_awesome</mat-icon>
+          <div class="generator-card-content">
+            <h3>{{ 'agent_builder.generator.title' | translate }}</h3>
+            <p>{{ 'agent_builder.generator.subtitle' | translate }}</p>
+          </div>
+          <mat-icon class="generator-card-arrow">arrow_forward</mat-icon>
+        </div>
+
+        <div class="empty-actions">
+          <button mat-raised-button color="primary" (click)="createNewAgent()">
+            <mat-icon>add</mat-icon>
+            {{ 'agent_builder.empty.create_new' | translate }}
+          </button>
+          <button mat-stroked-button (click)="openAgentList()">
+            <mat-icon>folder_open</mat-icon>
+            {{ 'agent_builder.empty.open_existing' | translate }}
+          </button>
+          <button mat-stroked-button (click)="emptyFileInput.click()">
+            <mat-icon>upload</mat-icon>
+            {{ 'agent_builder.empty.import_copilot' | translate }}
+          </button>
+        </div>
+        <input #emptyFileInput type="file" accept=".json,.zip" (change)="importAgent($event)" hidden />
+      </div>
+    }
+
+    <!-- Editor Tabs -->
+    @else {
+      <div class="editor-container">
+        <mat-tab-group [(selectedIndex)]="selectedTabIndex" (selectedIndexChange)="onTabChange($event)" class="editor-tabs">
+          <!-- Tab 1: Agent Info -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon>info</mat-icon>
+              <span>{{ 'agent_builder.tabs.info' | translate }}</span>
+            </ng-template>
+            <div class="tab-content">
+              <app-agent-info-editor [agent]="agent"></app-agent-info-editor>
+            </div>
+          </mat-tab>
+
+          <!-- Tab 2: Tools -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon>build</mat-icon>
+              <span>{{ 'agent_builder.tabs.tools' | translate }}</span>
+              @if (agent.tools.length > 0) {
+                <span class="tab-badge">{{ agent.tools.length }}</span>
+              }
+            </ng-template>
+            <div class="tab-content">
+              <app-tools-editor [agent]="agent"></app-tools-editor>
+            </div>
+          </mat-tab>
+
+          <!-- Tab 3: UI Layout (Widget Grid) -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon>dashboard</mat-icon>
+              <span>{{ 'agent_builder.tabs.ui_layout' | translate }}</span>
+            </ng-template>
+            <div class="tab-content grid-tab">
+              <app-widget-grid-editor [agent]="agent"></app-widget-grid-editor>
+            </div>
+          </mat-tab>
+
+          <!-- Tab 4: AI Behavior -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon>psychology</mat-icon>
+              <span>{{ 'agent_builder.tabs.ai_behavior' | translate }}</span>
+            </ng-template>
+            <div class="tab-content">
+              <app-ai-behavior-editor [agent]="agent"></app-ai-behavior-editor>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+
+        <!-- Validation Results -->
+        @if (validationResult) {
+          <div class="validation-results" [class.valid]="validationResult.valid" [class.invalid]="!validationResult.valid">
+            <div class="validation-header">
+              <mat-icon>{{ validationResult.valid ? 'check_circle' : 'error' }}</mat-icon>
+              <span>{{ validationResult.valid ? ('agent_builder.validation.passed' | translate) : ('agent_builder.validation.failed' | translate) }}</span>
+              <button mat-icon-button (click)="validationResult = null">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            @if (validationResult.errors.length > 0) {
+              <div class="validation-errors">
+                <h4>{{ 'agent_builder.validation.errors' | translate }}</h4>
+                <ul>
+                  @for (error of validationResult.errors; track error.field) {
+                    <li>
+                      <strong>{{ error.field }}:</strong> {{ error.message }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+            @if (validationResult.warnings.length > 0) {
+              <div class="validation-warnings">
+                <h4>{{ 'agent_builder.validation.warnings' | translate }}</h4>
+                <ul>
+                  @for (warning of validationResult.warnings; track warning.field) {
+                    <li>
+                      <strong>{{ warning.field }}:</strong> {{ warning.message }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Preview Panel -->
+      @if (showPreview) {
+        <div class="preview-panel">
+          <div class="preview-header">
+            <span>{{ 'agent_builder.preview.title' | translate }}</span>
+            <button mat-icon-button (click)="showPreview = false">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <div class="preview-content">
+            <app-agent-preview [agent]="agent"></app-agent-preview>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

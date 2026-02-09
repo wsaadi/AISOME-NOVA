@@ -1,0 +1,149 @@
+<div class="config-dialog">
+  <h2 mat-dialog-title>
+    <i class="fa fa-cog"></i>
+    Configuration de l'Assistant IA
+  </h2>
+
+  <div mat-dialog-content class="dialog-content">
+    <!-- Provider Selection -->
+    <div class="form-group">
+      <label>
+        <i class="fa fa-server"></i>
+        Fournisseur IA
+      </label>
+      <select [(ngModel)]="config.provider" (change)="onProviderChange()" class="form-control">
+        <option value="mistral">Mistral AI</option>
+        <option value="openai">OpenAI</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="gemini">Google Gemini</option>
+        <option value="perplexity">Perplexity AI</option>
+        <option value="nvidia-nim">NVIDIA NIM</option>
+      </select>
+      <small class="help-text">
+        Sélectionnez le fournisseur d'IA à utiliser pour les réponses
+      </small>
+    </div>
+
+    <!-- Model Selection -->
+    <div class="form-group">
+      <label>
+        <i class="fa fa-brain"></i>
+        Modèle
+      </label>
+      <select [(ngModel)]="config.model" class="form-control">
+        <option *ngFor="let model of availableModels" [value]="model.value">
+          {{ model.label }}
+        </option>
+      </select>
+      <small class="help-text">
+        Choisissez le modèle d'IA à utiliser (les modèles plus grands sont plus puissants mais plus lents)
+      </small>
+    </div>
+
+    <!-- API Key -->
+    <div class="form-group">
+      <label>
+        <i class="fa fa-key"></i>
+        Clé API {{ config.provider === 'mistral' ? 'Mistral' : config.provider === 'openai' ? 'OpenAI' : config.provider === 'anthropic' ? 'Anthropic' : config.provider === 'gemini' ? 'Gemini' : config.provider === 'nvidia-nim' ? 'NVIDIA NIM' : 'Perplexity' }}
+      </label>
+      <input
+        type="password"
+        [(ngModel)]="currentApiKey"
+        placeholder="Saisissez votre clé API"
+        class="form-control"
+      />
+      <small class="help-text">
+        <i class="fa fa-info-circle"></i>
+        Votre clé API est stockée localement dans votre navigateur
+      </small>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Temperature -->
+    <div class="form-group">
+      <label>
+        <i class="fa fa-thermometer-half"></i>
+        Température: {{ config.temperature }}
+      </label>
+      <input
+        type="range"
+        [(ngModel)]="config.temperature"
+        min="0"
+        max="2"
+        step="0.1"
+        class="form-range"
+      />
+      <div class="range-labels">
+        <small>Précis (0.0)</small>
+        <small>Créatif (2.0)</small>
+      </div>
+      <small class="help-text">
+        Contrôle la créativité des réponses (valeurs plus élevées = plus créatif mais moins prévisible)
+      </small>
+    </div>
+
+    <!-- Max Tokens -->
+    <div class="form-group">
+      <label>
+        <i class="fa fa-text-width"></i>
+        Longueur maximale de réponse
+      </label>
+      <select [(ngModel)]="config.maxTokens" class="form-control">
+        <option [value]="1024">Courte (1024 tokens)</option>
+        <option [value]="2048">Moyenne (2048 tokens)</option>
+        <option [value]="4096">Longue (4096 tokens)</option>
+        <option [value]="8192">Très longue (8192 tokens)</option>
+      </select>
+      <small class="help-text">
+        Limite la longueur des réponses générées
+      </small>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Strict Moderation -->
+    <div class="form-group">
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          [(ngModel)]="config.strictModeration"
+        />
+        <span>
+          <i class="fa fa-shield-alt"></i>
+          Modération stricte
+        </span>
+      </label>
+      <small class="help-text">
+        Active une modération plus stricte pour garantir un usage professionnel exclusif
+      </small>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+      <i class="fa fa-info-circle"></i>
+      <div>
+        <strong>Modération de contenu</strong>
+        <p>
+          Tous les messages sont analysés pour garantir un usage professionnel.
+          Les messages contenant du contenu personnel, des insultes ou des données sensibles
+          seront bloqués.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div mat-dialog-actions class="dialog-actions">
+    <app-custom-button
+      label="Annuler"
+      variant="secondary"
+      (click)="cancel()"
+    ></app-custom-button>
+    <app-custom-button
+      label="Enregistrer"
+      icon="fa fa-save"
+      (click)="saveConfig()"
+      [disabled]="!currentApiKey"
+    ></app-custom-button>
+  </div>
+</div>

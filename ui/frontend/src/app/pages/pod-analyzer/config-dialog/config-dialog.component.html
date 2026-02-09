@@ -1,0 +1,142 @@
+<h2 mat-dialog-title>
+  <i class="fa fa-cog"></i>
+  Configuration de l'agent
+</h2>
+
+<mat-dialog-content>
+  <div class="config-form">
+    <div class="form-group">
+      <label class="form-label">
+        <i class="fa fa-robot"></i>
+        Provider IA
+      </label>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-select [(ngModel)]="config.provider">
+          <mat-option value="mistral">Mistral AI</mat-option>
+          <mat-option value="openai">OpenAI</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @if (config.provider === 'mistral') {
+      <div class="provider-section">
+        <h3 class="provider-title">
+          <i class="fa fa-key"></i>
+          Configuration Mistral AI
+        </h3>
+
+        <div class="form-group">
+          <label class="form-label">Clé API Mistral</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input
+              matInput
+              type="password"
+              [(ngModel)]="config.mistralApiKey"
+              placeholder="Entrez votre clé API Mistral"
+            />
+            <mat-hint>Votre clé API ne sera jamais partagée</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Modèle Mistral</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-select [(ngModel)]="config.mistralModel">
+              @for (model of mistralModels; track model.value) {
+                <mat-option [value]="model.value">{{ model.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    }
+
+    @if (config.provider === 'openai') {
+      <div class="provider-section">
+        <h3 class="provider-title">
+          <i class="fa fa-key"></i>
+          Configuration OpenAI
+        </h3>
+
+        <div class="form-group">
+          <label class="form-label">Clé API OpenAI</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input
+              matInput
+              type="password"
+              [(ngModel)]="config.openaiApiKey"
+              placeholder="Entrez votre clé API OpenAI"
+            />
+            <mat-hint>Votre clé API ne sera jamais partagée</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Modèle OpenAI</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-select [(ngModel)]="config.openaiModel">
+              @for (model of openaiModels; track model.value) {
+                <mat-option [value]="model.value">{{ model.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    }
+
+    <div class="advanced-section">
+      <h3 class="section-title">
+        <i class="fa fa-sliders"></i>
+        Paramètres avancés
+      </h3>
+
+      <div class="form-group">
+        <label class="form-label">
+          Température ({{ formatTemperature(config.temperature) }})
+        </label>
+        <mat-slider
+          min="0"
+          max="2"
+          step="0.1"
+          discrete
+          [displayWith]="formatTemperature">
+          <input matSliderThumb [(ngModel)]="config.temperature" />
+        </mat-slider>
+        <p class="param-hint">
+          Contrôle la créativité des réponses (0 = précis, 2 = créatif)
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          Tokens maximum ({{ formatMaxTokens(config.maxTokens) }})
+        </label>
+        <mat-slider
+          min="1024"
+          max="8192"
+          step="256"
+          discrete
+          [displayWith]="formatMaxTokens">
+          <input matSliderThumb [(ngModel)]="config.maxTokens" />
+        </mat-slider>
+        <p class="param-hint">
+          Longueur maximale de la réponse générée
+        </p>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <app-custom-button
+    label="Annuler"
+    variant="secondary"
+    (onClick)="onCancel()">
+  </app-custom-button>
+  <app-custom-button
+    label="Enregistrer"
+    variant="primary"
+    icon="fa fa-save"
+    (onClick)="onSave()">
+  </app-custom-button>
+</mat-dialog-actions>

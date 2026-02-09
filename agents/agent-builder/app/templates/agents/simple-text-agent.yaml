@@ -1,0 +1,246 @@
+# Template Agent Textuel Simple
+# Ce template est utilisé comme base pour tous les agents créés via le Simple Builder
+# L'interface est héritée de l'Assistant IA Professionnel: chat multimodal simple
+
+metadata:
+  adl_version: "1.0.0"
+  schema_url: "https://agent-pf.io/schemas/adl/v1"
+  version: "1.0.0"
+  tags:
+    - textuel
+    - simple
+    - multimodal
+    - chat
+  changelog:
+    - "1.0.0: Template initial pour agents textuels simples"
+
+identity:
+  name: "{{AGENT_NAME}}"
+  slug: "{{AGENT_SLUG}}"
+  description: "{{AGENT_DESCRIPTION}}"
+  long_description: "{{AGENT_LONG_DESCRIPTION}}"
+  icon: "{{AGENT_ICON}}"
+  category: "{{AGENT_CATEGORY}}"
+  status: "draft"
+
+business_logic:
+  # Prompt système personnalisé - C'est le coeur de l'agent
+  system_prompt: |
+    {{SYSTEM_PROMPT}}
+
+  # Template de prompt utilisateur optionnel
+  user_prompt_template: "{{USER_PROMPT_TEMPLATE}}"
+
+  # Paramètres par défaut
+  personality_traits:
+    - name: "professional"
+      intensity: 1.3
+    - name: "helpful"
+      intensity: 1.2
+
+  tone: "professional"
+  language: "auto"
+
+  # Configuration LLM par défaut (peut être surchargée par l'admin)
+  llm_provider: "mistral"
+  llm_model: "mistral-small-latest"
+  temperature: 0.7
+  max_tokens: 4096
+
+  context_window_messages: 10
+  include_system_context: true
+  streaming_enabled: true
+
+  # Modération activée par défaut
+  moderation:
+    enabled: true
+    provider: "prompt-moderation"
+    block_on_fail: true
+    risk_threshold: "medium"
+
+  # Classification pour analytics
+  classification:
+    enabled: true
+    provider: "content-classification"
+    min_professional_score: 0.3
+
+# Outils pour le support multimodal et exports
+tools:
+  tools:
+    # Modération des entrées
+    - tool_id: "prompt-moderation"
+      name: "Modération de contenu"
+      enabled: true
+      description: "Vérifie que les messages respectent les règles de modération"
+      on_error: "stop"
+
+    # Classification (analytics)
+    - tool_id: "content-classification"
+      name: "Classification"
+      enabled: true
+      description: "Classifie le type de requête et le domaine métier"
+      on_error: "continue"
+
+    # Extraction de documents (pour support multimodal)
+    - tool_id: "document-extractor"
+      name: "Extraction de documents"
+      enabled: true
+      description: "Extrait le texte des documents uploadés (PDF, Word, Excel, etc.)"
+      on_error: "continue"
+
+    # Export Word (optionnel, activé selon configuration)
+    - tool_id: "word-crud"
+      name: "Export Word"
+      enabled: "{{EXPORT_WORD}}"
+      description: "Génère un document Word à partir des résultats"
+      on_error: "continue"
+
+    # Export Excel (optionnel)
+    - tool_id: "excel-crud"
+      name: "Export Excel"
+      enabled: "{{EXPORT_EXCEL}}"
+      description: "Génère un fichier Excel à partir des résultats"
+      on_error: "continue"
+
+    # Export PowerPoint (optionnel)
+    - tool_id: "pptx-crud"
+      name: "Export PowerPoint"
+      enabled: "{{EXPORT_POWERPOINT}}"
+      description: "Génère une présentation PowerPoint à partir des résultats"
+      on_error: "continue"
+
+    # Export PDF (optionnel)
+    - tool_id: "pdf-crud"
+      name: "Export PDF"
+      enabled: "{{EXPORT_PDF}}"
+      description: "Génère un fichier PDF à partir des résultats"
+      on_error: "continue"
+
+  default_error_handling: "continue"
+  parallel_execution: false
+
+# Interface utilisateur - Chat simple et multimodal
+ui:
+  layout_mode: "sections"
+  show_header: true
+  header_title: "{{AGENT_NAME}}"
+  header_subtitle: "{{AGENT_DESCRIPTION}}"
+  header_icon: "{{AGENT_ICON}}"
+
+  # Interface chat unique (héritée de l'Assistant IA Pro)
+  sections:
+    - name: "chat_section"
+      layout_type: "column"
+      components:
+        - type: "chat_interface"
+          name: "main_chat"
+          label: "Conversation"
+          auto_bind_output: true
+          style:
+            height: "calc(100vh - 200px)"
+
+  show_sidebar: false
+  show_footer: false
+  show_actions: false
+
+  theme: "auto"
+  primary_color: "#3B82F6"
+
+# Connecteurs LLM
+connectors:
+  default_connector: "mistral-default"
+  connectors:
+    - id: "mistral-default"
+      provider: "mistral"
+      name: "Mistral AI"
+      model: "mistral-small-latest"
+      default_temperature: 0.7
+      default_max_tokens: 4096
+      retry_on_error: true
+      max_retries: 3
+      priority: 0
+
+    - id: "mistral-large"
+      provider: "mistral"
+      name: "Mistral Large"
+      description: "Pour les tâches complexes"
+      model: "mistral-large-latest"
+      default_temperature: 0.5
+      default_max_tokens: 8192
+      priority: 1
+
+    - id: "pixtral-vision"
+      provider: "mistral"
+      name: "Pixtral Vision"
+      description: "Pour l'analyse d'images"
+      model: "pixtral-12b-2409"
+      default_temperature: 0.5
+      default_max_tokens: 4096
+      priority: 2
+
+  enable_fallback: true
+  fallback_order:
+    - "mistral-default"
+    - "mistral-large"
+
+# Workflow simple - Chat conversationnel
+workflows:
+  workflows:
+    - name: "Chat Flow"
+      description: "Flux conversationnel avec modération"
+      trigger: "user_message"
+      enabled: true
+      steps:
+        - id: "moderate"
+          name: "Modérer le message"
+          type: "tool_call"
+          tool_config_id: "prompt-moderation"
+          output_variable: "moderation"
+          on_error: "stop"
+          next_step: "check_moderation"
+
+        - id: "check_moderation"
+          name: "Vérifier la modération"
+          type: "condition"
+          condition:
+            variable: "moderation.approved"
+            operator: "eq"
+            value: true
+          on_true: "respond"
+          on_false: "reject"
+
+        - id: "respond"
+          name: "Générer la réponse"
+          type: "llm_call"
+          output_variable: "response"
+
+        - id: "reject"
+          name: "Rejeter le message"
+          type: "set_variable"
+          variable_name: "response"
+          variable_value: "Désolé, votre message ne respecte pas nos règles de modération."
+
+      entry_step: "moderate"
+      initial_variables:
+        moderation: null
+        response: null
+
+  default_workflow: "chat-flow"
+
+# Sécurité
+security:
+  requires_auth: false
+  rate_limit_enabled: true
+  requests_per_minute: 30
+  requests_per_hour: 500
+  sanitize_inputs: true
+  max_input_length: 10000
+  audit_logging: true
+
+# Déploiement
+deployment:
+  auto_route: true
+  environment: "production"
+  min_instances: 1
+  max_instances: 5
+  health_check_enabled: true

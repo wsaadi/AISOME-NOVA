@@ -1,0 +1,393 @@
+# Agent Descriptor Language (ADL) v1.0.0
+# Document Analyzer Agent - Multi-document analysis with synthesis
+
+metadata:
+  adl_version: "1.0.0"
+  schema_url: "https://agent-pf.io/schemas/adl/v1"
+  version: "1.0.0"
+  tags:
+    - document
+    - analysis
+    - synthesis
+    - tender
+    - procurement
+  changelog:
+    - "1.0.0: Initial ADL conversion"
+
+identity:
+  id: "document-analyzer"
+  name: "Document Analyzer"
+  slug: "document-analyzer"
+  description: "Analyse de documents et génération de synthèses structurées"
+  long_description: |
+    Agent spécialisé dans l'analyse de documents complexes.
+
+    ## Cas d'usage
+    - Analyse d'appels d'offres
+    - Synthèse de documents juridiques
+    - Extraction d'informations clés
+    - Génération de rapports Word
+
+    ## Fonctionnalités
+    - Upload multi-documents (PDF, Word, Excel)
+    - Extraction automatique du contenu
+    - Analyse IA avec Mistral ou OpenAI
+    - Génération de synthèse Word téléchargeable
+  icon: "fa fa-file-alt"
+  category: "document_analysis"
+  status: "active"
+
+business_logic:
+  system_prompt: |
+    Tu es un expert en analyse de documents administratifs et de marchés publics.
+
+    Ta mission est d'analyser les documents fournis et de générer une synthèse structurée.
+
+    Format de réponse obligatoire:
+
+    [DATE_ECHEANCE]
+    Date limite de réponse
+
+    [MODALITE_REPONSE]
+    Comment répondre (plateforme, courrier, etc.)
+
+    [RESUME_LOTS]
+    Description des lots avec quantités
+
+    [ANALYSE_CAHIER_CHARGES]
+    - Objectifs principaux
+    - Périmètre des prestations
+    - Exigences techniques
+    - Livrables attendus
+
+    [ANALYSE_CLAUSES_PENALITES]
+    - Clauses importantes
+    - Pénalités de retard
+    - Conditions de résiliation
+    - Garanties demandées
+
+  user_prompt_template: |
+    Analyse les documents suivants et génère une synthèse structurée:
+
+    {{documents_content}}
+
+    {{#if instructions}}
+    Instructions supplémentaires: {{instructions}}
+    {{/if}}
+
+  personality_traits:
+    - name: "analytical"
+      intensity: 1.8
+    - name: "precise"
+      intensity: 1.5
+    - name: "structured"
+      intensity: 1.5
+
+  tone: "professional"
+  language: "fr"
+
+  llm_provider: "mistral"
+  llm_model: "mistral-large-latest"
+  temperature: 0.3
+  max_tokens: 8192
+
+  context_window_messages: 5
+  include_system_context: true
+  streaming_enabled: false
+
+  response_format:
+    type: "structured"
+    example: |
+      [DATE_ECHEANCE]
+      15 février 2025
+
+      [MODALITE_REPONSE]
+      Dématérialisée via la plateforme PLACE
+
+  moderation:
+    enabled: false
+
+  classification:
+    enabled: false
+
+  instructions:
+    - "Toujours extraire les dates importantes"
+    - "Identifier clairement les lots et leurs caractéristiques"
+    - "Mettre en évidence les risques et pénalités"
+
+  constraints:
+    - "Ne pas inventer d'informations absentes des documents"
+    - "Indiquer clairement quand une information n'est pas trouvée"
+
+tools:
+  tools:
+    - tool_id: "document-extractor"
+      name: "Extracteur de documents"
+      enabled: true
+      description: "Extrait le contenu textuel des documents"
+      parameters:
+        - name: "file"
+          source: "input"
+          input_component: "document_upload"
+          required: true
+      output_variable: "extracted_documents"
+      on_error: "stop"
+      timeout_ms: 60000
+
+    - tool_id: "word-crud"
+      name: "Générateur Word"
+      enabled: true
+      description: "Génère le document Word de synthèse"
+      parameters:
+        - name: "title"
+          source: "constant"
+          value: "Synthèse d'analyse"
+        - name: "paragraphs"
+          source: "variable"
+          value: "synthesis_paragraphs"
+      output_variable: "word_document"
+      on_error: "continue"
+      timeout_ms: 30000
+
+    - tool_id: "file-upload"
+      name: "Stockage fichier"
+      enabled: true
+      description: "Stocke le document Word généré"
+      parameters:
+        - name: "file"
+          source: "previous_output"
+      output_variable: "file_id"
+      on_error: "continue"
+
+  default_error_handling: "continue"
+  parallel_execution: false
+
+ui:
+  show_header: true
+  header_title: "Analyseur de Documents"
+  header_subtitle: "Analyse et synthèse de documents avec IA"
+  header_icon: "fa fa-file-alt"
+
+  sections:
+    - name: "input_section"
+      title: "Documents à analyser"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "document_upload"
+          name: "document_upload"
+          label: "Déposez vos documents"
+          help_text: "Formats acceptés: PDF, Word, Excel, PowerPoint, TXT"
+          accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+          multiple: true
+          max_size_mb: 25
+          required: true
+          style:
+            min_height: "200px"
+
+        - type: "textarea"
+          name: "instructions"
+          label: "Instructions supplémentaires"
+          placeholder: "Points spécifiques à analyser..."
+          help_text: "Optionnel: précisez les aspects à approfondir"
+          required: false
+          style:
+            min_height: "100px"
+
+        - type: "select"
+          name: "provider"
+          label: "Fournisseur IA"
+          default_value: "mistral"
+          options:
+            - value: "mistral"
+              label: "Mistral AI"
+              description: "Recommandé pour les documents en français"
+            - value: "openai"
+              label: "OpenAI GPT"
+              description: "Alternative performante"
+          required: true
+
+    - name: "output_section"
+      title: "Résultats de l'analyse"
+      layout_type: "column"
+      gap: "16px"
+      visible_when:
+        field: "analysis_complete"
+        operator: "equals"
+        value: true
+      components:
+        - type: "progress_bar"
+          name: "progress"
+          label: "Progression"
+          data_source: "progress_value"
+
+        - type: "markdown_viewer"
+          name: "synthesis_result"
+          label: "Synthèse"
+          auto_bind_output: true
+          style:
+            min_height: "400px"
+            border: "1px solid #e5e7eb"
+            border_radius: "8px"
+            padding: "16px"
+
+        - type: "button"
+          name: "download_word"
+          label: "Télécharger la synthèse Word"
+          button_action: "custom"
+          button_variant: "success"
+          custom_action: "downloadWordDocument"
+          visible_when:
+            field: "word_file_id"
+            operator: "is_not_empty"
+
+  show_sidebar: false
+  show_footer: false
+
+  show_actions: true
+  actions:
+    - type: "button"
+      name: "reset_button"
+      label: "Réinitialiser"
+      button_action: "reset_form"
+      button_variant: "secondary"
+
+    - type: "button"
+      name: "analyze_button"
+      label: "Analyser les documents"
+      button_action: "trigger_agent"
+      button_variant: "primary"
+      is_trigger_button: true
+
+  actions_position: "right"
+  theme: "auto"
+  primary_color: "#10B981"
+
+connectors:
+  default_connector: "mistral-analysis"
+  connectors:
+    - id: "mistral-analysis"
+      provider: "mistral"
+      name: "Mistral Large"
+      description: "Optimisé pour l'analyse de documents"
+      model: "mistral-large-latest"
+      default_temperature: 0.3
+      default_max_tokens: 8192
+      retry_on_error: true
+      max_retries: 3
+      timeout_ms: 120000
+      priority: 0
+
+    - id: "openai-analysis"
+      provider: "openai"
+      name: "GPT-4"
+      description: "Alternative OpenAI"
+      model: "gpt-4"
+      default_temperature: 0.3
+      default_max_tokens: 8192
+      retry_on_error: true
+      max_retries: 2
+      timeout_ms: 120000
+      priority: 1
+
+  enable_fallback: true
+  fallback_order:
+    - "mistral-analysis"
+    - "openai-analysis"
+
+workflows:
+  workflows:
+    - name: "Document Analysis Flow"
+      description: "Flux complet d'analyse de documents"
+      trigger: "button_click"
+      trigger_config:
+        button: "analyze_button"
+      enabled: true
+      steps:
+        - id: "extract"
+          name: "Extraire les documents"
+          type: "tool_call"
+          tool_config_id: "document-extractor"
+          output_variable: "extracted_documents"
+          on_error: "stop"
+          next_step: "check_extraction"
+
+        - id: "check_extraction"
+          name: "Vérifier l'extraction"
+          type: "condition"
+          condition:
+            variable: "extracted_documents"
+            operator: "is_not_empty"
+          on_true: "analyze"
+          on_false: "extraction_error"
+
+        - id: "analyze"
+          name: "Analyser avec l'IA"
+          type: "llm_call"
+          prompt_template: |
+            {{system_prompt}}
+
+            Documents extraits:
+            {{extracted_documents}}
+
+            {{#if instructions}}
+            Instructions: {{instructions}}
+            {{/if}}
+          output_variable: "synthesis"
+          next_step: "generate_word"
+
+        - id: "generate_word"
+          name: "Générer le document Word"
+          type: "tool_call"
+          tool_config_id: "word-crud"
+          output_variable: "word_bytes"
+          on_error: "continue"
+          next_step: "upload_word"
+
+        - id: "upload_word"
+          name: "Sauvegarder le Word"
+          type: "tool_call"
+          tool_config_id: "file-upload"
+          output_variable: "word_file_id"
+          on_error: "continue"
+          next_step: "complete"
+
+        - id: "complete"
+          name: "Terminer"
+          type: "set_variable"
+          variable_name: "analysis_complete"
+          variable_value: true
+
+        - id: "extraction_error"
+          name: "Erreur d'extraction"
+          type: "set_variable"
+          variable_name: "error_message"
+          variable_value: "Impossible d'extraire le contenu des documents"
+
+      entry_step: "extract"
+      initial_variables:
+        extracted_documents: []
+        synthesis: null
+        word_file_id: null
+        analysis_complete: false
+        progress_value: 0
+
+      timeout_ms: 300000
+
+  default_workflow: "document-analysis"
+
+security:
+  requires_auth: false
+  rate_limit_enabled: true
+  requests_per_minute: 10
+  requests_per_hour: 100
+  sanitize_inputs: true
+  max_input_length: 500000
+  audit_logging: true
+
+deployment:
+  auto_route: true
+  environment: "production"
+  min_instances: 1
+  max_instances: 3
+  health_check_enabled: true

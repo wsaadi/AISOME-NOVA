@@ -1,0 +1,59 @@
+.appointment-scheduler{max-width:1200px;margin:0 auto;padding:2rem}
+.appointment-scheduler__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid #e0e0e0}
+.appointment-scheduler__header-content{display:flex;align-items:center;gap:1.5rem}
+.appointment-scheduler__config-btn{display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:linear-gradient(135deg,#667eea,#764ba2);border:none;border-radius:12px;color:#fff;font-size:1.25rem;cursor:pointer;transition:all .3s;box-shadow:0 4px 12px rgba(102,126,234,.3)}
+.appointment-scheduler__config-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(102,126,234,.4)}
+.appointment-scheduler__config-btn:active{transform:translateY(0)}
+.appointment-scheduler__config-btn i{animation:rotate 20s linear infinite}
+@keyframes rotate{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.appointment-scheduler__icon{width:60px;height:60px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;display:flex;align-items:center;justify-content:center}
+.appointment-scheduler__icon i{font-size:28px;color:#fff}
+.appointment-scheduler__title{font-size:2rem;font-weight:700;color:#1a202c;margin:0}
+.appointment-scheduler__subtitle{font-size:1rem;color:#718096;margin:.25rem 0 0}
+.appointment-scheduler__section{background:#fff;border-radius:12px;padding:2rem;margin-bottom:2rem;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.appointment-scheduler__section-title{font-size:1.5rem;font-weight:600;color:#2d3748;margin:0 0 1.5rem;display:flex;align-items:center;gap:.75rem}
+.appointment-scheduler__section-title i{color:#667eea}
+.appointment-scheduler__form{display:grid;gap:1.5rem}
+.form-group{display:flex;flex-direction:column;gap:.5rem}
+.form-group__label{font-size:.95rem;font-weight:500;color:#4a5568;display:flex;align-items:center;gap:.5rem}
+.form-group__label i{color:#667eea;width:18px}
+.form-group__input,.form-group__textarea{padding:.75rem 1rem;border:2px solid #e2e8f0;border-radius:8px;font-size:1rem;font-family:inherit;transition:all .2s}
+.form-group__input:focus,.form-group__textarea:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
+.form-group__input:disabled,.form-group__textarea:disabled{background-color:#f7fafc;cursor:not-allowed}
+.form-group__input::placeholder,.form-group__textarea::placeholder{color:#a0aec0}
+.form-group__textarea{resize:vertical;min-height:100px}
+.appointment-scheduler__actions{display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap}
+.appointment-scheduler__error{background:#fff5f5;border:1px solid #fc8181;border-radius:8px;padding:1rem 1.25rem;color:#c53030;display:flex;align-items:center;gap:.75rem;margin-bottom:2rem}
+.appointment-scheduler__error i{font-size:1.25rem}
+.appointment-scheduler__progress-text{text-align:center;color:#718096;margin-top:1rem;font-size:.95rem}
+.appointment-scheduler__results{display:grid;gap:2rem}
+.appointment-scheduler__metadata{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1rem}
+.metadata-card{background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:1.25rem;display:flex;align-items:center;gap:1rem;color:#fff}
+.metadata-card__icon{width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.metadata-card__icon i{font-size:22px}
+.metadata-card__content{flex:1}
+.metadata-card__label{font-size:.85rem;opacity:.9;margin-bottom:.25rem}
+.metadata-card__value{font-size:1.25rem;font-weight:600}
+.metadata-card__value--small{font-size:1rem}
+.synthesis-section{background:#f7fafc;border-radius:10px;padding:1.5rem;border-left:4px solid #667eea}
+.synthesis-section--highlight{background:linear-gradient(135deg,#667eea15,#764ba215);border-left-color:#764ba2}
+.synthesis-section--recommendations{background:#f0fff4;border-left-color:#48bb78}
+.synthesis-section--full{background:#fff;border:1px solid #e2e8f0}
+.synthesis-section__title{font-size:1.25rem;font-weight:600;color:#2d3748;margin:0 0 1rem;display:flex;align-items:center;gap:.5rem}
+.synthesis-section__title i{color:#667eea}
+.synthesis-section__content{color:#4a5568;line-height:1.7;white-space:pre-wrap}
+.synthesis-subsection{margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid #e2e8f0}
+.synthesis-subsection__title{font-size:1rem;font-weight:600;color:#4a5568;margin:0 0 .75rem}
+.recommendation-group{margin-bottom:2rem}
+.recommendation-group:last-child{margin-bottom:0}
+.recommendation-group__title{font-size:1.1rem;font-weight:600;color:#2d3748;margin:0 0 1rem;display:flex;align-items:center;gap:.5rem}
+.recommendation-group__title i{color:#48bb78}
+.recommendation-list{list-style:none;padding:0;margin:0;display:grid;gap:.75rem}
+.recommendation-list__item{padding:.75rem 1rem;background:#fff;border-radius:8px;border-left:3px solid #48bb78;box-shadow:0 1px 3px rgba(0,0,0,.1);color:#4a5568;line-height:1.6}
+.appointment-scheduler__download{margin-top:2rem;padding-top:2rem;border-top:2px solid #e2e8f0}
+.appointment-scheduler__warning{margin-top:2rem;padding:1.5rem;padding-top:2rem;border-top:2px solid #e2e8f0;background:linear-gradient(135deg,#fff8e1,#ffe082);border-radius:12px;display:flex;align-items:flex-start;gap:1rem;box-shadow:0 2px 8px rgba(255,152,0,.2)}
+.appointment-scheduler__warning i{font-size:1.5rem;color:#f57c00;margin-top:.25rem;flex-shrink:0}
+.warning-content{flex:1}
+.warning-content strong{display:block;font-size:1.125rem;color:#e65100;margin-bottom:.5rem}
+.warning-content p{margin:0;color:#5d4037;line-height:1.6}
+@media(max-width:768px){.appointment-scheduler{padding:1rem}.appointment-scheduler__header-content{gap:1rem}.appointment-scheduler__icon{width:50px;height:50px}.appointment-scheduler__icon i{font-size:24px}.appointment-scheduler__title{font-size:1.5rem}.appointment-scheduler__metadata{grid-template-columns:1fr}}

@@ -1,0 +1,22 @@
+<button
+  [type]="type"
+  [class]="buttonClasses"
+  [disabled]="disabled || loading"
+  (click)="handleClick($event)">
+
+  <span class="custom-button__content">
+    @if (loading) {
+      <span class="custom-button__spinner"></span>
+    }
+
+    @if (icon && iconPosition === 'left' && !loading) {
+      <i [class]="icon + ' custom-button__icon custom-button__icon--left'"></i>
+    }
+
+    <span class="custom-button__label">{{ label }}</span>
+
+    @if (icon && iconPosition === 'right' && !loading) {
+      <i [class]="icon + ' custom-button__icon custom-button__icon--right'"></i>
+    }
+  </span>
+</button>

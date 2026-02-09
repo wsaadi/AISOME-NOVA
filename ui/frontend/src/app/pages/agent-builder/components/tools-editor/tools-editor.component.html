@@ -1,0 +1,166 @@
+<div class="tools-editor">
+  <div class="tools-layout">
+    <!-- Available Tools Panel -->
+    <div class="available-tools-panel">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>extension</mat-icon>
+            {{ 'agent_builder.tools.available_tools' | translate }}
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <!-- Search -->
+          <div class="tools-search">
+            <mat-icon>search</mat-icon>
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              (ngModelChange)="filterTools()"
+              [placeholder]="'agent_builder.tools.search_placeholder' | translate"
+            />
+            @if (searchQuery) {
+              <button mat-icon-button (click)="searchQuery = ''; filterTools()">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </div>
+
+          <!-- Categories -->
+          <div class="tools-categories">
+            @for (category of categories; track category.id) {
+              <button
+                class="category-chip"
+                [class.active]="selectedCategory === category.id"
+                (click)="selectCategory(category.id)"
+              >
+                <i [class]="category.icon"></i>
+                <span>{{ category.name }}</span>
+              </button>
+            }
+          </div>
+
+          <!-- Tools List -->
+          <div class="tools-list">
+            @if (filteredTools.length === 0) {
+              <div class="empty-tools">
+                <mat-icon>search_off</mat-icon>
+                <p>{{ 'agent_builder.tools.no_tools_found' | translate }}</p>
+              </div>
+            } @else {
+              @for (tool of filteredTools; track tool.id) {
+                <div class="tool-item available">
+                  <div class="tool-icon">
+                    <i [class]="tool.icon"></i>
+                  </div>
+                  <div class="tool-info">
+                    <div class="tool-name">{{ tool.name }}</div>
+                    <div class="tool-description">{{ tool.description }}</div>
+                    <div class="tool-meta">
+                      <mat-chip class="category-chip-small">
+                        <i [class]="getCategoryIcon(tool.category)"></i>
+                        {{ getCategoryLabel(tool.category) }}
+                      </mat-chip>
+                      @if (tool.requires_file_input) {
+                        <mat-chip class="feature-chip">
+                          <mat-icon>attach_file</mat-icon>
+                          File Input
+                        </mat-chip>
+                      }
+                      @if (tool.produces_file_output) {
+                        <mat-chip class="feature-chip">
+                          <mat-icon>file_download</mat-icon>
+                          File Output
+                        </mat-chip>
+                      }
+                    </div>
+                  </div>
+                  <button mat-icon-button color="primary" (click)="addTool(tool)" matTooltip="{{ 'agent_builder.tools.add_tool' | translate }}">
+                    <mat-icon>add_circle</mat-icon>
+                  </button>
+                </div>
+              }
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Selected Tools Panel -->
+    <div class="selected-tools-panel">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>build</mat-icon>
+            {{ 'agent_builder.tools.selected_tools' | translate }}
+            <span class="tools-count">({{ enabledToolsCount }}/{{ agent.tools.length }})</span>
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (agent.tools.length === 0) {
+            <div class="empty-selected">
+              <mat-icon>touch_app</mat-icon>
+              <h3>{{ 'agent_builder.tools.no_tools_selected' | translate }}</h3>
+              <p>{{ 'agent_builder.tools.select_tools_hint' | translate }}</p>
+            </div>
+          } @else {
+            <div class="selected-tools-list" cdkDropList (cdkDropListDropped)="onToolDrop($event)">
+              @for (toolConfig of agent.tools; track toolConfig.id; let i = $index) {
+                <div class="tool-item selected" cdkDrag [class.disabled]="!toolConfig.enabled">
+                  <div class="drag-handle" cdkDragHandle>
+                    <mat-icon>drag_indicator</mat-icon>
+                  </div>
+
+                  <div class="tool-number">{{ i + 1 }}</div>
+
+                  @if (getToolInfo(toolConfig.tool_id); as tool) {
+                    <div class="tool-icon">
+                      <i [class]="tool.icon"></i>
+                    </div>
+                    <div class="tool-info">
+                      <div class="tool-name">{{ tool.name }}</div>
+                      <div class="tool-description">{{ tool.description }}</div>
+                    </div>
+                  } @else {
+                    <div class="tool-icon">
+                      <i class="fa fa-puzzle-piece"></i>
+                    </div>
+                    <div class="tool-info">
+                      <div class="tool-name">{{ toolConfig.tool_name }}</div>
+                      <div class="tool-description text-warning">Tool not found in registry</div>
+                    </div>
+                  }
+
+                  <div class="tool-actions">
+                    <mat-slide-toggle
+                      [checked]="toolConfig.enabled"
+                      (change)="toggleToolEnabled(toolConfig)"
+                      matTooltip="{{ toolConfig.enabled ? ('agent_builder.tools.disable' | translate) : ('agent_builder.tools.enable' | translate) }}"
+                    ></mat-slide-toggle>
+
+                    <button
+                      mat-icon-button
+                      color="warn"
+                      (click)="removeTool(toolConfig)"
+                      matTooltip="{{ 'agent_builder.tools.remove_tool' | translate }}"
+                    >
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+
+                  <!-- Drag placeholder -->
+                  <div class="drag-placeholder" *cdkDragPlaceholder></div>
+                </div>
+              }
+            </div>
+
+            <div class="tools-help">
+              <mat-icon>info</mat-icon>
+              <span>{{ 'agent_builder.tools.drag_hint' | translate }}</span>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,91 @@
+.markdown-viewer{width:100%;background-color:#fff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}
+.markdown-viewer__header{padding:16px 20px;background-color:#f7fafc;border-bottom:1px solid #e2e8f0}
+.markdown-viewer__title{margin:0;font-size:1.125rem;font-weight:600;color:#2d3748}
+.markdown-viewer__content{padding:20px;overflow-y:auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#2d3748}
+.markdown-viewer__content--with-numbers{padding:0}
+.markdown-viewer__formatted ::ng-deep h2{font-size:1.5rem;font-weight:700;color:#1a202c;margin:24px 0 16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}
+.markdown-viewer__formatted ::ng-deep h2:first-child{margin-top:0}
+.markdown-viewer__formatted ::ng-deep h3{font-size:1.25rem;font-weight:600;color:#2d3748;margin:20px 0 12px}
+.markdown-viewer__formatted ::ng-deep h3:first-child{margin-top:0}
+.markdown-viewer__formatted ::ng-deep strong{font-weight:600;color:#1a202c}
+.markdown-viewer__formatted ::ng-deep em{font-style:italic;color:#4a5568}
+.markdown-viewer__formatted ::ng-deep h1{font-size:1.875rem;font-weight:700;color:#1a202c;margin:32px 0 20px;padding-bottom:12px;border-bottom:3px solid #667eea}
+.markdown-viewer__formatted ::ng-deep h1:first-child{margin-top:0}
+.markdown-viewer__formatted ::ng-deep h4{font-size:1.125rem;font-weight:600;color:#2d3748;margin:16px 0 10px}
+.markdown-viewer__formatted ::ng-deep h4:first-child{margin-top:0}
+.markdown-viewer__formatted ::ng-deep ul{margin:12px 0;padding-left:24px;list-style-type:disc}
+.markdown-viewer__formatted ::ng-deep ul li{margin:6px 0;color:#4a5568;line-height:1.6}
+.markdown-viewer__formatted ::ng-deep p{margin:12px 0;color:#4a5568;line-height:1.7}
+.markdown-viewer__formatted ::ng-deep code{background-color:#f7fafc;color:#e53e3e;padding:2px 6px;border-radius:4px;font-family:'Monaco','Menlo','Ubuntu Mono','Consolas',monospace;font-size:.875em}
+.markdown-viewer__formatted ::ng-deep hr{border:none;border-top:2px solid #e2e8f0;margin:24px 0}
+.markdown-viewer__formatted ::ng-deep .markdown-table{width:100%;border-collapse:collapse;margin:16px 0;background-color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1);border-radius:8px;overflow:hidden}
+.markdown-viewer__formatted ::ng-deep .markdown-table thead{background:linear-gradient(135deg,#667eea,#764ba2)}
+.markdown-viewer__formatted ::ng-deep .markdown-table thead tr th{padding:14px 16px;text-align:left;font-weight:600;font-size:.875rem;color:#fff;text-transform:uppercase;letter-spacing:.05em;border:none}
+.markdown-viewer__formatted ::ng-deep .markdown-table tbody tr{transition:background-color .2s ease}
+.markdown-viewer__formatted ::ng-deep .markdown-table tbody tr:nth-child(even){background-color:#f7fafc}
+.markdown-viewer__formatted ::ng-deep .markdown-table tbody tr:hover{background-color:#edf2f7}
+.markdown-viewer__formatted ::ng-deep .markdown-table tbody tr td{padding:12px 16px;border-bottom:1px solid #e2e8f0;color:#4a5568;font-size:.9375rem}
+.markdown-viewer__formatted ::ng-deep .markdown-table tbody tr td:not(:last-child){border-right:1px solid #e2e8f0}
+.markdown-viewer__formatted ::ng-deep .markdown-table tbody tr:last-child td{border-bottom:none}
+.markdown-viewer__formatted ::ng-deep br{content:'';display:block;margin:6px 0}
+.markdown-viewer__lines{font-family:'Monaco','Menlo','Ubuntu Mono','Consolas',monospace;font-size:.875rem}
+.markdown-viewer__line{display:flex;align-items:flex-start;min-height:20px;padding:2px 0}
+.markdown-viewer__line:hover{background-color:#f7fafc}
+.markdown-viewer__line-number{flex-shrink:0;width:60px;padding:0 12px;text-align:right;color:#a0aec0;user-select:none;background-color:#f7fafc;border-right:1px solid #e2e8f0}
+.markdown-viewer__line-content{flex:1;padding:0 16px;white-space:pre-wrap;word-wrap:break-word}
+.markdown-viewer__content::-webkit-scrollbar{width:8px;height:8px}
+.markdown-viewer__content::-webkit-scrollbar-track{background:#f1f1f1}
+.markdown-viewer__content::-webkit-scrollbar-thumb{background:#cbd5e0;border-radius:4px}
+.markdown-viewer__content::-webkit-scrollbar-thumb:hover{background:#a0aec0}
+
+/* Mermaid diagram styles */
+.markdown-viewer__formatted ::ng-deep .mermaid-diagram {
+  margin: 24px 0;
+  padding: 20px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  // Large diagrams should scroll horizontally instead of shrinking
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.markdown-viewer__formatted ::ng-deep .mermaid-diagram svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-viewer__formatted ::ng-deep .mermaid-error {
+  background-color: #fff5f5;
+  color: #c53030;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #feb2b2;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* Code block styles */
+
+.markdown-viewer__formatted ::ng-deep pre {
+  background-color: #1a202c;
+  color: #e2e8f0;
+  padding: 16px 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 16px 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.markdown-viewer__formatted ::ng-deep pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}

@@ -1,0 +1,446 @@
+# Agent Descriptor Language (ADL) v1.0.0
+# Multi-LLM Search Agent - Chaque LLM cherche sur le web de manière autonome
+
+metadata:
+  adl_version: "1.0.0"
+  schema_url: "https://agent-pf.io/schemas/adl/v1"
+  version: "2.0.0"
+  tags:
+    - search
+    - multi-llm
+    - research
+    - consolidation
+    - intelligence
+  changelog:
+    - "2.0.0: Each LLM searches the web autonomously via native capabilities"
+    - "1.0.0: Initial multi-LLM search agent"
+
+identity:
+  id: "multi-llm-search-agent"
+  name: "Multi-LLM Search Agent"
+  slug: "multi-llm-search-agent"
+  description: "4 LLMs cherchent sur le web en parallèle puis consolident leurs résultats"
+  long_description: |
+    Agent de recherche intelligent où chaque LLM (OpenAI, Mistral, Anthropic, Gemini)
+    effectue sa propre recherche web grâce à ses capacités natives, puis les résultats
+    sont consolidés en une réponse ultra-complète.
+
+    ## Fonctionnalités
+    - Chaque LLM cherche sur le web de manière autonome
+    - Recherche parallèle par 4 LLMs (GPT-4o, Mistral, Claude, Gemini)
+    - Consolidation finale par relecture croisée
+    - Clés API et modèles configurables directement dans l'interface
+    - Réponse exhaustive et sourcée
+
+    ## Comment ça marche
+    1. Configurez vos clés API et modèles pour chaque LLM
+    2. Posez votre question
+    3. Les 4 LLMs cherchent sur le web en parallèle
+    4. Un LLM consolide toutes les recherches
+    5. Vous recevez une réponse complète et vérifiée
+  icon: "fa fa-brain"
+  category: "research"
+  status: "active"
+
+business_logic:
+  system_prompt: |
+    Tu es un assistant de recherche multi-LLM expert et polyvalent.
+    Tu aides l'utilisateur à explorer des sujets en profondeur grâce à la recherche
+    web parallèle effectuée par 4 LLMs (OpenAI, Mistral, Anthropic, Gemini).
+
+    Après chaque recherche, l'utilisateur peut te demander via le chat de :
+    - Approfondir un point spécifique de la réponse
+    - Reformuler ou simplifier certaines parties
+    - Détailler davantage un aspect particulier
+    - Comparer les perspectives des différents LLMs
+    - Poser des questions de suivi sur le sujet
+
+    Réponds toujours en français sauf si l'utilisateur demande une autre langue.
+    Sois précis, structuré et cite tes sources quand disponibles.
+    Utilise le markdown pour formater tes réponses.
+
+  llm_provider: "mistral"
+  llm_model: "mistral-large-latest"
+  temperature: 0.3
+  max_tokens: 8000
+
+  moderation:
+    enabled: false
+  classification:
+    enabled: false
+
+  instructions:
+    - "Chaque LLM effectue sa propre recherche web via ses capacités natives"
+    - "Les clés API et modèles sont configurés par l'utilisateur dans l'interface"
+    - "La consolidation croise les 4 analyses pour une réponse exhaustive"
+
+tools:
+  tools:
+    - tool_id: "multi-llm-search"
+      name: "Recherche Multi-LLM"
+      enabled: true
+      description: "Lance la recherche web parallèle sur les 4 LLMs configurés"
+      endpoint: "http://multi-llm-search-tool:8000"
+      path: "/api/v1/search"
+      method: "POST"
+      parameters:
+        - name: "query"
+          source: "input"
+          input_component: "search_query"
+          required: true
+        - name: "context"
+          source: "input"
+          input_component: "search_context"
+          required: false
+        - name: "language"
+          source: "constant"
+          value: "fr"
+        - name: "providers"
+          source: "computed"
+          compute_from:
+            - component: "openai_enabled"
+              mapping:
+                provider: "openai"
+                api_key_component: "openai_api_key"
+                model_component: "openai_model"
+            - component: "mistral_enabled"
+              mapping:
+                provider: "mistral"
+                api_key_component: "mistral_api_key"
+                model_component: "mistral_model"
+            - component: "anthropic_enabled"
+              mapping:
+                provider: "anthropic"
+                api_key_component: "anthropic_api_key"
+                model_component: "anthropic_model"
+            - component: "gemini_enabled"
+              mapping:
+                provider: "gemini"
+                api_key_component: "gemini_api_key"
+                model_component: "gemini_model"
+        - name: "consolidation_provider"
+          source: "input"
+          input_component: "consolidation_provider"
+          required: false
+      output_variable: "search_response"
+      on_error: "stop"
+      timeout_ms: 180000
+
+  default_error_handling: "stop"
+  parallel_execution: false
+
+ui:
+  show_header: true
+  header_title: "Multi-LLM Search"
+  header_subtitle: "4 IAs cherchent sur le web pour vous"
+  header_icon: "fa fa-brain"
+
+  sections:
+    # --- Section Configuration LLMs ---
+    - name: "llm_config_section"
+      title: "Configuration des LLMs"
+      layout_type: "column"
+      gap: "16px"
+      collapsible: true
+      collapsed_default: true
+      components:
+        # --- OpenAI ---
+        - type: "checkbox"
+          name: "openai_enabled"
+          label: "OpenAI"
+          default_value: true
+
+        - type: "password_input"
+          name: "openai_api_key"
+          label: "OpenAI - Clé API"
+          placeholder: "sk-..."
+          required: false
+          help_text: "Votre clé API OpenAI"
+          visible_when:
+            field: "openai_enabled"
+            operator: "equals"
+            value: true
+
+        - type: "select"
+          name: "openai_model"
+          label: "OpenAI - Modèle"
+          default_value: "gpt-4o"
+          options:
+            - label: "GPT-4o"
+              value: "gpt-4o"
+            - label: "GPT-4o mini"
+              value: "gpt-4o-mini"
+            - label: "GPT-4.1"
+              value: "gpt-4.1"
+            - label: "GPT-4.1 mini"
+              value: "gpt-4.1-mini"
+            - label: "GPT-4.1 nano"
+              value: "gpt-4.1-nano"
+          visible_when:
+            field: "openai_enabled"
+            operator: "equals"
+            value: true
+
+        # --- Mistral ---
+        - type: "checkbox"
+          name: "mistral_enabled"
+          label: "Mistral AI"
+          default_value: true
+
+        - type: "password_input"
+          name: "mistral_api_key"
+          label: "Mistral - Clé API"
+          placeholder: "..."
+          required: false
+          help_text: "Votre clé API Mistral"
+          visible_when:
+            field: "mistral_enabled"
+            operator: "equals"
+            value: true
+
+        - type: "select"
+          name: "mistral_model"
+          label: "Mistral - Modèle"
+          default_value: "mistral-large-latest"
+          options:
+            - label: "Mistral Large"
+              value: "mistral-large-latest"
+            - label: "Mistral Small"
+              value: "mistral-small-latest"
+            - label: "Mistral Medium"
+              value: "mistral-medium-latest"
+          visible_when:
+            field: "mistral_enabled"
+            operator: "equals"
+            value: true
+
+        # --- Anthropic ---
+        - type: "checkbox"
+          name: "anthropic_enabled"
+          label: "Anthropic Claude"
+          default_value: true
+
+        - type: "password_input"
+          name: "anthropic_api_key"
+          label: "Anthropic - Clé API"
+          placeholder: "sk-ant-..."
+          required: false
+          help_text: "Votre clé API Anthropic"
+          visible_when:
+            field: "anthropic_enabled"
+            operator: "equals"
+            value: true
+
+        - type: "select"
+          name: "anthropic_model"
+          label: "Anthropic - Modèle"
+          default_value: "claude-sonnet-4-20250514"
+          options:
+            - label: "Claude Sonnet 4"
+              value: "claude-sonnet-4-20250514"
+            - label: "Claude 3.5 Sonnet"
+              value: "claude-3-5-sonnet-20241022"
+            - label: "Claude 3.5 Haiku"
+              value: "claude-3-5-haiku-20241022"
+          visible_when:
+            field: "anthropic_enabled"
+            operator: "equals"
+            value: true
+
+        # --- Gemini ---
+        - type: "checkbox"
+          name: "gemini_enabled"
+          label: "Google Gemini"
+          default_value: true
+
+        - type: "password_input"
+          name: "gemini_api_key"
+          label: "Gemini - Clé API"
+          placeholder: "AI..."
+          required: false
+          help_text: "Votre clé API Google Gemini"
+          visible_when:
+            field: "gemini_enabled"
+            operator: "equals"
+            value: true
+
+        - type: "select"
+          name: "gemini_model"
+          label: "Gemini - Modèle"
+          default_value: "gemini-2.0-flash"
+          options:
+            - label: "Gemini 2.0 Flash"
+              value: "gemini-2.0-flash"
+            - label: "Gemini 2.5 Flash"
+              value: "gemini-2.5-flash-preview-05-20"
+            - label: "Gemini 2.5 Pro"
+              value: "gemini-2.5-pro-preview-05-06"
+          visible_when:
+            field: "gemini_enabled"
+            operator: "equals"
+            value: true
+
+        # --- Consolidation ---
+        - type: "select"
+          name: "consolidation_provider"
+          label: "LLM pour la consolidation finale"
+          default_value: "openai"
+          help_text: "Quel LLM relit et consolide l'ensemble des résultats"
+          options:
+            - label: "OpenAI"
+              value: "openai"
+            - label: "Mistral"
+              value: "mistral"
+            - label: "Anthropic"
+              value: "anthropic"
+            - label: "Gemini"
+              value: "gemini"
+
+    # --- Section Recherche ---
+    - name: "input_section"
+      title: "Votre recherche"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "text_input"
+          name: "search_query"
+          label: "Question de recherche"
+          placeholder: "Ex: Quelles sont les dernières avancées en informatique quantique ?"
+          required: true
+          validation_rules:
+            - type: "required"
+              message: "La question de recherche est requise"
+            - type: "minLength"
+              value: 10
+              message: "Minimum 10 caractères pour une recherche pertinente"
+
+        - type: "textarea"
+          name: "search_context"
+          label: "Contexte additionnel (optionnel)"
+          placeholder: "Précisez le contexte ou les aspects qui vous intéressent"
+          required: false
+
+    # --- Section Résultats ---
+    - name: "results_section"
+      title: "Résultat consolidé"
+      layout_type: "column"
+      gap: "16px"
+      components:
+        - type: "progress_bar"
+          name: "search_progress"
+          label: "Recherche multi-LLM en cours..."
+          data_source: "progress"
+          visible_when:
+            field: "is_searching"
+            operator: "equals"
+            value: true
+
+        - type: "markdown_viewer"
+          name: "final_output"
+          label: "Réponse consolidée"
+          auto_bind_output: true
+          style:
+            min_height: "600px"
+            border: "1px solid #e5e7eb"
+            border_radius: "8px"
+            padding: "24px"
+
+    # --- Section Chat ---
+    - name: "chat_section"
+      title: "Discussion"
+      layout_type: "column"
+      gap: "0px"
+      components:
+        - type: "chat_interface"
+          name: "main_chat"
+          label: "Discutez avec l'agent"
+          auto_bind_output: true
+          style:
+            height: "400px"
+
+  show_sidebar: false
+  show_footer: false
+
+  show_actions: true
+  actions:
+    - type: "button"
+      name: "clear_button"
+      label: "Effacer"
+      button_action: "reset_form"
+      button_variant: "secondary"
+
+    - type: "button"
+      name: "search_button"
+      label: "Lancer la recherche multi-LLM"
+      button_action: "trigger_agent"
+      button_variant: "primary"
+      is_trigger_button: true
+
+  actions_position: "right"
+  theme: "auto"
+  primary_color: "#8B5CF6"
+
+connectors:
+  default_connector: "mistral-default"
+  connectors:
+    - id: "mistral-default"
+      provider: "mistral"
+      model: "mistral-small-latest"
+
+workflows:
+  workflows:
+    - name: "Multi-LLM Search Flow"
+      description: "Chaque LLM cherche sur le web de manière autonome puis consolidation"
+      trigger: "button_click"
+      trigger_config:
+        button: "search_button"
+      enabled: true
+      steps:
+        - id: "multi_llm_search"
+          name: "Recherche web par les 4 LLMs"
+          type: "tool_call"
+          tool_config_id: "multi-llm-search"
+          output_variable: "search_response"
+          on_error: "stop"
+          next_step: "format_output"
+
+        - id: "format_output"
+          name: "Formater la réponse"
+          type: "llm_call"
+          prompt_template: |
+            Voici le résultat brut de la recherche multi-LLM.
+            Extrais et affiche proprement la réponse consolidée.
+            Si des LLMs ont échoué, mentionne-le.
+
+            Résultat: {{search_response}}
+
+            Affiche la réponse consolidée telle quelle si elle est déjà bien formatée.
+            Sinon, reformate-la proprement en markdown.
+          output_variable: "final_output"
+
+      entry_step: "multi_llm_search"
+      initial_variables:
+        search_response: null
+        final_output: null
+        is_searching: false
+        progress: 0
+
+      timeout_ms: 300000
+
+  default_workflow: "Multi-LLM Search Flow"
+
+security:
+  requires_auth: false
+  rate_limit_enabled: true
+  requests_per_minute: 3
+  requests_per_hour: 30
+  sanitize_inputs: true
+  max_input_length: 2000
+  audit_logging: true
+
+deployment:
+  auto_route: true
+  environment: "production"
+  min_instances: 1
+  max_instances: 2
+  health_check_enabled: true

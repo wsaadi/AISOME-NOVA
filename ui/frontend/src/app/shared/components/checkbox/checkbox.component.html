@@ -1,0 +1,25 @@
+<div class="checkbox-container">
+  <label class="checkbox-wrapper" [class.checkbox-wrapper--disabled]="disabled">
+    <input
+      type="checkbox"
+      [checked]="checked"
+      [disabled]="disabled"
+      [indeterminate]="indeterminate"
+      (change)="handleChange($event)"
+      class="checkbox-native">
+
+    <span [ngClass]="checkboxClasses"></span>
+
+    <div class="checkbox-content" *ngIf="label || description">
+      <span class="checkbox-label" *ngIf="label">
+        {{ label }}
+        <span *ngIf="required" class="required-asterisk">*</span>
+      </span>
+      <span class="checkbox-description" *ngIf="description">
+        {{ description }}
+      </span>
+    </div>
+  </label>
+
+  <p *ngIf="error" class="checkbox-error">{{ error }}</p>
+</div>

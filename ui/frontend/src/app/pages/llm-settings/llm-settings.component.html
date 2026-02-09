@@ -1,0 +1,197 @@
+<div class="llm-settings-page" *ngIf="isLoaded && settings">
+  <header class="page-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">psychology</mat-icon>
+      <div class="header-text">
+        <h1>{{ 'llm_settings.title' | translate }}</h1>
+        <p class="subtitle">{{ 'llm_settings.subtitle' | translate }}</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button color="warn" (click)="resetToDefaults()">
+        <mat-icon>restart_alt</mat-icon>
+        {{ 'llm_settings.reset' | translate }}
+      </button>
+      <button mat-raised-button color="primary" (click)="saveSettings()" [disabled]="isSaving">
+        <mat-icon>save</mat-icon>
+        {{ isSaving ? ('common.saving' | translate) : ('common.save' | translate) }}
+      </button>
+    </div>
+  </header>
+
+  <mat-tab-group animationDuration="200ms">
+    <!-- Onglet Provider par défaut -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">tune</mat-icon>
+        {{ 'llm_settings.tabs.default_provider' | translate }}
+      </ng-template>
+
+      <div class="tab-content">
+        <mat-card class="settings-card">
+          <mat-card-header>
+            <mat-card-title>{{ 'llm_settings.default_provider_title' | translate }}</mat-card-title>
+            <mat-card-subtitle>{{ 'llm_settings.default_provider_desc' | translate }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'llm_settings.provider' | translate }}</mat-label>
+              <mat-select [(ngModel)]="settings.defaultProvider">
+                <mat-option *ngFor="let provider of providers" [value]="provider.id">
+                  <mat-icon>{{ provider.icon }}</mat-icon>
+                  {{ provider.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="settings-card">
+          <mat-card-header>
+            <mat-card-title>{{ 'llm_settings.default_params_title' | translate }}</mat-card-title>
+            <mat-card-subtitle>{{ 'llm_settings.default_params_desc' | translate }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="param-row">
+              <label>{{ 'llm_settings.temperature' | translate }}: {{ formatTemperature(settings.defaults.temperature) }}</label>
+              <mat-slider min="0" max="2" step="0.1" class="full-width">
+                <input matSliderThumb [(ngModel)]="settings.defaults.temperature">
+              </mat-slider>
+              <p class="help-text">{{ 'llm_settings.temperature_help' | translate }}</p>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="param-row">
+              <label>{{ 'llm_settings.max_tokens' | translate }}: {{ formatTokens(settings.defaults.maxTokens) }}</label>
+              <mat-slider min="256" max="32000" step="256" class="full-width">
+                <input matSliderThumb [(ngModel)]="settings.defaults.maxTokens">
+              </mat-slider>
+              <p class="help-text">{{ 'llm_settings.max_tokens_help' | translate }}</p>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="param-row">
+              <label>{{ 'llm_settings.top_p' | translate }}: {{ formatTopP(settings.defaults.topP) }}</label>
+              <mat-slider min="0" max="1" step="0.05" class="full-width">
+                <input matSliderThumb [(ngModel)]="settings.defaults.topP">
+              </mat-slider>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Onglet Clés API -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">vpn_key</mat-icon>
+        {{ 'llm_settings.tabs.api_keys' | translate }}
+      </ng-template>
+
+      <div class="tab-content">
+        <mat-card *ngFor="let provider of providers" class="settings-card provider-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>{{ provider.icon }}</mat-icon>
+            <mat-card-title>{{ provider.name }}</mat-card-title>
+            <mat-card-subtitle>
+              <span *ngIf="hasApiKey(provider.id)" class="status-configured">
+                <mat-icon>check_circle</mat-icon> {{ 'llm_settings.configured' | translate }}
+              </span>
+              <span *ngIf="!hasApiKey(provider.id)" class="status-not-configured">
+                <mat-icon>warning</mat-icon> {{ 'llm_settings.not_configured' | translate }}
+              </span>
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="api-key-row">
+              <mat-form-field appearance="outline" class="api-key-field">
+                <mat-label>{{ 'llm_settings.api_key' | translate }}</mat-label>
+                <input matInput
+                       [type]="showApiKeys[provider.id] ? 'text' : 'password'"
+                       [ngModel]="getApiKey(provider.id)"
+                       (ngModelChange)="setApiKey(provider.id, $event)"
+                       [placeholder]="'llm_settings.api_key_placeholder' | translate">
+                <button mat-icon-button matSuffix (click)="toggleApiKeyVisibility(provider.id)"
+                        [matTooltip]="showApiKeys[provider.id] ? ('common.hide' | translate) : ('common.show' | translate)">
+                  <mat-icon>{{ showApiKeys[provider.id] ? 'visibility_off' : 'visibility' }}</mat-icon>
+                </button>
+              </mat-form-field>
+              <button mat-stroked-button color="primary"
+                      (click)="testConnection(provider.id)"
+                      [disabled]="!hasApiKey(provider.id)">
+                <mat-icon>wifi</mat-icon>
+                {{ 'llm_settings.test_connection' | translate }}
+              </button>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'llm_settings.default_model' | translate }}</mat-label>
+              <mat-select [ngModel]="getDefaultModel(provider.id)"
+                          (ngModelChange)="setDefaultModel(provider.id, $event)">
+                <mat-option *ngFor="let model of modelOptions[provider.id]" [value]="model.value">
+                  {{ model.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Onglet Limites utilisateurs -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">security</mat-icon>
+        {{ 'llm_settings.tabs.user_limits' | translate }}
+      </ng-template>
+
+      <div class="tab-content">
+        <mat-card class="settings-card">
+          <mat-card-header>
+            <mat-card-title>{{ 'llm_settings.user_limits_title' | translate }}</mat-card-title>
+            <mat-card-subtitle>{{ 'llm_settings.user_limits_desc' | translate }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="checkbox-row">
+              <mat-checkbox [(ngModel)]="settings.limits.allowProviderChange">
+                {{ 'llm_settings.allow_provider_change' | translate }}
+              </mat-checkbox>
+              <p class="help-text">{{ 'llm_settings.allow_provider_change_help' | translate }}</p>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="checkbox-row">
+              <mat-checkbox [(ngModel)]="settings.limits.allowModelChange">
+                {{ 'llm_settings.allow_model_change' | translate }}
+              </mat-checkbox>
+              <p class="help-text">{{ 'llm_settings.allow_model_change_help' | translate }}</p>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="param-row">
+              <label>{{ 'llm_settings.max_temperature_limit' | translate }}: {{ formatTemperature(settings.limits.maxTemperature) }}</label>
+              <mat-slider min="0.1" max="2" step="0.1" class="full-width">
+                <input matSliderThumb [(ngModel)]="settings.limits.maxTemperature">
+              </mat-slider>
+              <p class="help-text">{{ 'llm_settings.max_temperature_limit_help' | translate }}</p>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="param-row">
+              <label>{{ 'llm_settings.max_tokens_limit' | translate }}: {{ formatTokens(settings.limits.maxTokensLimit) }}</label>
+              <mat-slider min="1024" max="32000" step="1024" class="full-width">
+                <input matSliderThumb [(ngModel)]="settings.limits.maxTokensLimit">
+              </mat-slider>
+              <p class="help-text">{{ 'llm_settings.max_tokens_limit_help' | translate }}</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
