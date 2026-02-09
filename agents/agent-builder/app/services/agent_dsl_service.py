@@ -52,6 +52,8 @@ from ..models.agent_dsl import (
     ComponentStyle,
     ConditionalVisibility,
     WorkflowCondition,
+    DashboardConfig,
+    GridPosition,
     PartialAgentUpdate,
 )
 
@@ -78,6 +80,7 @@ from ..models import (
     DashboardConfig as LegacyDashboardConfig,
     GridPosition as LegacyGridPosition,
     ChartConfig as LegacyChartConfig,
+    ResponseFormat as LegacyResponseFormat,
 )
 
 
@@ -402,10 +405,19 @@ class AgentDSLService:
 
         # Convert UI layout
         ui = ADLUILayout(
+            layout_mode=legacy.ui_layout.layout_mode,
             show_header=legacy.ui_layout.show_header,
             header_title=legacy.ui_layout.header_title,
             header_subtitle=legacy.ui_layout.header_subtitle,
             header_icon=legacy.ui_layout.header_icon,
+            dashboard_config=DashboardConfig(
+                columns=legacy.ui_layout.dashboard_config.columns,
+                rowHeight=legacy.ui_layout.dashboard_config.rowHeight,
+                gap=legacy.ui_layout.dashboard_config.gap
+            ) if legacy.ui_layout.dashboard_config else None,
+            widgets=[
+                self._convert_legacy_component(w) for w in legacy.ui_layout.widgets
+            ],
             sections=[
                 self._convert_legacy_section(s) for s in legacy.ui_layout.sections
             ],
@@ -554,7 +566,18 @@ class AgentDSLService:
             on_change_action=comp.on_change_action,
             button_action=comp.button_action,
             button_variant=comp.button_variant,
-            is_trigger_button=comp.is_trigger_button or False
+            is_trigger_button=comp.is_trigger_button or False,
+            gridPosition=GridPosition(
+                x=comp.gridPosition.x,
+                y=comp.gridPosition.y,
+                w=comp.gridPosition.w,
+                h=comp.gridPosition.h
+            ) if comp.gridPosition else None,
+            chart_config={
+                'show_legend': comp.chart_config.show_legend,
+                'animate': comp.chart_config.animate,
+                'colors': comp.chart_config.colors
+            } if comp.chart_config else None
         )
 
     def _convert_legacy_workflow_step(self, step: LegacyWorkflowStep) -> ADLWorkflowStep:
@@ -687,7 +710,12 @@ class AgentDSLService:
                 include_confidence=dsl.business_logic.include_confidence,
                 enable_moderation=dsl.business_logic.moderation.enabled,
                 enable_classification=dsl.business_logic.classification.enabled,
-                task_prompts=dsl.business_logic.task_prompts
+                task_prompts=dsl.business_logic.task_prompts,
+                response_format=LegacyResponseFormat(
+                    type=dsl.business_logic.response_format.type,
+                    schema=dsl.business_logic.response_format.json_schema,
+                    example=dsl.business_logic.response_format.example
+                ) if dsl.business_logic.response_format else None
             ),
             workflows=[
                 LegacyWorkflow(

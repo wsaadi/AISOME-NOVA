@@ -1,210 +1,266 @@
-# Agent Platform - Plateforme d'Agents Intelligents
+# AISOME NOVA - Plateforme d'Agents IA
 
-> Plateforme cloud-native simple et légère avec architecture microservices.
+> Plateforme cloud-native d'agents intelligents avec architecture microservices, moteur d'execution universel et support multi-LLM.
 
-## ✨ Caractéristiques
+## Caracteristiques
 
-- 🏗️ **Architecture microservices** : Backend Python FastAPI + Frontend Angular 20
-- 🐳 **Containerisé** : Docker Compose pour un déploiement simple
-- ⚡ **Simple et rapide** : Architecture épurée sans dépendances complexes (pas d'Authentik/Traefik)
-- 🚀 **Prêt à l'emploi** : Lancez et utilisez immédiatement
+- **Architecture microservices** : Backend Python FastAPI + Frontend Angular 20
+- **Moteur d'agents universel** : Agent Runtime remplace les services agents individuels
+- **Multi-LLM** : 8 connecteurs (Mistral, OpenAI, Anthropic, Gemini, Perplexity, NVIDIA NIM, Ollama, Dolibarr)
+- **Agent Builder** : Creation et configuration d'agents via interface graphique
+- **Securite** : CORS hardening, security headers, rate limiting, hachage des mots de passe
+- **Containerise** : Docker Compose pour un deploiement simple
 
-## 🚀 Installation rapide (< 2 minutes)
+## Installation rapide
 
-### Prérequis
+### Prerequis
 
 - Docker >= 20.10
 - Docker Compose >= 2.0
-- Clé API Mistral ([obtenir une clé](https://console.mistral.ai/))
+- Au moins une cle API LLM (Mistral, OpenAI, Anthropic, Gemini, Perplexity ou NVIDIA NIM)
 
-### Déploiement
+### Deploiement
 
 ```bash
 # Cloner le projet
 git clone <votre-repo>
-cd agent-pf
+cd AISOME-NOVA
 
 # Copier le fichier d'environnement
 cp .env.example .env
 
-# Ajouter votre clé API Mistral dans le fichier .env
-echo "MISTRAL_API_KEY=votre_clé_api_ici" >> .env
+# Configurer vos cles API dans le fichier .env
+# MISTRAL_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.
 
-# Démarrer tous les services
+# Demarrer tous les services
 docker-compose up -d
-
-# C'est tout ! 🎉
 ```
 
-### Accéder aux services
+## Services et ports
 
-| Service | URL | Description |
-|---------|-----|-------------|
-| **Frontend** | http://localhost:4200 | Application Angular |
-| **Mistral AI Connector** | http://localhost:8005/docs | Connecteur Mistral AI - Service central |
-| **Word CRUD API** | http://localhost:8001/docs | API Word - Documentation Swagger |
-| **Web Search API** | http://localhost:8002/docs | API Web Search - Documentation Swagger |
-| **PDF CRUD API** | http://localhost:8003/docs | API PDF - Documentation Swagger |
-| **Excel CRUD API** | http://localhost:8004/docs | API Excel - Documentation Swagger |
-| **File Upload API** | http://localhost:8007/docs | API File Upload - Documentation Swagger |
-| **Document Extractor API** | http://localhost:8008/docs | API Document Extractor - Documentation Swagger |
-| **Document Analyzer Agent** | http://localhost:8009/docs | Agent d'analyse de documents |
-| **Appointment Scheduler Agent** | http://localhost:8010/docs | Agent de planification de rendez-vous |
-| **PowerPoint CRUD API** | http://localhost:8011/docs | API PowerPoint - Documentation Swagger |
-| **AI Chat Agent** | http://localhost:8012/docs | Agent de chat IA |
-| **Prompt Moderation API** | http://localhost:8013/docs | API Modération de prompts |
-| **Content Classification API** | http://localhost:8014/docs | API Classification de contenu |
+### Interface utilisateur
 
-## 📚 Stack technique
+| Service | Port | Description |
+|---------|------|-------------|
+| **Frontend** | [4200](http://localhost:4200) | Application Angular 20 |
 
-- **Angular** 20 - Framework frontend
-- **FastAPI** - Framework backend Python
-- **Mistral AI** - Service d'IA générative
-- **Docker** - Containerisation
+### Moteur d'agents
 
-## 🏗️ Architecture
+| Service | Port | Description |
+|---------|------|-------------|
+| **Agent Runtime** | [8025](http://localhost:8025/docs) | Moteur d'execution universel des agents |
+| **Agent Builder** | [8026](http://localhost:8026/docs) | Creation et configuration d'agents |
 
-### Structure simplifiée
+### Connecteurs LLM (Core)
+
+| Service | Port | Description |
+|---------|------|-------------|
+| **Mistral** | [8005](http://localhost:8005/docs) | Connecteur Mistral AI |
+| **OpenAI** | [8006](http://localhost:8006/docs) | Connecteur OpenAI (GPT-4o, etc.) |
+| **Perplexity** | [8022](http://localhost:8022/docs) | Connecteur Perplexity (Sonar) |
+| **Gemini** | [8023](http://localhost:8023/docs) | Connecteur Google Gemini |
+| **Anthropic** | [8024](http://localhost:8024/docs) | Connecteur Anthropic (Claude) |
+| **NVIDIA NIM** | [8028](http://localhost:8028/docs) | Connecteur NVIDIA NIM (Llama, etc.) |
+| **Ollama** | [8040](http://localhost:8040/docs) | Connecteur Ollama (inference locale) |
+| **Dolibarr** | [8015](http://localhost:8015/docs) | Connecteur ERP Dolibarr |
+
+### Outils (Tools)
+
+| Service | Port | Description |
+|---------|------|-------------|
+| **Word CRUD** | [8001](http://localhost:8001/docs) | Gestion de documents Word |
+| **Web Search** | [8002](http://localhost:8002/docs) | Recherche web |
+| **PDF CRUD** | [8003](http://localhost:8003/docs) | Gestion de documents PDF |
+| **Excel CRUD** | [8004](http://localhost:8004/docs) | Gestion de fichiers Excel |
+| **File Upload** | [8007](http://localhost:8007/docs) | Upload de fichiers |
+| **Document Extractor** | [8008](http://localhost:8008/docs) | Extraction de contenu de documents |
+| **PPTX CRUD** | [8011](http://localhost:8011/docs) | Gestion de presentations PowerPoint |
+| **Prompt Moderation** | [8013](http://localhost:8013/docs) | Moderation de prompts |
+| **Content Classification** | [8014](http://localhost:8014/docs) | Classification de contenu |
+| **EML Parser** | [8020](http://localhost:8020/docs) | Analyse de fichiers email (.eml) |
+| **Data Export** | [8027](http://localhost:8027/docs) | Export de donnees |
+
+### Outils NVIDIA specialises
+
+| Service | Port | Description |
+|---------|------|-------------|
+| **NeMo Guardrails** | [8029](http://localhost:8029/docs) | Garde-fous IA (safety) |
+| **NVIDIA Multimodal** | [8030](http://localhost:8030/docs) | Analyse multimodale |
+| **NVIDIA Vista 3D** | [8031](http://localhost:8031/docs) | Segmentation 3D medicale |
+| **Multi-LLM Search** | [8032](http://localhost:8032/docs) | Recherche multi-LLM |
+| **FourCastNet** | [8033](http://localhost:8033/docs) | Previsions meteorologiques |
+| **OpenFold3** | [8034](http://localhost:8034/docs) | Prediction de structures proteiques |
+| **Grounding DINO** | [8035](http://localhost:8035/docs) | Detection d'objets zero-shot |
+
+### Infrastructure email et Kanban
+
+| Service | Port | Description |
+|---------|------|-------------|
+| **Ollama** | 11434 | Inference LLM locale |
+| **WeKan** | [8085](http://localhost:8085) | Tableau Kanban |
+| **WeKan Tool** | [8041](http://localhost:8041/docs) | API WeKan |
+| **IMAP Tool** | [8042](http://localhost:8042/docs) | Lecture d'emails IMAP |
+| **Email Analysis Agent** | [8043](http://localhost:8043/docs) | Agent d'analyse d'emails |
+
+## Architecture
+
+### Structure du projet
 
 ```
-agent-pf/
-├── ui/                          # 🎨 Interface utilisateur
-│   └── frontend/                # Application Angular
-│
-├── core/                        # 🔧 Services centraux
-│   ├── mistral-connector/       # Connecteur Mistral AI
-│   └── openai-connector/        # Connecteur OpenAI
-│
-├── agents/                      # 🤖 Agents orchestrateurs
-│   ├── ai-chat-agent/           # Agent de chat IA
-│   ├── document-analyzer-tool/  # Agent d'analyse de documents
-│   └── appointment-scheduler-tool/ # Agent de planification
-│
-├── tools/                       # 🛠️ Outils et briques de base
-│   ├── word-crud-tool/          # CRUD Word
-│   ├── pdf-crud-tool/           # CRUD PDF
-│   ├── excel-crud-tool/         # CRUD Excel
-│   ├── pptx-crud-tool/          # CRUD PowerPoint
-│   ├── web-search-tool/         # Recherche web
-│   ├── file-upload-tool/        # Upload de fichiers
-│   ├── document-extractor-tool/ # Extraction de documents
-│   ├── prompt-moderation-tool/  # Modération de prompts
-│   └── content-classification-tool/ # Classification de contenu
-│
-├── docker-compose.yml           # Configuration Docker
-└── .env.example                 # Variables d'environnement
+AISOME-NOVA/
+├── ui/frontend/                     # Interface utilisateur Angular 20
+├── core/                            # Connecteurs LLM
+│   ├── mistral-connector/
+│   ├── openai-connector/
+│   ├── anthropic-connector/
+│   ├── gemini-connector/
+│   ├── perplexity-connector/
+│   ├── nvidia-nim-connector/
+│   ├── ollama-connector/
+│   └── dolibarr-connector/
+├── agents/                          # Agents
+│   ├── agent-runtime/               # Moteur d'execution universel
+│   ├── agent-builder/               # Constructeur d'agents
+│   └── email-analysis-agent/        # Agent d'analyse d'emails
+├── shared/                          # Code partage (auth, security, etc.)
+├── docs/                            # Documentation detaillee
+└── docker-compose.yml
 ```
 
 ### Diagramme d'architecture
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│                    UI Layer (Port 4200)                  │
-│                    Frontend Angular                      │
-└────────────────────┬─────────────────────────────────────┘
-                     │
-┌────────────────────┼─────────────────────────────────────┐
-│                    │        Core Layer                   │
-│         ┌──────────▼──────────┐  ┌──────────────────┐   │
-│         │ Mistral Connector   │  │ OpenAI Connector │   │
-│         │    (Port 8005)      │  │    (Port 8006)   │   │
-│         └──────────┬──────────┘  └──────────────────┘   │
-└────────────────────┼─────────────────────────────────────┘
-                     │
-┌────────────────────┼─────────────────────────────────────┐
-│                    │      Agents Layer                   │
-│         ┌──────────▼──────────┐  ┌──────────────────┐   │
-│         │ AI Chat Agent       │  │ Document Analyzer│   │
-│         │   (Port 8012)       │  │   (Port 8009)    │   │
-│         └─────────────────────┘  └──────────────────┘   │
-│         ┌─────────────────────┐                         │
-│         │Appointment Scheduler│                         │
-│         │   (Port 8010)       │                         │
-│         └──────────┬──────────┘                         │
-└────────────────────┼─────────────────────────────────────┘
-                     │
-┌────────────────────▼─────────────────────────────────────┐
-│                    Tools Layer                           │
-│  ┌───────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
-│  │Word CRUD  │ │ PDF CRUD │ │Excel CRUD│ │PPTX CRUD │  │
-│  │(Port 8001)│ │(Port 8003│ │(Port 8004│ │(Port 8011│  │
-│  └───────────┘ └──────────┘ └──────────┘ └──────────┘  │
-│  ┌───────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
-│  │Web Search │ │File Upload│ │Doc Extract│ │Prompt Mod│  │
-│  │(Port 8002)│ │(Port 8007)│ │(Port 8008)│ │(Port 8013│  │
-│  └───────────┘ └──────────┘ └──────────┘ └──────────┘  │
-│  ┌───────────┐                                          │
-│  │Content    │                                          │
-│  │Classif.   │                                          │
-│  │(Port 8014)│                                          │
-│  └───────────┘                                          │
-└──────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Frontend Angular (Port 4200)                   │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+         ┌─────────────────────┼──────────────────────┐
+         │                     │                      │
+         ▼                     ▼                      ▼
+┌─────────────────┐  ┌─────────────────┐  ┌──────────────────────┐
+│  Agent Runtime   │  │  Agent Builder   │  │ Email Analysis Agent │
+│   (Port 8025)    │  │   (Port 8026)    │  │     (Port 8043)      │
+└────────┬─────────┘  └────────┬─────────┘  └──────────┬───────────┘
+         │                     │                       │
+         └─────────┬───────────┘                       │
+                   │                                   │
+    ┌──────────────┼───────────────────────────────────┤
+    │              │                                   │
+    ▼              ▼                                   ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Connecteurs LLM (Core)                         │
+│  Mistral   OpenAI   Anthropic   Gemini   Perplexity   NVIDIA NIM   │
+│  (8005)    (8006)   (8024)      (8023)   (8022)       (8028)       │
+│                        Ollama (8040)    Dolibarr (8015)             │
+└─────────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                          Outils (Tools)                             │
+│  Word    PDF    Excel   PPTX   Web Search   File Upload   Doc Ext  │
+│  (8001)  (8003) (8004)  (8011) (8002)       (8007)        (8008)   │
+│  Prompt Mod  Content Class  EML Parser  Data Export                 │
+│  (8013)      (8014)         (8020)      (8027)                     │
+│  NeMo Guardrails  NVIDIA Multimodal  Multi-LLM Search  ...        │
+│  (8029)           (8030)             (8032)                        │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-## 🐳 Gestion Docker
+## Stack technique
+
+- **Angular 20** - Framework frontend
+- **FastAPI** (Python) - Framework backend pour tous les microservices
+- **Docker / Docker Compose** - Containerisation et orchestration
+- **Ollama** - Inference LLM locale
+- **WeKan** - Gestion de taches Kanban
+- **MongoDB** - Base de donnees (WeKan)
+
+### Fournisseurs LLM supportes
+
+| Fournisseur | Modeles par defaut | Usage |
+|-------------|-------------------|-------|
+| Mistral | mistral-small-latest | Chat, analyse de documents |
+| OpenAI | gpt-4o-mini | Chat, vision |
+| Anthropic | claude-3-5-sonnet | Chat, raisonnement |
+| Gemini | gemini-2.0-flash-exp | Chat, multimodal |
+| Perplexity | sonar | Recherche augmentee |
+| NVIDIA NIM | llama-3.1-8b-instruct | Inference haute performance |
+| Ollama | gemma3:4b | Inference locale, hors-ligne |
+
+## Securite
+
+La plateforme integre plusieurs couches de securite :
+
+- **CORS hardening** : Configuration stricte des origines autorisees
+- **Security headers** : Headers HTTP de securite sur toutes les reponses
+- **Rate limiting** : Limitation du nombre de requetes par client
+- **Hachage des mots de passe** : Stockage securise des credentials
+- **Moderation de prompts** : Filtrage automatique des contenus inappropries
+- **Classification de contenu** : Detection de contenu non professionnel
+- **NeMo Guardrails** : Garde-fous IA NVIDIA pour la securite des agents
+
+## Gestion Docker
 
 ```bash
-# Démarrer tous les services
+# Demarrer tous les services
 docker-compose up -d
 
 # Voir les logs
 docker-compose logs -f
 
-# Voir les logs d'un service spécifique
-docker-compose logs -f frontend
-docker-compose logs -f ai-chat-agent
+# Logs d'un service specifique
+docker-compose logs -f agent-runtime
 
-# Redémarrer un service
-docker-compose restart frontend
+# Redemarrer un service
+docker-compose restart agent-runtime
 
-# Arrêter tous les services
+# Arreter tous les services
 docker-compose down
 
-# Rebuild et redémarrer
+# Rebuild et redemarrer
 docker-compose up -d --build
 ```
 
-## 🛠️ Configuration
+## Configuration
 
-Le fichier `.env` contient les variables d'environnement pour tous les services.
+Le fichier `.env` contient les variables d'environnement. Principales variables :
 
-### Variables importantes :
+```env
+# Cles API LLM (configurer celles dont vous avez besoin)
+MISTRAL_API_KEY=votre_cle
+OPENAI_API_KEY=votre_cle
+ANTHROPIC_API_KEY=votre_cle
+GEMINI_API_KEY=votre_cle
+PERPLEXITY_API_KEY=votre_cle
+NVIDIA_NIM_API_KEY=votre_cle
 
-**Mistral AI Connector** (Service central)
-- `MISTRAL_API_KEY` : ⚠️ **OBLIGATOIRE** - Clé API Mistral ([obtenir une clé](https://console.mistral.ai/))
-- `MISTRAL_ENVIRONMENT` : Environnement (production/development)
-- `MISTRAL_DEFAULT_MODEL` : Modèle par défaut (mistral-small-latest)
-- `MISTRAL_DEFAULT_TEMPERATURE` : Température de génération (0.7)
+# Dolibarr ERP
+DOLIBARR_URL=http://localhost:8081
+DOLIBARR_API_KEY=votre_cle
 
-**Autres services**
-- Chaque outil/agent a ses propres variables d'environnement
-- Format : `{SERVICE}_ENVIRONMENT`, `{SERVICE}_CORS_ORIGINS`
+# Email (pour l'agent d'analyse d'emails)
+IMAP_SERVER=imap.gmail.com
+IMAP_USERNAME=votre_email
+IMAP_PASSWORD=votre_mot_de_passe
+```
 
-## 📝 Développement
+## Developpement
 
-### Ajouter un nouveau tool
+Pour plus de details sur l'architecture et le developpement, consultez la documentation dans le dossier `docs/` :
 
-1. Créer un nouveau dossier dans `tools/`
-2. Ajouter le service dans `docker-compose.yml`
-3. Exposer un nouveau port
-4. Ajouter les variables d'environnement dans `.env.example`
+- `docs/ARCHITECTURE_AGENTS_TOOLS.md` - Architecture detaillee des agents et outils
+- `docs/core/` - Documentation des connecteurs LLM
+- `docs/tools/` - Documentation de chaque outil
+- `docs/agents/` - Documentation des agents
+- `docs/platform/` - Documentation de la plateforme
 
-### Ajouter un nouveau agent
+Voir egalement :
 
-1. Créer un nouveau dossier dans `agents/`
-2. L'agent orchestre plusieurs tools/services
-3. Ajouter le service dans `docker-compose.yml`
-4. Configurer les dépendances dans le `depends_on`
+- `MULTI_LLM_FEATURES.md` - Configuration multi-LLM et detection de documents professionnels
+- `I18N.md` - Guide d'internationalisation (fr, en, es)
+- `doc_fonctionnelle.md` - Specifications fonctionnelles
 
-### Ajouter un nouveau service core
+## Support
 
-1. Créer un nouveau dossier dans `core/`
-2. Les services core sont utilisés par les agents
-3. Ajouter le service dans `docker-compose.yml`
-
-## 🆘 Support
-
-- Issues : Créez une issue sur GitHub
-- Documentation : Consultez les fichiers `.md` du projet
-
-**Développé avec ❤️ pour la simplicité et la clarté**
+- Issues : Creez une issue sur GitHub
+- Documentation : Consultez les fichiers dans `docs/`

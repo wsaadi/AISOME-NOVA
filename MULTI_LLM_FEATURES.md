@@ -2,7 +2,7 @@
 
 ## 📋 Vue d'ensemble
 
-Ce document décrit les nouvelles fonctionnalités ajoutées au système AI Chat Agent pour résoudre deux problèmes critiques :
+Ce document décrit les fonctionnalités du systeme multi-LLM de la plateforme, gerees par l'Agent Runtime (port 8025). Deux problematiques principales sont adressees :
 
 1. **Blocage injustifié de documents professionnels** (CCTP, RFP, etc.) par la modération
 2. **Besoin de modèles LLM spécialisés** selon le type de tâche (texte, document, image)
@@ -132,41 +132,53 @@ Si vous ne spécifiez pas `task_type`, le système détecte automatiquement :
 | Documents complexes | `gpt-4o` | Excellente compréhension |
 | Images | `gpt-4o` | Vision intégrée |
 
+### Anthropic
+| Tâche | Modèle | Pourquoi |
+|-------|--------|----------|
+| Texte classique | `claude-3-5-sonnet` | Raisonnement avancé |
+| Documents complexes | `claude-3-5-sonnet` | Excellente analyse |
+
+### Gemini
+| Tâche | Modèle | Pourquoi |
+|-------|--------|----------|
+| Texte classique | `gemini-2.0-flash-exp` | Rapide, multimodal |
+| Documents complexes | `gemini-2.0-flash-exp` | Support natif documents |
+
+### NVIDIA NIM
+| Tâche | Modèle | Pourquoi |
+|-------|--------|----------|
+| Texte classique | `llama-3.1-8b-instruct` | Haute performance |
+
+### Ollama (inference locale)
+| Tâche | Modèle | Pourquoi |
+|-------|--------|----------|
+| Texte classique | `gemma3:4b` | Inference hors-ligne, confidentialite |
+
 ---
 
-## 🔧 Modifications Techniques
+## Implementation technique
 
-### Fichiers Modifiés
+### Composants concernes
 
-#### 1. Modèles Chat (`agents/ai-chat-agent/app/models/chat_models.py`)
-- ✅ Ajout de `TaskType` enum
-- ✅ Ajout de `LLMConfig` pour configurer un LLM
-- ✅ Ajout de `MultiLLMConfig` pour configuration multi-LLM
-- ✅ Nouveaux champs dans `ChatRequest` :
-  - `multi_llm_config`
-  - `task_type`
-  - `is_professional_document`
-  - `document_type`
+#### Agent Runtime (`agents/agent-runtime/`, port 8025)
 
-#### 2. Service Chat (`agents/ai-chat-agent/app/services/chat_service.py`)
-- ✅ Méthode `_detect_professional_document()` : détecte CCTP, RFP, etc.
-- ✅ Méthode `_resolve_llm_config()` : résout quelle config LLM utiliser
-- ✅ Méthode `_get_default_model_for_provider()` : modèles par défaut
-- ✅ Transmission du contexte professionnel à la modération
+Le moteur d'execution universel gere la configuration multi-LLM :
+- `TaskType` enum : `text_chat`, `document_analysis`, `image_analysis`
+- `LLMConfig` et `MultiLLMConfig` : modeles de configuration par type de tache
+- Detection automatique du type de tache selon le contenu de la requete
+- Resolution dynamique du connecteur LLM a utiliser
+- Detection des documents professionnels (CCTP, RFP, etc.)
+- Transmission du contexte professionnel a la moderation
 
-#### 3. Configuration (`agents/ai-chat-agent/app/config.py`)
-- ✅ Nouveaux paramètres pour chaque type de tâche :
-  - `text_chat_*`
-  - `document_analysis_*`
-  - `image_analysis_*`
+#### Moderation (`tools/prompt-moderation-tool/`, port 8013)
+- Champs de requete : `is_professional_document`, `document_type`, `has_attachments`
+- Logique de moderation adaptee au contexte professionnel
+- Patterns de confidentialite relaxes pour documents professionnels
 
-#### 4. Modération (`tools/prompt-moderation-tool/`)
-- ✅ Nouveaux champs dans `ModerationRequest` :
-  - `is_professional_document`
-  - `document_type`
-  - `has_attachments`
-- ✅ Logique de modération adaptée au contexte professionnel
-- ✅ Patterns de confidentialité relaxés pour documents pros
+#### Connecteurs LLM disponibles
+- Mistral (port 8005), OpenAI (port 8006), Anthropic (port 8024)
+- Gemini (port 8023), Perplexity (port 8022), NVIDIA NIM (port 8028)
+- Ollama (port 8040) pour l'inference locale
 
 ---
 
@@ -291,47 +303,9 @@ Si vous ne spécifiez pas `task_type`, le système détecte automatiquement :
 
 ---
 
-## 🔄 Migration
+## Support
 
-### Avant (Ancienne API)
-```json
-{
-  "messages": [...],
-  "provider": "mistral",
-  "model": "mistral-small-latest"
-}
-```
-
-### Après (Nouvelle API Multi-LLM)
-```json
-{
-  "messages": [...],
-  "multi_llm_config": {
-    "text_chat": {
-      "provider": "mistral",
-      "model": "mistral-small-latest"
-    },
-    "document_analysis": {
-      "provider": "mistral",
-      "model": "mistral-large-latest"
-    }
-  }
-}
-```
-
-**Note** : L'ancienne API continue de fonctionner ! 🎉
-
----
-
-## 📞 Support
-
-Pour toute question ou problème :
-1. Vérifiez ce document
-2. Consultez les logs du service
-3. Contactez l'équipe de développement
-
----
-
-**Date de création** : 2026-01-10
-**Version** : 1.0.0
-**Auteur** : Claude Code Agent
+Pour toute question ou probleme :
+1. Consultez ce document
+2. Consultez les logs de l'Agent Runtime : `docker-compose logs -f agent-runtime`
+3. Consultez la documentation dans `docs/`
