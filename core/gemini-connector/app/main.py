@@ -4,6 +4,8 @@ Application principale du connecteur Gemini
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 import logging
 
 from app.config import settings
@@ -102,13 +104,28 @@ app = FastAPI(
 
 
 # Configuration CORS
+origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins.split(","),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=origins,
+    allow_credentials="*" not in origins,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key", "X-Request-ID"],
 )
+
+
+# Security headers middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 # Enregistrer les routers
@@ -179,7 +196,7 @@ async def global_exception_handler(request, exc):
         status_code=500,
         content={
             "success": False,
-            "message": f"Erreur interne du serveur: {str(exc)}",
+            "message": "Internal server error" if settings.environment == "production" else f"{type(exc).__name__}: {str(exc)}",
             "error": type(exc).__name__
         }
     )

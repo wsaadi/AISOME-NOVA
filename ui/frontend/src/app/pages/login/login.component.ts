@@ -27,6 +27,7 @@ export class LoginComponent {
   isLoading = signal(false);
   errorMessage = signal('');
   showPassword = signal(false);
+  maxAttempts = signal(5);
 
   constructor(
     private authService: AuthService,
@@ -57,7 +58,14 @@ export class LoginComponent {
         this.errorMessage.set(this.translate.instant('login.errors.invalid_credentials'));
       }
     } catch (error) {
-      this.errorMessage.set(this.translate.instant('login.errors.login_failed'));
+      if (error instanceof Error && error.message.startsWith('RATE_LIMITED:')) {
+        const minutes = error.message.split(':')[1];
+        this.errorMessage.set(
+          `Too many attempts. Please try again in ${minutes} minute(s).`
+        );
+      } else {
+        this.errorMessage.set(this.translate.instant('login.errors.login_failed'));
+      }
     } finally {
       this.isLoading.set(false);
     }
