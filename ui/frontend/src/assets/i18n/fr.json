@@ -477,6 +477,14 @@
       "upload": "Télécharger un email",
       "analyze": "Analyser",
       "results": "Résultats"
+    },
+    "legal_contract": {
+      "name": "Agent Contrats Juridiques",
+      "description": "Agent spécialisé en droit des contrats"
+    },
+    "webgpu_local": {
+      "name": "Vision IA Locale (WebGPU)",
+      "description": "Agent de vision IA exécuté localement via WebGPU"
     }
   },
   "moderation": {

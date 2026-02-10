@@ -477,6 +477,14 @@
       "upload": "Subir un correo",
       "analyze": "Analizar",
       "results": "Resultados"
+    },
+    "legal_contract": {
+      "name": "Agente de Contratos Legales",
+      "description": "Agente especializado en derecho contractual"
+    },
+    "webgpu_local": {
+      "name": "Visión IA Local (WebGPU)",
+      "description": "Agente de visión IA ejecutado localmente vía WebGPU"
     }
   },
   "moderation": {
