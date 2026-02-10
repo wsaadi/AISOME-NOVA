@@ -62,7 +62,7 @@ STATIC_AGENTS = [
         "description": "Extraction automatique de données depuis différentes sources",
         "icon": "fa fa-database",
         "category": "extraction",
-        "route": None,
+        "route": "/agent/data-extractor",
         "tags": ["extraction", "data", "automation"],
     },
     {
@@ -71,7 +71,7 @@ STATIC_AGENTS = [
         "description": "Génération automatique de rapports professionnels",
         "icon": "fa fa-file-word",
         "category": "generation",
-        "route": None,
+        "route": "/agent/report-generator",
         "tags": ["report", "generation", "document"],
     },
     {
@@ -89,7 +89,7 @@ STATIC_AGENTS = [
         "description": "Agent spécialisé en droit des contrats",
         "icon": "fa fa-scale-balanced",
         "category": "legal_analysis",
-        "route": "/legal-contract-agent",
+        "route": "/agent/legal-contract-agent",
         "tags": ["legal", "contract", "law"],
     },
     {
@@ -205,15 +205,22 @@ async def seed_static_agents(storage) -> int:
     seeded = 0
     for agent_data in STATIC_AGENTS:
         agent_id = agent_data["id"]
+        expected_route = agent_data.get("route")
         existing = await storage.get(agent_id)
         if existing is None:
             agent = _build_agent_definition(agent_data)
             await storage.save(agent)
             seeded += 1
         else:
-            # Ensure existing static agents have the correct agent_type
+            # Ensure existing static agents have correct agent_type and route
+            needs_update = False
             if not hasattr(existing, 'agent_type') or existing.agent_type != AgentType.STATIC:
                 existing.agent_type = AgentType.STATIC
+                needs_update = True
+            if expected_route and existing.route != expected_route:
+                existing.route = expected_route
+                needs_update = True
+            if needs_update:
                 await storage.save(existing)
 
     return seeded

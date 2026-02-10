@@ -117,7 +117,7 @@ export class AgentsCatalogComponent implements OnInit {
 
     // Déterminer la route selon le type d'agent
     let route = agent.route;
-    if (agentType === 'dynamic' && !route) {
+    if (!route) {
       route = `/agent/${agent.id}`;
     }
 
