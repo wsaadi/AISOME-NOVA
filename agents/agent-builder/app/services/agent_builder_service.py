@@ -16,6 +16,7 @@ import httpx
 from ..models import (
     AgentDefinition,
     AgentStatus,
+    AgentType,
     CreateAgentRequest,
     UpdateAgentRequest,
     ToolConfiguration,
@@ -484,6 +485,7 @@ class AgentBuilderService:
         self,
         category: Optional[str] = None,
         status: Optional[AgentStatus] = None,
+        agent_type: Optional[AgentType] = None,
         search: Optional[str] = None,
         page: int = 1,
         page_size: int = 20
@@ -492,6 +494,7 @@ class AgentBuilderService:
         return await self.storage.list(
             category=category,
             status=status,
+            agent_type=agent_type,
             search=search,
             page=page,
             page_size=page_size
@@ -619,6 +622,115 @@ class AgentBuilderService:
 
         agent = AgentDefinition.model_validate(data)
         return await self.storage.save(agent)
+
+    async def export_agent_archive(self, agent_id: str) -> Optional[bytes]:
+        """
+        Export an agent as a ZIP archive containing everything needed to recreate it.
+
+        Archive structure:
+            manifest.json       - Archive metadata (version, type, dependencies)
+            definition.json     - Full agent definition
+            config.json         - Agent configuration (LLM settings, etc.)
+        """
+        import json
+        import zipfile
+        import io
+
+        agent = await self.storage.get(agent_id)
+        if not agent:
+            return None
+
+        # Create in-memory ZIP
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+            # Manifest
+            manifest = {
+                "version": "1.0.0",
+                "format": "aisome-agent-archive",
+                "agent_name": agent.name,
+                "agent_type": agent.agent_type.value if hasattr(agent, 'agent_type') else "dynamic",
+                "created_at": datetime.utcnow().isoformat(),
+                "platform_version": "1.0.0",
+                "dependencies": {
+                    "tools": [t.tool_id for t in agent.tools],
+                    "llm_provider": agent.ai_behavior.default_provider.value if agent.ai_behavior else None,
+                }
+            }
+            zf.writestr("manifest.json", json.dumps(manifest, indent=2, default=str))
+
+            # Full agent definition
+            agent_data = agent.model_dump()
+            zf.writestr("definition.json", json.dumps(agent_data, indent=2, default=str))
+
+            # Configuration (sanitized - no API keys)
+            config = {
+                "llm_settings": {
+                    "provider": agent.ai_behavior.default_provider.value if agent.ai_behavior else "mistral",
+                    "model": agent.ai_behavior.default_model if agent.ai_behavior else None,
+                    "temperature": agent.ai_behavior.temperature if agent.ai_behavior else 0.7,
+                    "max_tokens": agent.ai_behavior.max_tokens if agent.ai_behavior else 2048,
+                },
+                "moderation": {
+                    "enabled": agent.ai_behavior.enable_moderation if agent.ai_behavior else True,
+                    "content_filters": agent.ai_behavior.content_filters if agent.ai_behavior else [],
+                }
+            }
+            zf.writestr("config.json", json.dumps(config, indent=2, default=str))
+
+        buffer.seek(0)
+        return buffer.getvalue()
+
+    async def import_agent_archive(self, archive_bytes: bytes) -> AgentDefinition:
+        """
+        Import an agent from a ZIP archive.
+
+        Reads the archive, validates its contents, and creates a new agent.
+        """
+        import json
+        import zipfile
+        import io
+
+        buffer = io.BytesIO(archive_bytes)
+
+        with zipfile.ZipFile(buffer, 'r') as zf:
+            # Validate archive structure
+            names = zf.namelist()
+            if "manifest.json" not in names or "definition.json" not in names:
+                raise ValueError("Invalid archive: missing manifest.json or definition.json")
+
+            # Read manifest
+            manifest = json.loads(zf.read("manifest.json"))
+            if manifest.get("format") != "aisome-agent-archive":
+                raise ValueError("Invalid archive format")
+
+            # Read agent definition
+            agent_data = json.loads(zf.read("definition.json"))
+
+            # Generate new ID to avoid conflicts
+            agent_data["id"] = str(uuid.uuid4())
+            agent_data["status"] = AgentStatus.DRAFT.value
+            agent_data["route"] = None
+            # Imported agents are always dynamic (they're user-managed)
+            agent_data["agent_type"] = AgentType.DYNAMIC.value
+
+            # Reset metadata
+            if "metadata" in agent_data:
+                agent_data["metadata"]["created_at"] = datetime.utcnow().isoformat()
+                agent_data["metadata"]["updated_at"] = datetime.utcnow().isoformat()
+                agent_data["metadata"]["version"] = "1.0.0"
+
+            # Apply config overrides if present
+            if "config.json" in names:
+                config = json.loads(zf.read("config.json"))
+                if "llm_settings" in config and "ai_behavior" in agent_data:
+                    llm = config["llm_settings"]
+                    if llm.get("provider"):
+                        agent_data["ai_behavior"]["default_provider"] = llm["provider"]
+                    if llm.get("model"):
+                        agent_data["ai_behavior"]["default_model"] = llm["model"]
+
+            agent = AgentDefinition.model_validate(agent_data)
+            return await self.storage.save(agent)
 
     def get_component_types(self) -> List[Dict[str, Any]]:
         """Get all available UI component types with metadata."""

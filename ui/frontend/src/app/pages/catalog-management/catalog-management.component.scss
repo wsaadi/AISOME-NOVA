@@ -198,6 +198,39 @@
   }
 }
 
+// Agent types
+.type-static {
+  background-color: #7b1fa2 !important;
+  color: white !important;
+}
+
+.type-dynamic {
+  background-color: #1976d2 !important;
+  color: white !important;
+}
+
+.type-runtime {
+  background-color: #00838f !important;
+  color: white !important;
+}
+
+// Import
+.import-progress {
+  margin-bottom: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.agents-count {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-secondary, #666);
+}
+
 .delete-action {
   color: #f44336;
 }

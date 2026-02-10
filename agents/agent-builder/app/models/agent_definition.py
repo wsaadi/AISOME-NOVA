@@ -26,6 +26,13 @@ class AgentStatus(str, Enum):
     ARCHIVED = "archived"
 
 
+class AgentType(str, Enum):
+    """Agent type indicating its origin and rendering mode."""
+    STATIC = "static"      # Built-in agent with dedicated Angular component
+    DYNAMIC = "dynamic"    # Created via Agent Builder, rendered by agent-runner
+    RUNTIME = "runtime"    # Defined in YAML, loaded from agent-runtime service
+
+
 class ComponentType(str, Enum):
     """Available UI component types for agent interfaces."""
     # Input Components
@@ -479,6 +486,7 @@ class AgentDefinition(BaseModel):
     icon: str = Field("fa fa-robot", description="Font Awesome icon class")
     category: str = Field("custom", description="Agent category")
     status: AgentStatus = AgentStatus.DRAFT
+    agent_type: AgentType = Field(AgentType.DYNAMIC, description="Agent type: static, dynamic, or runtime")
 
     # Metadata
     metadata: AgentMetadata = Field(default_factory=AgentMetadata)

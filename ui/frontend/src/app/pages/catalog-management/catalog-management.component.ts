@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -16,11 +16,12 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 
 import { AgentBuilderService } from '../agent-builder/services/agent-builder.service';
-import { AgentDefinition } from '../agent-builder/models/agent.models';
+import { AgentDefinition, AgentType } from '../agent-builder/models/agent.models';
 import { RoleService } from '../../core/services/role.service';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -32,7 +33,8 @@ interface AgentWithOwnership extends AgentDefinition {
 /**
  * Page de gestion du catalogue d'agents
  *
- * - Admin: peut publier, masquer, supprimer tous les agents
+ * Gère TOUS les agents de la plateforme (static, dynamic, runtime):
+ * - Admin: peut publier, masquer, supprimer, exporter, importer tous les agents
  * - Utilisateur: peut publier, masquer uniquement ses propres agents
  */
 @Component({
@@ -56,20 +58,24 @@ interface AgentWithOwnership extends AgentDefinition {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatProgressBarModule,
     TranslateModule
   ],
   templateUrl: './catalog-management.component.html',
   styleUrls: ['./catalog-management.component.scss']
 })
 export class CatalogManagementComponent implements OnInit {
+  @ViewChild('importFileInput') importFileInput!: ElementRef<HTMLInputElement>;
+
   agents: AgentWithOwnership[] = [];
   filteredAgents: AgentWithOwnership[] = [];
-  displayedColumns = ['icon', 'name', 'category', 'status', 'createdBy', 'updatedAt', 'actions'];
+  displayedColumns = ['icon', 'name', 'agentType', 'category', 'status', 'createdBy', 'updatedAt', 'actions'];
 
   // Filtres
   searchTerm = '';
   statusFilter = 'all';
   ownershipFilter = 'all';
+  typeFilter = 'all';
 
   // Pagination
   pageSize = 10;
@@ -79,6 +85,9 @@ export class CatalogManagementComponent implements OnInit {
   // Permissions
   isAdmin = false;
   currentUserId = '';
+
+  // Import state
+  isImporting = false;
 
   // Statuts disponibles
   statusOptions = [
@@ -96,6 +105,13 @@ export class CatalogManagementComponent implements OnInit {
     { value: 'others', label: 'Agents des autres' }
   ];
 
+  typeOptions = [
+    { value: 'all', label: 'Tous les types' },
+    { value: 'static', label: 'Intégré (Static)' },
+    { value: 'dynamic', label: 'Personnalisé (Dynamic)' },
+    { value: 'runtime', label: 'Runtime (YAML)' }
+  ];
+
   constructor(
     private agentBuilderService: AgentBuilderService,
     private roleService: RoleService,
@@ -107,19 +123,15 @@ export class CatalogManagementComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    // Vérifier si l'utilisateur est admin (par rôle)
     this.isAdmin = this.roleService.hasRole('admin');
-
-    // Obtenir l'ID utilisateur courant
     const profile = await this.roleService.getUserProfile();
     this.currentUserId = profile?.id || '';
-
-    // Charger les agents
     this.loadAgents();
   }
 
   loadAgents(): void {
-    this.agentBuilderService.listAgents({}).subscribe({
+    // Charger TOUS les agents (sans filtre de statut ni de type)
+    this.agentBuilderService.listAgents({ pageSize: 200 }).subscribe({
       next: (response) => {
         this.agents = response.agents.map(agent => ({
           ...agent,
@@ -166,6 +178,11 @@ export class CatalogManagementComponent implements OnInit {
       filtered = filtered.filter(a => a.status === this.statusFilter);
     }
 
+    // Filtre par type d'agent
+    if (this.typeFilter !== 'all') {
+      filtered = filtered.filter(a => (a.agent_type || 'dynamic') === this.typeFilter);
+    }
+
     // Filtre par propriété
     if (this.ownershipFilter === 'mine') {
       filtered = filtered.filter(a => a.isOwner);
@@ -188,6 +205,11 @@ export class CatalogManagementComponent implements OnInit {
   }
 
   onOwnershipFilterChange(): void {
+    this.pageIndex = 0;
+    this.applyFilters();
+  }
+
+  onTypeFilterChange(): void {
     this.pageIndex = 0;
     this.applyFilters();
   }
@@ -256,7 +278,6 @@ export class CatalogManagementComponent implements OnInit {
   }
 
   deleteAgent(agent: AgentWithOwnership): void {
-    // Seuls les admins peuvent supprimer
     if (!this.isAdmin) {
       this.showPermissionError();
       return;
@@ -293,12 +314,25 @@ export class CatalogManagementComponent implements OnInit {
       this.showPermissionError();
       return;
     }
-    this.router.navigate(['/agent-builder', agent.id]);
+    // Les agents statiques ne sont pas éditables via le builder
+    if (agent.agent_type === 'static') {
+      this.snackBar.open(
+        'Les agents intégrés ne peuvent pas être édités via le builder',
+        this.translate.instant('common.close'),
+        { duration: 3000, panelClass: 'warning-snackbar' }
+      );
+      return;
+    }
+    this.router.navigate(['/edit-agent', agent.id]);
   }
 
   viewAgent(agent: AgentWithOwnership): void {
     if (agent.status === 'active') {
-      this.router.navigate(['/agent', agent.id]);
+      if (agent.route) {
+        this.router.navigate([agent.route]);
+      } else {
+        this.router.navigate(['/agent', agent.id]);
+      }
     }
   }
 
@@ -312,7 +346,6 @@ export class CatalogManagementComponent implements OnInit {
 
     this.agentBuilderService.duplicateAgent(agent.id, newName).subscribe({
       next: (newAgent) => {
-        // Ajouter le nouvel agent à la liste
         this.agents.push({
           ...newAgent,
           isOwner: true,
@@ -336,13 +369,104 @@ export class CatalogManagementComponent implements OnInit {
     });
   }
 
-  // Actions en masse (admin uniquement)
+  // ============== IMPORT / EXPORT ==============
+
+  /**
+   * Exporte un agent sous forme d'archive ZIP
+   */
+  exportAgentArchive(agent: AgentWithOwnership): void {
+    this.agentBuilderService.exportAgentArchive(agent.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${agent.name.toLowerCase().replace(/\s+/g, '-')}.agent.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.snackBar.open(
+          `Archive "${agent.name}" téléchargée`,
+          this.translate.instant('common.close'),
+          { duration: 3000, panelClass: 'success-snackbar' }
+        );
+      },
+      error: (err) => {
+        console.error('Error exporting agent archive:', err);
+        this.snackBar.open(
+          'Erreur lors de l\'export de l\'archive',
+          this.translate.instant('common.close'),
+          { duration: 5000, panelClass: 'error-snackbar' }
+        );
+      }
+    });
+  }
+
+  /**
+   * Ouvre le sélecteur de fichier pour importer une archive
+   */
+  triggerImportArchive(): void {
+    if (this.importFileInput) {
+      this.importFileInput.nativeElement.click();
+    }
+  }
+
+  /**
+   * Gère l'import d'une archive ZIP sélectionnée
+   */
+  onImportFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+
+    if (!file.name.endsWith('.zip')) {
+      this.snackBar.open(
+        'Veuillez sélectionner un fichier .zip',
+        this.translate.instant('common.close'),
+        { duration: 3000, panelClass: 'warning-snackbar' }
+      );
+      return;
+    }
+
+    this.isImporting = true;
+    this.agentBuilderService.importAgentArchive(file).subscribe({
+      next: (newAgent) => {
+        this.isImporting = false;
+        this.agents.push({
+          ...newAgent,
+          isOwner: true,
+          canManage: true
+        });
+        this.applyFilters();
+        this.snackBar.open(
+          `Agent "${newAgent.name}" importé avec succès`,
+          this.translate.instant('common.close'),
+          { duration: 3000, panelClass: 'success-snackbar' }
+        );
+        // Reset file input
+        input.value = '';
+      },
+      error: (err) => {
+        this.isImporting = false;
+        console.error('Error importing agent archive:', err);
+        this.snackBar.open(
+          'Erreur lors de l\'import de l\'archive: ' + (err.error?.detail || err.message),
+          this.translate.instant('common.close'),
+          { duration: 5000, panelClass: 'error-snackbar' }
+        );
+        input.value = '';
+      }
+    });
+  }
+
+  // ============== BULK ACTIONS ==============
+
   publishSelected(agents: AgentWithOwnership[]): void {
     if (!this.isAdmin) {
       this.showPermissionError();
       return;
     }
-
     const manageable = agents.filter(a => a.canManage && a.status !== 'active');
     manageable.forEach(agent => this.publishAgent(agent));
   }
@@ -352,10 +476,11 @@ export class CatalogManagementComponent implements OnInit {
       this.showPermissionError();
       return;
     }
-
     const manageable = agents.filter(a => a.canManage && a.status === 'active');
     manageable.forEach(agent => this.hideAgent(agent));
   }
+
+  // ============== HELPERS ==============
 
   private showPermissionError(): void {
     this.snackBar.open(
@@ -363,6 +488,19 @@ export class CatalogManagementComponent implements OnInit {
       this.translate.instant('common.close'),
       { duration: 3000, panelClass: 'warning-snackbar' }
     );
+  }
+
+  getAgentTypeLabel(agentType: string): string {
+    const typeMap: { [key: string]: string } = {
+      'static': 'Intégré',
+      'dynamic': 'Personnalisé',
+      'runtime': 'Runtime'
+    };
+    return typeMap[agentType] || agentType || 'Personnalisé';
+  }
+
+  getAgentTypeClass(agentType: string): string {
+    return `type-${agentType || 'dynamic'}`;
   }
 
   getStatusLabel(status: string): string {

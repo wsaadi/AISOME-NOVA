@@ -6,6 +6,8 @@
 
 export type AgentStatus = 'draft' | 'active' | 'beta' | 'disabled' | 'archived';
 
+export type AgentType = 'static' | 'dynamic' | 'runtime';
+
 export type ComponentType =
   // Input Components
   | 'text_input'
@@ -358,6 +360,7 @@ export interface AgentDefinition {
   icon: string;
   category: string;
   status: AgentStatus;
+  agent_type: AgentType;
   metadata: AgentMetadata;
   tools: ToolConfiguration[];
   ui_layout: UILayout;

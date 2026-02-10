@@ -12,7 +12,7 @@ from pathlib import Path
 import asyncio
 from contextlib import asynccontextmanager
 
-from ..models import AgentDefinition, AgentStatus
+from ..models import AgentDefinition, AgentStatus, AgentType
 
 
 class AgentStorage:
@@ -69,6 +69,7 @@ class AgentStorage:
             "icon": agent.icon,
             "category": agent.category,
             "status": agent.status.value,
+            "agent_type": agent.agent_type.value,
             "created_at": agent.metadata.created_at.isoformat(),
             "updated_at": agent.metadata.updated_at.isoformat(),
             "version": agent.metadata.version,
@@ -155,6 +156,7 @@ class AgentStorage:
         self,
         category: Optional[str] = None,
         status: Optional[AgentStatus] = None,
+        agent_type: Optional[AgentType] = None,
         search: Optional[str] = None,
         tags: Optional[List[str]] = None,
         page: int = 1,
@@ -166,6 +168,7 @@ class AgentStorage:
         Args:
             category: Filter by category.
             status: Filter by status.
+            agent_type: Filter by agent type (static, dynamic, runtime).
             search: Search in name and description.
             tags: Filter by tags (any match).
             page: Page number (1-indexed).
@@ -185,6 +188,10 @@ class AgentStorage:
 
             # Status filter
             if status and meta.get("status") != status.value:
+                continue
+
+            # Agent type filter
+            if agent_type and meta.get("agent_type") != agent_type.value:
                 continue
 
             # Search filter
