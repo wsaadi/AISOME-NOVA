@@ -360,7 +360,7 @@ export interface AgentDefinition {
   icon: string;
   category: string;
   status: AgentStatus;
-  agent_type: AgentType;
+  agent_type?: AgentType;
   metadata: AgentMetadata;
   tools: ToolConfiguration[];
   ui_layout: UILayout;

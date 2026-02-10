@@ -220,6 +220,7 @@ export class AgentRunnerComponent implements OnInit, OnDestroy, AfterViewChecked
       icon: identity.icon || runtime.icon,
       category: identity.category || runtime.category,
       status: (identity.status || runtime.status || 'active') as 'active' | 'inactive' | 'draft',
+      agent_type: 'runtime' as const,
       metadata: {
         version: metadata.version || runtime.version || '1.0.0',
         tags: metadata.tags || runtime.tags || [],
