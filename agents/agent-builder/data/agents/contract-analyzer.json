@@ -1,0 +1,70 @@
+{
+  "id": "contract-analyzer",
+  "name": "Contract Analyzer",
+  "description": "Analyse juridique automatisée de contrats",
+  "long_description": null,
+  "icon": "fa fa-gavel",
+  "category": "legal_analysis",
+  "status": "active",
+  "agent_type": "static",
+  "metadata": {
+    "created_at": "2024-01-01 00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "created_by": "system",
+    "version": "1.0.0",
+    "tags": [
+      "legal",
+      "contract",
+      "analysis"
+    ]
+  },
+  "tools": [],
+  "ui_layout": {
+    "layout_mode": "sections",
+    "show_header": true,
+    "header_title": "Contract Analyzer",
+    "header_subtitle": "Analyse juridique automatisée de contrats",
+    "header_icon": null,
+    "dashboard_config": {
+      "columns": 12,
+      "rowHeight": 80,
+      "gap": 12
+    },
+    "widgets": [],
+    "sections": [],
+    "show_sidebar": false,
+    "sidebar_sections": [],
+    "sidebar_position": "left",
+    "sidebar_width": "300px",
+    "show_footer": false,
+    "footer_content": null,
+    "show_actions": true,
+    "actions": [],
+    "primary_color": null,
+    "secondary_color": null,
+    "custom_css": null
+  },
+  "ai_behavior": {
+    "system_prompt": "You are the Contract Analyzer agent. Analyse juridique automatisée de contrats",
+    "user_prompt": null,
+    "personality_traits": [],
+    "tone": "professional",
+    "default_provider": "mistral",
+    "default_model": null,
+    "temperature": 0.7,
+    "max_tokens": 2048,
+    "response_format": null,
+    "include_sources": false,
+    "include_confidence": false,
+    "context_window": 10,
+    "include_system_context": true,
+    "enable_moderation": false,
+    "enable_classification": true,
+    "content_filters": [],
+    "task_prompts": {}
+  },
+  "workflows": [],
+  "route": "/contract-analysis",
+  "requires_auth": false,
+  "allowed_roles": []
+}

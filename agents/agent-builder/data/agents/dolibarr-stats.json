@@ -1,0 +1,70 @@
+{
+  "id": "dolibarr-stats",
+  "name": "Dolibarr Stats",
+  "description": "Analyse et visualisation des statistiques Dolibarr ERP",
+  "long_description": null,
+  "icon": "fa fa-chart-pie",
+  "category": "sales_analysis",
+  "status": "active",
+  "agent_type": "static",
+  "metadata": {
+    "created_at": "2024-01-01 00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "created_by": "system",
+    "version": "1.0.0",
+    "tags": [
+      "erp",
+      "dolibarr",
+      "analytics"
+    ]
+  },
+  "tools": [],
+  "ui_layout": {
+    "layout_mode": "sections",
+    "show_header": true,
+    "header_title": "Dolibarr Stats",
+    "header_subtitle": "Analyse et visualisation des statistiques Dolibarr ERP",
+    "header_icon": null,
+    "dashboard_config": {
+      "columns": 12,
+      "rowHeight": 80,
+      "gap": 12
+    },
+    "widgets": [],
+    "sections": [],
+    "show_sidebar": false,
+    "sidebar_sections": [],
+    "sidebar_position": "left",
+    "sidebar_width": "300px",
+    "show_footer": false,
+    "footer_content": null,
+    "show_actions": true,
+    "actions": [],
+    "primary_color": null,
+    "secondary_color": null,
+    "custom_css": null
+  },
+  "ai_behavior": {
+    "system_prompt": "You are the Dolibarr Stats agent. Analyse et visualisation des statistiques Dolibarr ERP",
+    "user_prompt": null,
+    "personality_traits": [],
+    "tone": "professional",
+    "default_provider": "mistral",
+    "default_model": null,
+    "temperature": 0.7,
+    "max_tokens": 2048,
+    "response_format": null,
+    "include_sources": false,
+    "include_confidence": false,
+    "context_window": 10,
+    "include_system_context": true,
+    "enable_moderation": false,
+    "enable_classification": true,
+    "content_filters": [],
+    "task_prompts": {}
+  },
+  "workflows": [],
+  "route": "/dolibarr-stats",
+  "requires_auth": false,
+  "allowed_roles": []
+}

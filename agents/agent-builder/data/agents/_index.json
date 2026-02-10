@@ -1,15 +1,16 @@
 {
   "2334709b-26ae-4cd6-a15f-78eeddb9a6d8": {
     "id": "2334709b-26ae-4cd6-a15f-78eeddb9a6d8",
-    "name": "Analyseur de sch\u00e9ma",
-    "description": "Analyse des sch\u00e9mas et donne une description et explication",
+    "name": "Analyseur de schéma",
+    "description": "Analyse des schémas et donne une description et explication",
     "icon": "fa fa-file-alt",
     "category": "custom",
     "status": "active",
     "created_at": "2026-01-13T09:49:20.366145",
     "updated_at": "2026-01-13T10:40:11.276110",
     "version": "1.0.0",
-    "tags": []
+    "tags": [],
+    "agent_type": "dynamic"
   },
   "04a21794-39ed-4305-b439-ac900a0c0234": {
     "id": "04a21794-39ed-4305-b439-ac900a0c0234",
@@ -21,19 +22,21 @@
     "created_at": "2026-01-13T10:55:06.966259",
     "updated_at": "2026-01-13T16:20:37.915534",
     "version": "1.0.0",
-    "tags": []
+    "tags": [],
+    "agent_type": "dynamic"
   },
   "f67cc145-5fdf-4064-9802-a744263f32d2": {
     "id": "f67cc145-5fdf-4064-9802-a744263f32d2",
-    "name": "Assistant m\u00e9dical",
-    "description": "assistant m\u00e9dical d'analyse de diagnostic",
+    "name": "Assistant médical",
+    "description": "assistant médical d'analyse de diagnostic",
     "icon": "fa fa-comments",
     "category": "custom",
     "status": "active",
     "created_at": "2026-01-13T17:53:55.190258",
     "updated_at": "2026-01-19T16:31:13.846954",
     "version": "1.0.0",
-    "tags": []
+    "tags": [],
+    "agent_type": "dynamic"
   },
   "9de04fd5-b46c-4f92-8f52-801ea0002498": {
     "id": "9de04fd5-b46c-4f92-8f52-801ea0002498",
@@ -45,12 +48,13 @@
     "created_at": "2026-01-13T17:58:22.929072",
     "updated_at": "2026-01-13T18:01:48.151882",
     "version": "1.0.0",
-    "tags": []
+    "tags": [],
+    "agent_type": "dynamic"
   },
   "bbec9fc0-01e9-4e96-b738-25c8b1e48411": {
     "id": "bbec9fc0-01e9-4e96-b738-25c8b1e48411",
-    "name": "Analyseur d'\u00c9missions CO\u2082 AWS",
-    "description": "Agent permettant d'analyser un fichier CSV d'\u00e9missions CO\u2082 d'AWS et de g\u00e9n\u00e9rer une synth\u00e8se d\u00e9taill\u00e9e avec recommandations",
+    "name": "Analyseur d'Émissions CO₂ AWS",
+    "description": "Agent permettant d'analyser un fichier CSV d'émissions CO₂ d'AWS et de générer une synthèse détaillée avec recommandations",
     "icon": "fa fa-leaf",
     "category": "data_processing",
     "status": "active",
@@ -64,12 +68,13 @@
       "rapport",
       "recommandations",
       "environnement"
-    ]
+    ],
+    "agent_type": "dynamic"
   },
   "587d22bf-a3a8-4c5f-a9c1-1fa267d25d5d": {
     "id": "587d22bf-a3a8-4c5f-a9c1-1fa267d25d5d",
     "name": "Analyseur d'Appels d'Offre IT",
-    "description": "Agent sp\u00e9cialis\u00e9 dans l'analyse des documents d'appels d'offre IT, extrait les informations cl\u00e9s et g\u00e9n\u00e8re une synth\u00e8se compl\u00e8te au format Word.",
+    "description": "Agent spécialisé dans l'analyse des documents d'appels d'offre IT, extrait les informations clés et génère une synthèse complète au format Word.",
     "icon": "fa fa-file-contract",
     "category": "document_analysis",
     "status": "active",
@@ -81,13 +86,14 @@
       "analyse_document",
       "IT",
       "cahier_charges",
-      "synth\u00e8se"
-    ]
+      "synthèse"
+    ],
+    "agent_type": "dynamic"
   },
   "fe5b994f-a307-4aae-b5ad-b418b67f9cbe": {
     "id": "fe5b994f-a307-4aae-b5ad-b418b67f9cbe",
-    "name": "Veille Tech & March\u00e9",
-    "description": "Agent de veille technologique et march\u00e9 qui recherche des actualit\u00e9s mondiales multilingues et les pr\u00e9sente de mani\u00e8re structur\u00e9e.",
+    "name": "Veille Tech & Marché",
+    "description": "Agent de veille technologique et marché qui recherche des actualités mondiales multilingues et les présente de manière structurée.",
     "icon": "fa fa-chart-line",
     "category": "analytics",
     "status": "active",
@@ -97,16 +103,17 @@
     "tags": [
       "veille",
       "technologie",
-      "march\u00e9",
-      "actualit\u00e9s",
+      "marché",
+      "actualités",
       "multilangue",
       "recherche"
-    ]
+    ],
+    "agent_type": "dynamic"
   },
   "9f20f98a-3925-4843-948e-667df66f3bb6": {
     "id": "9f20f98a-3925-4843-948e-667df66f3bb6",
     "name": "AWS CO2 Data Visualizer",
-    "description": "Agent qui transforme un fichier CSV de donn\u00e9es CO2 AWS en graphique lin\u00e9aire interactif",
+    "description": "Agent qui transforme un fichier CSV de données CO2 AWS en graphique linéaire interactif",
     "icon": "fa fa-line-chart",
     "category": "data_processing",
     "status": "active",
@@ -119,12 +126,13 @@
       "visualization",
       "data_analysis",
       "carbon_footprint"
-    ]
+    ],
+    "agent_type": "dynamic"
   },
   "e21773c9-edfc-4a77-9267-ed540073da7d": {
     "id": "e21773c9-edfc-4a77-9267-ed540073da7d",
     "name": "AWS CO2 Emissions Visualizer",
-    "description": "Agent qui analyse un fichier CSV d'\u00e9missions CO2 d'AWS et g\u00e9n\u00e8re un graphique lin\u00e9aire visuel",
+    "description": "Agent qui analyse un fichier CSV d'émissions CO2 d'AWS et génère un graphique linéaire visuel",
     "icon": "fa fa-line-chart",
     "category": "analytics",
     "status": "active",
@@ -137,12 +145,13 @@
       "visualisation",
       "data_analysis",
       "graphique"
-    ]
+    ],
+    "agent_type": "dynamic"
   },
   "d793ff8f-393a-4e1b-b11c-e730f3f27005": {
     "id": "d793ff8f-393a-4e1b-b11c-e730f3f27005",
-    "name": "Veille Technologique Avanc\u00e9e",
-    "description": "Agent de veille technologique qui analyse les actualit\u00e9s web et produit une analyse SWOT, une synth\u00e8se, des recommandations et les sources associ\u00e9es.",
+    "name": "Veille Technologique Avancée",
+    "description": "Agent de veille technologique qui analyse les actualités web et produit une analyse SWOT, une synthèse, des recommandations et les sources associées.",
     "icon": "fa fa-search",
     "category": "document_analysis",
     "status": "active",
@@ -154,14 +163,15 @@
       "technologie",
       "analyse",
       "swot",
-      "synth\u00e8se",
+      "synthèse",
       "web_search"
-    ]
+    ],
+    "agent_type": "dynamic"
   },
   "034dd450-69cd-4472-a0e4-3aa7fc5fcce0": {
     "id": "034dd450-69cd-4472-a0e4-3aa7fc5fcce0",
     "name": "Tech Market Trends Analyzer",
-    "description": "Analyse les tendances de croissance et d\u00e9croissance d'un secteur technologique avec veille web multi-langue et extrapolation des donn\u00e9es futures.",
+    "description": "Analyse les tendances de croissance et décroissance d'un secteur technologique avec veille web multi-langue et extrapolation des données futures.",
     "icon": "fa fa-chart-line",
     "category": "analytics",
     "status": "active",
@@ -175,12 +185,13 @@
       "web_search",
       "data_visualization",
       "forecasting"
-    ]
+    ],
+    "agent_type": "dynamic"
   },
   "958c7d94-d138-415a-9586-e4167f39c642": {
     "id": "958c7d94-d138-415a-9586-e4167f39c642",
     "name": "Analyseur d'Appels d'Offres (AO)",
-    "description": "Analyse automatique des documents d'un AO (CCTP, CCAP, RC, annexes) pour produire une synth\u00e8se d\u00e9taill\u00e9e facilitant l'arbitrage go/no-go.",
+    "description": "Analyse automatique des documents d'un AO (CCTP, CCAP, RC, annexes) pour produire une synthèse détaillée facilitant l'arbitrage go/no-go.",
     "icon": "fa fa-file-contract",
     "category": "analyse",
     "status": "active",
@@ -193,12 +204,13 @@
       "analyse",
       "IT",
       "arbitrage"
-    ]
+    ],
+    "agent_type": "dynamic"
   },
   "7bf4f55b-3697-4298-bbaa-a50a2debeef3": {
     "id": "7bf4f55b-3697-4298-bbaa-a50a2debeef3",
-    "name": "Extracteur de Donn\u00e9es JSON",
-    "description": "Analyse vos PDF et Excel pour extraire les donn\u00e9es structur\u00e9es en JSON t\u00e9l\u00e9chargeable",
+    "name": "Extracteur de Données JSON",
+    "description": "Analyse vos PDF et Excel pour extraire les données structurées en JSON téléchargeable",
     "icon": "fa fa-file-code",
     "category": "analyse",
     "status": "active",
@@ -211,12 +223,13 @@
       "json",
       "pdf",
       "excel"
-    ]
+    ],
+    "agent_type": "dynamic"
   },
   "7b839663-127e-478a-9cd5-470ee5870c75": {
     "id": "7b839663-127e-478a-9cd5-470ee5870c75",
     "name": "Extracteur de Devis Universel",
-    "description": "Extrait et structure toutes les donn\u00e9es d'un devis PDF en JSON, avec d\u00e9tection de synonymes et validation des montants.",
+    "description": "Extrait et structure toutes les données d'un devis PDF en JSON, avec détection de synonymes et validation des montants.",
     "icon": "fa fa-file-invoice-dollar",
     "category": "finance",
     "status": "active",
@@ -228,12 +241,13 @@
       "extraction",
       "finance",
       "json"
-    ]
+    ],
+    "agent_type": "dynamic"
   },
   "79c60b8e-1329-4565-95d4-1824a761df28": {
     "id": "79c60b8e-1329-4565-95d4-1824a761df28",
     "name": "Cartographe des Alternatives Digitales",
-    "description": "Recherche exhaustive des solutions open source et fran\u00e7aises/europ\u00e9ennes pour remplacer Office 365, Adobe, Windows, etc. avec cartographie d\u00e9taill\u00e9e, crit\u00e8res techniques et sources v\u00e9rifi\u00e9es.",
+    "description": "Recherche exhaustive des solutions open source et françaises/européennes pour remplacer Office 365, Adobe, Windows, etc. avec cartographie détaillée, critères techniques et sources vérifiées.",
     "icon": "fa fa-map-signs",
     "category": "recherche",
     "status": "active",
@@ -243,29 +257,324 @@
     "tags": [
       "open source",
       "alternatives",
-      "fran\u00e7ais",
-      "europ\u00e9en",
+      "français",
+      "européen",
       "digital workspace",
       "cartographie",
       "recherche approfondie"
-    ]
+    ],
+    "agent_type": "dynamic"
   },
   "b2389faa-c9ca-40e1-bd10-ea0826857212": {
     "id": "b2389faa-c9ca-40e1-bd10-ea0826857212",
-    "name": "Strat\u00e8ge Num\u00e9rique Public",
-    "description": "Expert en transformation num\u00e9rique du secteur public : analyse des directives, r\u00e9glementations, financements et innovations pour l'\u00e9ducation, la sant\u00e9, les collectivit\u00e9s et les organismes publics.",
+    "name": "Stratège Numérique Public",
+    "description": "Expert en transformation numérique du secteur public : analyse des directives, réglementations, financements et innovations pour l'éducation, la santé, les collectivités et les organismes publics.",
     "icon": "fa fa-university",
-    "category": "strat\u00e9gie publique",
+    "category": "stratégie publique",
     "status": "active",
     "created_at": "2026-01-29T13:58:45.944332",
     "updated_at": "2026-01-29T13:58:45.944829",
     "version": "1.0.0",
     "tags": [
-      "num\u00e9rique public",
-      "strat\u00e9gie",
-      "r\u00e9glementation",
+      "numérique public",
+      "stratégie",
+      "réglementation",
       "financement",
       "secteur public"
+    ],
+    "agent_type": "dynamic"
+  },
+  "document-analyzer": {
+    "id": "document-analyzer",
+    "name": "Document Analyzer",
+    "description": "Analyse intelligente de documents avec extraction de données structurées",
+    "icon": "fa fa-file-contract",
+    "category": "document_analysis",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "document",
+      "analysis",
+      "extraction"
+    ]
+  },
+  "appointment-scheduler": {
+    "id": "appointment-scheduler",
+    "name": "Appointment Scheduler",
+    "description": "Planification et gestion intelligente des rendez-vous",
+    "icon": "fa fa-calendar-check",
+    "category": "sales",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "scheduling",
+      "calendar",
+      "sales"
+    ]
+  },
+  "dolibarr-stats": {
+    "id": "dolibarr-stats",
+    "name": "Dolibarr Stats",
+    "description": "Analyse et visualisation des statistiques Dolibarr ERP",
+    "icon": "fa fa-chart-pie",
+    "category": "sales_analysis",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "erp",
+      "dolibarr",
+      "analytics"
+    ]
+  },
+  "web-monitoring": {
+    "id": "web-monitoring",
+    "name": "Web Monitoring",
+    "description": "Surveillance et analyse de sites web en temps réel",
+    "icon": "fa fa-globe",
+    "category": "intelligence",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "monitoring",
+      "web",
+      "intelligence"
+    ]
+  },
+  "ai-chat": {
+    "id": "ai-chat",
+    "name": "AI Chat",
+    "description": "Assistant conversationnel IA multi-modèle",
+    "icon": "fa fa-comments",
+    "category": "ai_assistant",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "chat",
+      "assistant",
+      "conversation"
+    ]
+  },
+  "data-extractor": {
+    "id": "data-extractor",
+    "name": "Data Extractor",
+    "description": "Extraction automatique de données depuis différentes sources",
+    "icon": "fa fa-database",
+    "category": "extraction",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "extraction",
+      "data",
+      "automation"
+    ]
+  },
+  "report-generator": {
+    "id": "report-generator",
+    "name": "Report Generator",
+    "description": "Génération automatique de rapports professionnels",
+    "icon": "fa fa-file-word",
+    "category": "generation",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "report",
+      "generation",
+      "document"
+    ]
+  },
+  "contract-analyzer": {
+    "id": "contract-analyzer",
+    "name": "Contract Analyzer",
+    "description": "Analyse juridique automatisée de contrats",
+    "icon": "fa fa-gavel",
+    "category": "legal_analysis",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "legal",
+      "contract",
+      "analysis"
+    ]
+  },
+  "legal-contract-agent": {
+    "id": "legal-contract-agent",
+    "name": "Legal Contract Agent",
+    "description": "Agent spécialisé en droit des contrats",
+    "icon": "fa fa-scale-balanced",
+    "category": "legal_analysis",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "legal",
+      "contract",
+      "law"
+    ]
+  },
+  "pod-analyzer": {
+    "id": "pod-analyzer",
+    "name": "POD Analyzer",
+    "description": "Analyse de preuves de livraison (Proof of Delivery)",
+    "icon": "fa fa-file-pdf",
+    "category": "logistics",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "logistics",
+      "delivery",
+      "pdf"
+    ]
+  },
+  "iso9001-audit": {
+    "id": "iso9001-audit",
+    "name": "Audit ISO 9001",
+    "description": "Assistant d'audit qualité ISO 9001:2015 avec génération de documents",
+    "icon": "fa fa-clipboard-check",
+    "category": "audit_quality",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "iso9001",
+      "audit",
+      "quality"
+    ]
+  },
+  "nvidia-multimodal": {
+    "id": "nvidia-multimodal",
+    "name": "NVIDIA Multimodal",
+    "description": "Agent multimodal NVIDIA avec LLM, génération d'images, TTS et avatar 3D",
+    "icon": "fa fa-microchip",
+    "category": "nvidia_ai",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "nvidia",
+      "multimodal",
+      "llm",
+      "tts",
+      "image"
+    ]
+  },
+  "nvidia-vista3d": {
+    "id": "nvidia-vista3d",
+    "name": "NVIDIA Vista 3D",
+    "description": "Segmentation médicale 3D avec NVIDIA Vista 3D",
+    "icon": "fa fa-cube",
+    "category": "nvidia_ai",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "nvidia",
+      "medical",
+      "3d",
+      "segmentation"
+    ]
+  },
+  "nvidia-fourcastnet": {
+    "id": "nvidia-fourcastnet",
+    "name": "NVIDIA FourCastNet",
+    "description": "Prévisions météorologiques avec NVIDIA FourCastNet",
+    "icon": "fa fa-cloud-sun",
+    "category": "nvidia_ai",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "nvidia",
+      "weather",
+      "forecasting"
+    ]
+  },
+  "nvidia-openfold3": {
+    "id": "nvidia-openfold3",
+    "name": "NVIDIA OpenFold3",
+    "description": "Prédiction de structures protéiques avec OpenFold3",
+    "icon": "fa fa-dna",
+    "category": "nvidia_ai",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "nvidia",
+      "protein",
+      "biology"
+    ]
+  },
+  "nvidia-grounding-dino": {
+    "id": "nvidia-grounding-dino",
+    "name": "NVIDIA Grounding DINO",
+    "description": "Détection d'objets zero-shot avec Grounding DINO",
+    "icon": "fa fa-crosshairs",
+    "category": "nvidia_ai",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "nvidia",
+      "detection",
+      "vision"
+    ]
+  },
+  "webgpu-local-agent": {
+    "id": "webgpu-local-agent",
+    "name": "Vision IA Locale (WebGPU)",
+    "description": "Agent de vision IA exécuté localement via WebGPU",
+    "icon": "fa fa-eye",
+    "category": "nvidia_ai",
+    "status": "active",
+    "agent_type": "static",
+    "created_at": "2024-01-01T00:00:00",
+    "updated_at": "2026-02-10T13:50:51.402255",
+    "version": "1.0.0",
+    "tags": [
+      "webgpu",
+      "local",
+      "vision",
+      "ai"
     ]
   }
 }

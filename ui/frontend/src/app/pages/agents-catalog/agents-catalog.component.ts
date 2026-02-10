@@ -68,6 +68,28 @@ export class AgentsCatalogComponent implements OnInit {
     'webgpu-local-agent': { nameKey: 'agents.webgpu_local.name', descriptionKey: 'agents.webgpu_local.description' },
   };
 
+  // Fallback static agents: ensures all built-in agents always appear in the catalog
+  // even if the backend hasn't seeded them yet
+  private static readonly FALLBACK_STATIC_AGENTS: Array<{id: string; icon: string; category: string; route: string}> = [
+    { id: 'document-analyzer', icon: 'fa fa-file-contract', category: 'document_analysis', route: '/document-analyzer' },
+    { id: 'appointment-scheduler', icon: 'fa fa-calendar-check', category: 'sales', route: '/appointment-scheduler' },
+    { id: 'dolibarr-stats', icon: 'fa fa-chart-pie', category: 'sales_analysis', route: '/dolibarr-stats' },
+    { id: 'web-monitoring', icon: 'fa fa-globe', category: 'intelligence', route: '/web-monitoring' },
+    { id: 'ai-chat', icon: 'fa fa-comments', category: 'ai_assistant', route: '/ai-chat' },
+    { id: 'data-extractor', icon: 'fa fa-database', category: 'extraction', route: '/agent/data-extractor' },
+    { id: 'report-generator', icon: 'fa fa-file-word', category: 'generation', route: '/agent/report-generator' },
+    { id: 'contract-analyzer', icon: 'fa fa-gavel', category: 'legal_analysis', route: '/contract-analysis' },
+    { id: 'legal-contract-agent', icon: 'fa fa-scale-balanced', category: 'legal_analysis', route: '/agent/legal-contract-agent' },
+    { id: 'pod-analyzer', icon: 'fa fa-file-pdf', category: 'logistics', route: '/pod-analyzer' },
+    { id: 'iso9001-audit', icon: 'fa fa-clipboard-check', category: 'audit_quality', route: '/iso9001-audit' },
+    { id: 'nvidia-multimodal', icon: 'fa fa-microchip', category: 'nvidia_ai', route: '/nvidia-multimodal' },
+    { id: 'nvidia-vista3d', icon: 'fa fa-cube', category: 'nvidia_ai', route: '/nvidia-vista3d' },
+    { id: 'nvidia-fourcastnet', icon: 'fa fa-cloud-sun', category: 'nvidia_ai', route: '/nvidia-fourcastnet' },
+    { id: 'nvidia-openfold3', icon: 'fa fa-dna', category: 'nvidia_ai', route: '/nvidia-openfold3' },
+    { id: 'nvidia-grounding-dino', icon: 'fa fa-crosshairs', category: 'nvidia_ai', route: '/nvidia-grounding-dino' },
+    { id: 'webgpu-local-agent', icon: 'fa fa-eye', category: 'nvidia_ai', route: '/webgpu-local-agent' },
+  ];
+
   // Map category slugs to translation keys
   private categoryTranslationMap: Record<string, string> = {
     'document_analysis': 'catalog.categories.document_analysis',
@@ -115,6 +137,9 @@ export class AgentsCatalogComponent implements OnInit {
       next: (response) => {
         this.agents = response.agents.map(agent => this.mapToDisplayAgent(agent));
 
+        // Inject missing static agents that the backend didn't return
+        this.injectMissingStaticAgents();
+
         // Ajouter les agents du runtime si disponible
         this.loadRuntimeAgents();
 
@@ -124,10 +149,40 @@ export class AgentsCatalogComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to load agents from unified storage:', error);
-        // Fallback: essayer de charger les agents du runtime
+        // Fallback: inject all static agents from frontend defaults
+        this.injectMissingStaticAgents();
         this.loadRuntimeAgents();
+        this.refreshCategories();
+        this.filterAgents();
       }
     });
+  }
+
+  /**
+   * Injects missing static agents that the backend didn't return.
+   * Ensures all built-in agents are always visible in the catalog.
+   */
+  private injectMissingStaticAgents(): void {
+    const existingIds = new Set(this.agents.map(a => a.id));
+
+    for (const fallback of AgentsCatalogComponent.FALLBACK_STATIC_AGENTS) {
+      if (existingIds.has(fallback.id)) continue;
+
+      const translationKeys = this.agentTranslationMap[fallback.id];
+      if (!translationKeys) continue;
+
+      this.agents.push({
+        id: fallback.id,
+        nameKey: translationKeys.nameKey,
+        descriptionKey: translationKeys.descriptionKey,
+        icon: fallback.icon,
+        categoryKey: this.mapCategoryToKey(fallback.category),
+        status: 'active',
+        route: fallback.route,
+        hasConfig: true,
+        agentType: 'static' as AgentType,
+      });
+    }
   }
 
   /**
