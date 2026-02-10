@@ -21,95 +21,99 @@ services:
 
   # ======================
   #  Word CRUD Tool (API Backend)
+  #  DISABLED: build context ./tools/word-crud-tool not found in repo
   # ======================
-  word-crud-tool:
-    build:
-      context: ./tools/word-crud-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-word-crud-tool
-    restart: unless-stopped
-    ports:
-      - "8001:8000"
-    environment:
-      - ENVIRONMENT=${WORD_CRUD_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${WORD_CRUD_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # word-crud-tool:
+  #   build:
+  #     context: ./tools/word-crud-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-word-crud-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8001:8000"
+  #   environment:
+  #     - ENVIRONMENT=${WORD_CRUD_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${WORD_CRUD_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Web Search Tool (API Backend)
+  #  DISABLED: build context ./tools/web-search-tool not found in repo
   # ======================
-  web-search-tool:
-    build:
-      context: ./tools/web-search-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-web-search-tool
-    restart: unless-stopped
-    ports:
-      - "8002:8000"
-    environment:
-      - ENVIRONMENT=${WEB_SEARCH_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${WEB_SEARCH_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # web-search-tool:
+  #   build:
+  #     context: ./tools/web-search-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-web-search-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8002:8000"
+  #   environment:
+  #     - ENVIRONMENT=${WEB_SEARCH_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${WEB_SEARCH_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  PDF CRUD Tool (API Backend)
+  #  DISABLED: build context ./tools/pdf-crud-tool not found in repo
   # ======================
-  pdf-crud-tool:
-    build:
-      context: ./tools/pdf-crud-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-pdf-crud-tool
-    restart: unless-stopped
-    ports:
-      - "8003:8000"
-    environment:
-      - ENVIRONMENT=${PDF_CRUD_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${PDF_CRUD_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # pdf-crud-tool:
+  #   build:
+  #     context: ./tools/pdf-crud-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-pdf-crud-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8003:8000"
+  #   environment:
+  #     - ENVIRONMENT=${PDF_CRUD_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${PDF_CRUD_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Excel CRUD Tool (API Backend)
+  #  DISABLED: build context ./tools/excel-crud-tool not found in repo
   # ======================
-  excel-crud-tool:
-    build:
-      context: ./tools/excel-crud-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-excel-crud-tool
-    restart: unless-stopped
-    ports:
-      - "8004:8000"
-    environment:
-      - ENVIRONMENT=${EXCEL_CRUD_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${EXCEL_CRUD_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # excel-crud-tool:
+  #   build:
+  #     context: ./tools/excel-crud-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-excel-crud-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8004:8000"
+  #   environment:
+  #     - ENVIRONMENT=${EXCEL_CRUD_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${EXCEL_CRUD_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Mistral AI Connector (Central Service)
@@ -140,72 +144,75 @@ services:
 
   # ======================
   #  File Upload Tool (API Backend)
+  #  DISABLED: build context ./tools/file-upload-tool not found in repo
   # ======================
-  file-upload-tool:
-    build:
-      context: ./tools/file-upload-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-file-upload-tool
-    restart: unless-stopped
-    ports:
-      - "8007:8007"
-    environment:
-      - ENVIRONMENT=${FILE_UPLOAD_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${FILE_UPLOAD_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8007/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # file-upload-tool:
+  #   build:
+  #     context: ./tools/file-upload-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-file-upload-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8007:8007"
+  #   environment:
+  #     - ENVIRONMENT=${FILE_UPLOAD_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${FILE_UPLOAD_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8007/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Document Extractor Tool (API Backend)
+  #  DISABLED: build context ./tools/document-extractor-tool not found in repo
   # ======================
-  document-extractor-tool:
-    build:
-      context: ./tools/document-extractor-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-document-extractor-tool
-    restart: unless-stopped
-    ports:
-      - "8008:8008"
-    environment:
-      - ENVIRONMENT=${DOCUMENT_EXTRACTOR_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${DOCUMENT_EXTRACTOR_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8008/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # document-extractor-tool:
+  #   build:
+  #     context: ./tools/document-extractor-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-document-extractor-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8008:8008"
+  #   environment:
+  #     - ENVIRONMENT=${DOCUMENT_EXTRACTOR_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${DOCUMENT_EXTRACTOR_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8008/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Data Export Tool (API Backend)
+  #  DISABLED: build context ./tools/data-export-tool not found in repo
   # ======================
-  data-export-tool:
-    build:
-      context: ./tools/data-export-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-data-export-tool
-    restart: unless-stopped
-    ports:
-      - "8027:8000"
-    environment:
-      - ENVIRONMENT=${DATA_EXPORT_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${DATA_EXPORT_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # data-export-tool:
+  #   build:
+  #     context: ./tools/data-export-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-data-export-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8027:8000"
+  #   environment:
+  #     - ENVIRONMENT=${DATA_EXPORT_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${DATA_EXPORT_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Agent Runtime Engine (Universal Agent Executor)
@@ -254,12 +261,6 @@ services:
       - agent-pf-network
     depends_on:
       - mistral-connector
-      - document-extractor-tool
-      - word-crud-tool
-      - web-search-tool
-      - prompt-moderation-tool
-      - content-classification-tool
-      - data-export-tool
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8022/health', timeout=5)"]
       interval: 30s
@@ -269,72 +270,75 @@ services:
 
   # ======================
   #  PowerPoint CRUD Tool (API Backend)
+  #  DISABLED: build context ./tools/pptx-crud-tool not found in repo
   # ======================
-  pptx-crud-tool:
-    build:
-      context: ./tools/pptx-crud-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-pptx-crud-tool
-    restart: unless-stopped
-    ports:
-      - "8011:8011"
-    environment:
-      - ENVIRONMENT=${PPTX_CRUD_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${PPTX_CRUD_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8011/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # pptx-crud-tool:
+  #   build:
+  #     context: ./tools/pptx-crud-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-pptx-crud-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8011:8011"
+  #   environment:
+  #     - ENVIRONMENT=${PPTX_CRUD_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${PPTX_CRUD_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8011/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Prompt Moderation Tool (API Backend)
+  #  DISABLED: build context ./tools/prompt-moderation-tool not found in repo
   # ======================
-  prompt-moderation-tool:
-    build:
-      context: ./tools/prompt-moderation-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-prompt-moderation-tool
-    restart: unless-stopped
-    ports:
-      - "8013:8000"
-    environment:
-      - ENVIRONMENT=${PROMPT_MODERATION_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${PROMPT_MODERATION_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # prompt-moderation-tool:
+  #   build:
+  #     context: ./tools/prompt-moderation-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-prompt-moderation-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8013:8000"
+  #   environment:
+  #     - ENVIRONMENT=${PROMPT_MODERATION_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${PROMPT_MODERATION_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Content Classification Tool (API Backend)
+  #  DISABLED: build context ./tools/content-classification-tool not found in repo
   # ======================
-  content-classification-tool:
-    build:
-      context: ./tools/content-classification-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-content-classification-tool
-    restart: unless-stopped
-    ports:
-      - "8014:8000"
-    environment:
-      - ENVIRONMENT=${CONTENT_CLASSIFICATION_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${CONTENT_CLASSIFICATION_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # content-classification-tool:
+  #   build:
+  #     context: ./tools/content-classification-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-content-classification-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8014:8000"
+  #   environment:
+  #     - ENVIRONMENT=${CONTENT_CLASSIFICATION_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${CONTENT_CLASSIFICATION_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Dolibarr Connector (Central Service)
@@ -471,26 +475,27 @@ services:
 
   # ======================
   #  EML Parser Tool (API Backend)
+  #  DISABLED: build context ./tools/eml-parser-tool not found in repo
   # ======================
-  eml-parser-tool:
-    build:
-      context: ./tools/eml-parser-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-eml-parser-tool
-    restart: unless-stopped
-    ports:
-      - "8020:8000"
-    environment:
-      - ENVIRONMENT=${EML_PARSER_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${EML_PARSER_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # eml-parser-tool:
+  #   build:
+  #     context: ./tools/eml-parser-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-eml-parser-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8020:8000"
+  #   environment:
+  #     - ENVIRONMENT=${EML_PARSER_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${EML_PARSER_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Agent Builder (AI Agent - Orchestrator)
@@ -559,172 +564,179 @@ services:
 
   # ======================
   #  NeMo Guardrails Tool (Safety API)
+  #  DISABLED: build context ./tools/nemo-guardrails-tool not found in repo
   # ======================
-  nemo-guardrails-tool:
-    build:
-      context: ./tools/nemo-guardrails-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-nemo-guardrails-tool
-    restart: unless-stopped
-    ports:
-      - "8029:8000"
-    environment:
-      - NEMO_GUARDRAILS_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
-      - NEMO_GUARDRAILS_NVIDIA_BASE_URL=${NVIDIA_NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
-      - NEMO_GUARDRAILS_ENVIRONMENT=${NEMO_GUARDRAILS_ENVIRONMENT:-production}
-      - NEMO_GUARDRAILS_CORS_ORIGINS=${NEMO_GUARDRAILS_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # nemo-guardrails-tool:
+  #   build:
+  #     context: ./tools/nemo-guardrails-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-nemo-guardrails-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8029:8000"
+  #   environment:
+  #     - NEMO_GUARDRAILS_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+  #     - NEMO_GUARDRAILS_NVIDIA_BASE_URL=${NVIDIA_NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+  #     - NEMO_GUARDRAILS_ENVIRONMENT=${NEMO_GUARDRAILS_ENVIRONMENT:-production}
+  #     - NEMO_GUARDRAILS_CORS_ORIGINS=${NEMO_GUARDRAILS_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  NVIDIA Multimodal Tool (API Backend)
+  #  DISABLED: build context ./tools/nvidia-multimodal-tool not found in repo
   # ======================
-  nvidia-multimodal-tool:
-    build:
-      context: ./tools/nvidia-multimodal-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-nvidia-multimodal-tool
-    restart: unless-stopped
-    ports:
-      - "8030:8000"
-    environment:
-      - NVIDIA_MULTIMODAL_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
-      - NVIDIA_MULTIMODAL_NVIDIA_BASE_URL=${NVIDIA_NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
-      - NVIDIA_MULTIMODAL_ENVIRONMENT=${NVIDIA_MULTIMODAL_ENVIRONMENT:-production}
-      - NVIDIA_MULTIMODAL_CORS_ORIGINS=${NVIDIA_MULTIMODAL_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # nvidia-multimodal-tool:
+  #   build:
+  #     context: ./tools/nvidia-multimodal-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-nvidia-multimodal-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8030:8000"
+  #   environment:
+  #     - NVIDIA_MULTIMODAL_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+  #     - NVIDIA_MULTIMODAL_NVIDIA_BASE_URL=${NVIDIA_NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+  #     - NVIDIA_MULTIMODAL_ENVIRONMENT=${NVIDIA_MULTIMODAL_ENVIRONMENT:-production}
+  #     - NVIDIA_MULTIMODAL_CORS_ORIGINS=${NVIDIA_MULTIMODAL_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Multi-LLM Search Tool (API Backend)
+  #  DISABLED: build context ./tools/multi-llm-search-tool not found in repo
   # ======================
-  multi-llm-search-tool:
-    build:
-      context: ./tools/multi-llm-search-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-multi-llm-search-tool
-    restart: unless-stopped
-    ports:
-      - "8032:8000"
-    environment:
-      - MULTI_LLM_SEARCH_ENVIRONMENT=${MULTI_LLM_SEARCH_ENVIRONMENT:-production}
-      - MULTI_LLM_SEARCH_CORS_ORIGINS=${MULTI_LLM_SEARCH_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # multi-llm-search-tool:
+  #   build:
+  #     context: ./tools/multi-llm-search-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-multi-llm-search-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8032:8000"
+  #   environment:
+  #     - MULTI_LLM_SEARCH_ENVIRONMENT=${MULTI_LLM_SEARCH_ENVIRONMENT:-production}
+  #     - MULTI_LLM_SEARCH_CORS_ORIGINS=${MULTI_LLM_SEARCH_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  NVIDIA Vista 3D Tool (API Backend)
+  #  DISABLED: build context ./tools/nvidia-vista3d-tool not found in repo
   # ======================
-  nvidia-vista3d-tool:
-    build:
-      context: ./tools/nvidia-vista3d-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-nvidia-vista3d-tool
-    restart: unless-stopped
-    ports:
-      - "8031:8000"
-    environment:
-      - NVIDIA_VISTA3D_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
-      - NVIDIA_VISTA3D_ENVIRONMENT=${NVIDIA_VISTA3D_ENVIRONMENT:-production}
-      - NVIDIA_VISTA3D_CORS_ORIGINS=${NVIDIA_VISTA3D_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # nvidia-vista3d-tool:
+  #   build:
+  #     context: ./tools/nvidia-vista3d-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-nvidia-vista3d-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8031:8000"
+  #   environment:
+  #     - NVIDIA_VISTA3D_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+  #     - NVIDIA_VISTA3D_ENVIRONMENT=${NVIDIA_VISTA3D_ENVIRONMENT:-production}
+  #     - NVIDIA_VISTA3D_CORS_ORIGINS=${NVIDIA_VISTA3D_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  NVIDIA FourCastNet Tool (API Backend)
+  #  DISABLED: build context ./tools/nvidia-fourcastnet-tool not found in repo
   # ======================
-  nvidia-fourcastnet-tool:
-    build:
-      context: ./tools/nvidia-fourcastnet-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-nvidia-fourcastnet-tool
-    restart: unless-stopped
-    ports:
-      - "8033:8000"
-    environment:
-      - NVIDIA_FOURCASTNET_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
-      - NVIDIA_FOURCASTNET_ENVIRONMENT=${NVIDIA_FOURCASTNET_ENVIRONMENT:-production}
-      - NVIDIA_FOURCASTNET_CORS_ORIGINS=${NVIDIA_FOURCASTNET_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # nvidia-fourcastnet-tool:
+  #   build:
+  #     context: ./tools/nvidia-fourcastnet-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-nvidia-fourcastnet-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8033:8000"
+  #   environment:
+  #     - NVIDIA_FOURCASTNET_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+  #     - NVIDIA_FOURCASTNET_ENVIRONMENT=${NVIDIA_FOURCASTNET_ENVIRONMENT:-production}
+  #     - NVIDIA_FOURCASTNET_CORS_ORIGINS=${NVIDIA_FOURCASTNET_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  NVIDIA OpenFold3 Tool (API Backend)
+  #  DISABLED: build context ./tools/nvidia-openfold3-tool not found in repo
   # ======================
-  nvidia-openfold3-tool:
-    build:
-      context: ./tools/nvidia-openfold3-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-nvidia-openfold3-tool
-    restart: unless-stopped
-    ports:
-      - "8034:8000"
-    environment:
-      - NVIDIA_OPENFOLD3_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
-      - NVIDIA_OPENFOLD3_ENVIRONMENT=${NVIDIA_OPENFOLD3_ENVIRONMENT:-production}
-      - NVIDIA_OPENFOLD3_CORS_ORIGINS=${NVIDIA_OPENFOLD3_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # nvidia-openfold3-tool:
+  #   build:
+  #     context: ./tools/nvidia-openfold3-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-nvidia-openfold3-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8034:8000"
+  #   environment:
+  #     - NVIDIA_OPENFOLD3_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+  #     - NVIDIA_OPENFOLD3_ENVIRONMENT=${NVIDIA_OPENFOLD3_ENVIRONMENT:-production}
+  #     - NVIDIA_OPENFOLD3_CORS_ORIGINS=${NVIDIA_OPENFOLD3_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  NVIDIA Grounding DINO Tool (API Backend)
+  #  DISABLED: build context ./tools/nvidia-grounding-dino-tool not found in repo
   # ======================
-  nvidia-grounding-dino-tool:
-    build:
-      context: ./tools/nvidia-grounding-dino-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-nvidia-grounding-dino-tool
-    restart: unless-stopped
-    ports:
-      - "8035:8000"
-    environment:
-      - NVIDIA_GROUNDING_DINO_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
-      - NVIDIA_GROUNDING_DINO_ENVIRONMENT=${NVIDIA_GROUNDING_DINO_ENVIRONMENT:-production}
-      - NVIDIA_GROUNDING_DINO_CORS_ORIGINS=${NVIDIA_GROUNDING_DINO_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # nvidia-grounding-dino-tool:
+  #   build:
+  #     context: ./tools/nvidia-grounding-dino-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-nvidia-grounding-dino-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8035:8000"
+  #   environment:
+  #     - NVIDIA_GROUNDING_DINO_NVIDIA_API_KEY=${NVIDIA_NIM_API_KEY}
+  #     - NVIDIA_GROUNDING_DINO_ENVIRONMENT=${NVIDIA_GROUNDING_DINO_ENVIRONMENT:-production}
+  #     - NVIDIA_GROUNDING_DINO_CORS_ORIGINS=${NVIDIA_GROUNDING_DINO_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  SECTION: EMAIL ANALYSIS AGENT & INFRASTRUCTURE
@@ -834,59 +846,61 @@ services:
 
   # ======================
   #  WeKan Tool (API Backend)
+  #  DISABLED: build context ./tools/wekan-tool not found in repo
   # ======================
-  wekan-tool:
-    build:
-      context: ./tools/wekan-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-wekan-tool
-    restart: unless-stopped
-    ports:
-      - "8041:8000"
-    environment:
-      - WEKAN_URL=http://wekan:8080
-      - WEKAN_USERNAME=${WEKAN_USERNAME:-admin}
-      - WEKAN_PASSWORD=${WEKAN_PASSWORD:-admin}
-      - ENVIRONMENT=${WEKAN_TOOL_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${WEKAN_TOOL_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    depends_on:
-      - wekan
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # wekan-tool:
+  #   build:
+  #     context: ./tools/wekan-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-wekan-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8041:8000"
+  #   environment:
+  #     - WEKAN_URL=http://wekan:8080
+  #     - WEKAN_USERNAME=${WEKAN_USERNAME:-admin}
+  #     - WEKAN_PASSWORD=${WEKAN_PASSWORD:-admin}
+  #     - ENVIRONMENT=${WEKAN_TOOL_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${WEKAN_TOOL_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   depends_on:
+  #     - wekan
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  IMAP Tool (Email Reader)
+  #  DISABLED: build context ./tools/imap-tool not found in repo
   # ======================
-  imap-tool:
-    build:
-      context: ./tools/imap-tool
-      dockerfile: Dockerfile
-    container_name: agent-pf-imap-tool
-    restart: unless-stopped
-    ports:
-      - "8042:8000"
-    environment:
-      - IMAP_SERVER=${IMAP_SERVER:-imap.gmail.com}
-      - IMAP_PORT=${IMAP_PORT:-993}
-      - IMAP_USERNAME=${IMAP_USERNAME}
-      - IMAP_PASSWORD=${IMAP_PASSWORD}
-      - IMAP_USE_SSL=${IMAP_USE_SSL:-true}
-      - ENVIRONMENT=${IMAP_TOOL_ENVIRONMENT:-production}
-      - CORS_ORIGINS=${IMAP_TOOL_CORS_ORIGINS:-*}
-    networks:
-      - agent-pf-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+  # imap-tool:
+  #   build:
+  #     context: ./tools/imap-tool
+  #     dockerfile: Dockerfile
+  #   container_name: agent-pf-imap-tool
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8042:8000"
+  #   environment:
+  #     - IMAP_SERVER=${IMAP_SERVER:-imap.gmail.com}
+  #     - IMAP_PORT=${IMAP_PORT:-993}
+  #     - IMAP_USERNAME=${IMAP_USERNAME}
+  #     - IMAP_PASSWORD=${IMAP_PASSWORD}
+  #     - IMAP_USE_SSL=${IMAP_USE_SSL:-true}
+  #     - ENVIRONMENT=${IMAP_TOOL_ENVIRONMENT:-production}
+  #     - CORS_ORIGINS=${IMAP_TOOL_CORS_ORIGINS:-*}
+  #   networks:
+  #     - agent-pf-network
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 15s
 
   # ======================
   #  Email Analysis Agent (Main Agent)
@@ -923,8 +937,6 @@ services:
       - agent-pf-network
     depends_on:
       - ollama-connector
-      - wekan-tool
-      - imap-tool
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
       interval: 30s
