@@ -149,8 +149,7 @@
                 <!-- Voir l'agent -->
                 <button mat-icon-button
                         [matTooltip]="'catalog_management.actions.view' | translate"
-                        (click)="viewAgent(agent)"
-                        [disabled]="agent.status !== 'active'">
+                        (click)="viewAgent(agent)">
                   <mat-icon>visibility</mat-icon>
                 </button>
 
