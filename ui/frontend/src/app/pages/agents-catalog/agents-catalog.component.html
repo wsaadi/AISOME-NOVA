@@ -75,13 +75,13 @@
         </div>
 
         <div class="agent-card__body">
-          <h3 class="agent-card__name">{{ agent.isDynamic ? agent.nameKey : (agent.nameKey | translate) }}</h3>
-          <p class="agent-card__description">{{ agent.isDynamic ? agent.descriptionKey : (agent.descriptionKey | translate) }}</p>
+          <h3 class="agent-card__name">{{ resolveText(agent.nameKey) }}</h3>
+          <p class="agent-card__description">{{ resolveText(agent.descriptionKey) }}</p>
           <div class="agent-card__category">
             <i class="fa fa-tag"></i>
-            {{ agent.isDynamic ? agent.categoryKey : (agent.categoryKey | translate) }}
+            {{ resolveText(agent.categoryKey) }}
           </div>
-          @if (agent.isDynamic) {
+          @if (agent.agentType === 'dynamic') {
             <div class="agent-card__badge agent-card__badge--custom">
               <i class="fa fa-magic"></i>
               {{ 'catalog.custom_agent' | translate }}

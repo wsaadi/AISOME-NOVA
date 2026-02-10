@@ -275,7 +275,7 @@ export class AgentsCatalogComponent implements OnInit {
   /**
    * Résout un texte: si c'est une clé de traduction, la traduit; sinon retourne la valeur directe.
    */
-  private resolveText(key: string): string {
+  resolveText(key: string): string {
     const translated = this.translate.instant(key);
     // Si la traduction retourne la clé elle-même, c'est une valeur directe
     return translated !== key ? translated : key;
