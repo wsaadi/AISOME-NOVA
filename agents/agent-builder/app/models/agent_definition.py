@@ -513,13 +513,8 @@ class AgentDefinition(BaseModel):
     allowed_roles: List[str] = Field(default_factory=list)
 
     def generate_route(self) -> str:
-        """Generate a URL-safe route from the agent name."""
-        import re
-        route = self.name.lower()
-        route = re.sub(r'[^a-z0-9\s-]', '', route)
-        route = re.sub(r'[\s_]+', '-', route)
-        route = re.sub(r'-+', '-', route)
-        return f"/custom-agent/{route}-{self.id[:8]}"
+        """Generate a URL-safe route from the agent ID."""
+        return f"/agent/{self.id}"
 
 
 # ============== API REQUEST/RESPONSE MODELS ==============
