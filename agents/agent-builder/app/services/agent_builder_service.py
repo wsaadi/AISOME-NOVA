@@ -612,7 +612,12 @@ class AgentBuilderService:
         """Import an agent from JSON."""
         # Generate new ID to avoid conflicts
         data["id"] = str(uuid.uuid4())
-        data["status"] = AgentStatus.DRAFT.value
+        # Preserve original status if it was active/beta, otherwise default to active
+        original_status = data.get("status", AgentStatus.ACTIVE.value)
+        if original_status in (AgentStatus.ACTIVE.value, AgentStatus.BETA.value):
+            data["status"] = original_status
+        else:
+            data["status"] = AgentStatus.ACTIVE.value
         data["route"] = None
 
         # Reset metadata
@@ -708,7 +713,13 @@ class AgentBuilderService:
 
             # Generate new ID to avoid conflicts
             agent_data["id"] = str(uuid.uuid4())
-            agent_data["status"] = AgentStatus.DRAFT.value
+            # Preserve original status if it was active/beta, otherwise default to active
+            original_status = agent_data.get("status", AgentStatus.ACTIVE.value)
+            if original_status in (AgentStatus.ACTIVE.value, AgentStatus.BETA.value):
+                agent_data["status"] = original_status
+            else:
+                agent_data["status"] = AgentStatus.ACTIVE.value
+            # Clear route so the frontend generates /agent/{id} for dynamic agents
             agent_data["route"] = None
             # Imported agents are always dynamic (they're user-managed)
             agent_data["agent_type"] = AgentType.DYNAMIC.value

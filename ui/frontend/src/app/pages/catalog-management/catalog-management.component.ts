@@ -327,12 +327,10 @@ export class CatalogManagementComponent implements OnInit {
   }
 
   viewAgent(agent: AgentWithOwnership): void {
-    if (agent.status === 'active') {
-      if (agent.route) {
-        this.router.navigate([agent.route]);
-      } else {
-        this.router.navigate(['/agent', agent.id]);
-      }
+    if (agent.route) {
+      this.router.navigate([agent.route]);
+    } else {
+      this.router.navigate(['/agent', agent.id]);
     }
   }
 
