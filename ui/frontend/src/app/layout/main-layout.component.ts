@@ -57,13 +57,6 @@ export class MainLayoutComponent implements OnInit {
     { icon: 'psychology', label: 'menu.llm_settings', route: '/llm-settings', permissions: ['admin:llm-settings'] },
     { icon: 'data_usage', label: 'menu.token_consumption', route: '/token-consumption', permissions: ['admin:token-consumption'] },
     { icon: 'security', label: 'menu.moderation', route: '/moderation-settings', permissions: ['admin:moderation'] },
-    { icon: 'verified', label: 'menu.iso9001_audit', route: '/iso9001-audit' },
-    { icon: 'smart_toy', label: 'menu.nvidia_multimodal', route: '/nvidia-multimodal' },
-    { icon: 'biotech', label: 'menu.nvidia_vista3d', route: '/nvidia-vista3d' },
-    { icon: 'cloud', label: 'menu.nvidia_fourcastnet', route: '/nvidia-fourcastnet' },
-    { icon: 'science', label: 'menu.nvidia_openfold3', route: '/nvidia-openfold3' },
-    { icon: 'target', label: 'menu.nvidia_grounding_dino', route: '/nvidia-grounding-dino' },
-    { icon: 'visibility', label: 'menu.webgpu_local_agent', route: '/webgpu-local-agent' },
     { icon: 'settings', label: 'menu.settings', route: '/settings', permissions: ['admin:settings'] }
   ];
 

@@ -20,6 +20,7 @@ import {
   AIBehavior,
   Workflow,
   AgentStatus,
+  AgentType,
 } from '../models/agent.models';
 
 @Injectable({
@@ -57,6 +58,7 @@ export class AgentBuilderService {
   listAgents(params?: {
     category?: string;
     status?: AgentStatus;
+    agent_type?: AgentType;
     search?: string;
     page?: number;
     pageSize?: number;
@@ -64,6 +66,7 @@ export class AgentBuilderService {
     let httpParams = new HttpParams();
     if (params?.category) httpParams = httpParams.set('category', params.category);
     if (params?.status) httpParams = httpParams.set('status', params.status);
+    if (params?.agent_type) httpParams = httpParams.set('agent_type', params.agent_type);
     if (params?.search) httpParams = httpParams.set('search', params.search);
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.pageSize) httpParams = httpParams.set('page_size', params.pageSize.toString());
@@ -150,6 +153,26 @@ export class AgentBuilderService {
   importAgent(data: any): Observable<AgentDefinition> {
     return this.http
       .post<AgentResponse>(`${this.apiUrl}/agents/import`, data)
+      .pipe(map((response) => response.agent!));
+  }
+
+  /**
+   * Export an agent as a ZIP archive containing everything needed to recreate it.
+   */
+  exportAgentArchive(agentId: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/agents/${agentId}/export-archive`, {
+      responseType: 'blob'
+    });
+  }
+
+  /**
+   * Import an agent from a ZIP archive.
+   */
+  importAgentArchive(file: File): Observable<AgentDefinition> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http
+      .post<AgentResponse>(`${this.apiUrl}/agents/import-archive`, formData)
       .pipe(map((response) => response.agent!));
   }
 

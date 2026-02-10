@@ -14,6 +14,8 @@ from contextlib import asynccontextmanager
 from .config import settings
 from .routers import agent_builder_router, dsl_router, generator_router, simple_builder_router
 from .models import ADL_VERSION
+from .storage.agent_storage import get_storage
+from .storage.static_agents_seed import seed_static_agents
 
 
 @asynccontextmanager
@@ -22,6 +24,15 @@ async def lifespan(app: FastAPI):
     # Startup
     print(f"🚀 Starting {settings.service_name} v{settings.service_version}")
     print(f"📋 Agent Descriptor Language (ADL) v{ADL_VERSION}")
+
+    # Seed static agents into unified storage
+    storage = get_storage()
+    seeded = await seed_static_agents(storage)
+    if seeded > 0:
+        print(f"📦 Seeded {seeded} static agents into unified storage")
+    else:
+        print(f"📦 All static agents already registered in unified storage")
+
     yield
     # Shutdown
     print(f"👋 Shutting down {settings.service_name}")

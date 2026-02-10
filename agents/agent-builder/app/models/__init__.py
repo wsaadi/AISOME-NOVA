@@ -3,6 +3,7 @@
 from .agent_definition import (
     # Enums
     AgentStatus,
+    AgentType,
     ComponentType,
     ToolCategory,
     LLMProvider,
@@ -95,6 +96,7 @@ from .agent_dsl import (
 __all__ = [
     # Enums
     "AgentStatus",
+    "AgentType",
     "ComponentType",
     "ToolCategory",
     "LLMProvider",

@@ -3,12 +3,14 @@ Agent Builder API Router - REST endpoints for agent management.
 """
 
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException, Query, Body, UploadFile, File
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from ..models import (
     AgentDefinition,
     AgentStatus,
+    AgentType,
     CreateAgentRequest,
     UpdateAgentRequest,
     AgentListResponse,
@@ -41,9 +43,10 @@ async def create_agent(request: CreateAgentRequest):
 async def list_agents(
     category: Optional[str] = Query(None, description="Filter by category"),
     status: Optional[AgentStatus] = Query(None, description="Filter by status"),
+    agent_type: Optional[AgentType] = Query(None, description="Filter by agent type"),
     search: Optional[str] = Query(None, description="Search in name/description"),
     page: int = Query(1, ge=1, description="Page number"),
-    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    page_size: int = Query(20, ge=1, le=200, description="Items per page"),
 ):
     """List all agents with optional filtering."""
     try:
@@ -51,6 +54,7 @@ async def list_agents(
         agents, total = await service.list_agents(
             category=category,
             status=status,
+            agent_type=agent_type,
             search=search,
             page=page,
             page_size=page_size
@@ -224,6 +228,47 @@ async def import_agent(data: Dict[str, Any] = Body(...)):
         return AgentResponse(success=True, agent=agent)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Import failed: {str(e)}")
+
+
+@router.get("/agents/{agent_id}/export-archive")
+async def export_agent_archive(agent_id: str):
+    """
+    Export an agent as a ZIP archive containing everything needed to recreate it.
+    The archive can be imported on any AISOME NOVA platform.
+    """
+    import io
+    service = get_agent_builder_service()
+    archive_bytes = await service.export_agent_archive(agent_id)
+    if not archive_bytes:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    agent = await service.get_agent(agent_id)
+    filename = agent.name.lower().replace(" ", "-") if agent else agent_id
+
+    return StreamingResponse(
+        io.BytesIO(archive_bytes),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}.agent.zip"'
+        }
+    )
+
+
+@router.post("/agents/import-archive", response_model=AgentResponse)
+async def import_agent_archive(file: UploadFile = File(...)):
+    """
+    Import an agent from a ZIP archive.
+    Accepts .zip files exported from any AISOME NOVA platform.
+    """
+    try:
+        content = await file.read()
+        service = get_agent_builder_service()
+        agent = await service.import_agent_archive(content)
+        return AgentResponse(success=True, agent=agent, message="Agent imported successfully from archive")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Archive import failed: {str(e)}")
 
 
 # ============== TOOLS REGISTRY ==============
