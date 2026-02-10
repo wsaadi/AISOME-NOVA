@@ -477,6 +477,14 @@
       "upload": "Upload an email",
       "analyze": "Analyze",
       "results": "Results"
+    },
+    "legal_contract": {
+      "name": "Legal Contract Agent",
+      "description": "Agent specialized in contract law"
+    },
+    "webgpu_local": {
+      "name": "Local AI Vision (WebGPU)",
+      "description": "AI vision agent running locally via WebGPU"
     }
   },
   "moderation": {

@@ -47,6 +47,27 @@ export class AgentsCatalogComponent implements OnInit {
 
   isAdmin = false;
 
+  // Map agent IDs to their i18n translation keys for name and description
+  private agentTranslationMap: Record<string, { nameKey: string; descriptionKey: string }> = {
+    'document-analyzer': { nameKey: 'agents.document_analyzer.name', descriptionKey: 'agents.document_analyzer.description' },
+    'appointment-scheduler': { nameKey: 'agents.appointment_scheduler.name', descriptionKey: 'agents.appointment_scheduler.description' },
+    'dolibarr-stats': { nameKey: 'agents.dolibarr_stats.name', descriptionKey: 'agents.dolibarr_stats.description' },
+    'web-monitoring': { nameKey: 'agents.web_monitoring.name', descriptionKey: 'agents.web_monitoring.description' },
+    'ai-chat': { nameKey: 'agents.ai_chat.name', descriptionKey: 'agents.ai_chat.description' },
+    'data-extractor': { nameKey: 'agents.data_extractor.name', descriptionKey: 'agents.data_extractor.description' },
+    'report-generator': { nameKey: 'agents.report_generator.name', descriptionKey: 'agents.report_generator.description' },
+    'contract-analyzer': { nameKey: 'agents.contract_analyzer.name', descriptionKey: 'agents.contract_analyzer.description' },
+    'legal-contract-agent': { nameKey: 'agents.legal_contract.name', descriptionKey: 'agents.legal_contract.description' },
+    'pod-analyzer': { nameKey: 'agents.pod_analyzer.name', descriptionKey: 'agents.pod_analyzer.description' },
+    'iso9001-audit': { nameKey: 'agents.iso9001.name', descriptionKey: 'agents.iso9001.description' },
+    'nvidia-multimodal': { nameKey: 'nvidia_multimodal.title', descriptionKey: 'nvidia_multimodal.subtitle' },
+    'nvidia-vista3d': { nameKey: 'nvidia_vista3d.title', descriptionKey: 'nvidia_vista3d.subtitle' },
+    'nvidia-fourcastnet': { nameKey: 'nvidia_fourcastnet.title', descriptionKey: 'nvidia_fourcastnet.subtitle' },
+    'nvidia-openfold3': { nameKey: 'nvidia_openfold3.title', descriptionKey: 'nvidia_openfold3.subtitle' },
+    'nvidia-grounding-dino': { nameKey: 'nvidia_grounding_dino.title', descriptionKey: 'nvidia_grounding_dino.subtitle' },
+    'webgpu-local-agent': { nameKey: 'agents.webgpu_local.name', descriptionKey: 'agents.webgpu_local.description' },
+  };
+
   // Map category slugs to translation keys
   private categoryTranslationMap: Record<string, string> = {
     'document_analysis': 'catalog.categories.document_analysis',
@@ -121,10 +142,15 @@ export class AgentsCatalogComponent implements OnInit {
       route = `/agent/${agent.id}`;
     }
 
+    // Use i18n translation keys for known agents, fallback to raw backend values
+    const translationKeys = this.agentTranslationMap[agent.id];
+    const nameKey = translationKeys ? translationKeys.nameKey : agent.name;
+    const descriptionKey = translationKeys ? translationKeys.descriptionKey : agent.description;
+
     return {
       id: agent.id,
-      nameKey: agent.name,
-      descriptionKey: agent.description,
+      nameKey: nameKey,
+      descriptionKey: descriptionKey,
       icon: agent.icon || 'fa fa-robot',
       categoryKey: this.mapCategoryToKey(agent.category),
       status: agent.status === 'beta' ? 'beta' : 'active',
