@@ -108,13 +108,8 @@ class SimpleAgentDefinition(BaseModel):
     is_public: bool = Field(False, description="Agent visible par tous les utilisateurs")
 
     def generate_route(self) -> str:
-        """Génère une route URL-safe à partir du nom de l'agent."""
-        import re
-        route = self.name.lower()
-        route = re.sub(r'[^a-z0-9\s-]', '', route)
-        route = re.sub(r'[\s_]+', '-', route)
-        route = re.sub(r'-+', '-', route)
-        return f"/agent/{route}-{self.id[:8]}"
+        """Génère une route URL-safe à partir de l'ID de l'agent."""
+        return f"/agent/{self.id}"
 
     def to_chat_config(self) -> Dict[str, Any]:
         """
