@@ -118,7 +118,10 @@
     "size": "Size",
     "enabled": "Enabled",
     "disabled": "Disabled",
-    "image_attached": "Attached image"
+    "image_attached": "Attached image",
+    "saving": "Saving...",
+    "show": "Show",
+    "hide": "Hide"
   },
   "time": {
     "minutes_ago": "{{count}} minutes ago",
@@ -239,13 +242,16 @@
       "legal_analysis": "Legal analysis",
       "logistics": "Logistics",
       "audit_quality": "Audit & Quality",
-      "nvidia_ai": "NVIDIA AI & Vision"
+      "nvidia_ai": "NVIDIA AI & Vision",
+      "custom": "Custom"
     },
     "status": {
       "active": "Active",
       "beta": "Beta",
       "coming_soon": "Coming soon"
-    }
+    },
+    "custom_agent": "Custom agent",
+    "manage_catalog": "Manage catalog"
   },
   "agents": {
     "iso9001": {
@@ -760,7 +766,9 @@
       "save": "Save",
       "more": "More options",
       "unsaved_changes": "Unsaved changes",
-      "no_agent_selected": "No agent selected"
+      "no_agent_selected": "No agent selected",
+      "readonly": "Read only",
+      "readonly_hint": "You cannot modify this agent because you are not its creator. You can duplicate it to create your own version."
     },
     "tabs": {
       "info": "Information",
@@ -900,7 +908,25 @@
       "layout_type": "Layout",
       "grid_columns": "Number of columns",
       "gap": "Spacing",
-      "select_element": "Select an element to view its properties"
+      "select_element": "Select an element to view its properties",
+      "trigger_settings": "Trigger settings",
+      "trigger_info": "Configure how this button triggers agent execution. The trigger button will start processing user input data.",
+      "button_action": "Button action",
+      "button_action_hint": "Define what happens when the user clicks this button",
+      "action_trigger_agent": "Trigger agent",
+      "action_submit_form": "Submit form",
+      "action_reset_form": "Reset form",
+      "action_navigate": "Navigate to page",
+      "action_custom": "Custom action",
+      "button_variant": "Button style",
+      "variant_primary": "Primary (blue)",
+      "variant_secondary": "Secondary (grey)",
+      "variant_success": "Success (green)",
+      "variant_warning": "Warning (orange)",
+      "variant_danger": "Danger (red)",
+      "is_trigger_button": "Main trigger button",
+      "trigger_button_hint": "Enables this button as the main trigger to launch the agent job",
+      "trigger_button_tooltip": "This button triggers agent execution"
     },
     "ai": {
       "system_prompt": "System Prompt",
@@ -956,6 +982,48 @@
       "all_status": "All statuses",
       "no_agents": "No agents found",
       "showing": "Showing {{count}} of {{total}} agents"
+    },
+    "generator": {
+      "title": "AI Agent Generator",
+      "subtitle": "Describe your needs and let AI create your agent",
+      "tabs": {
+        "prompt": "Description",
+        "result": "Result"
+      },
+      "examples_title": "Examples for inspiration",
+      "prompt_label": "Describe the agent you want to create",
+      "prompt_placeholder": "E.g.: I want an agent that analyzes PDF documents and generates a structured summary with key points and action items...",
+      "prompt_hint": "Be specific about features, interface and expected behavior",
+      "options_title": "Advanced options",
+      "provider_label": "AI Provider",
+      "model_label": "Model",
+      "generate_button": "Generate agent",
+      "generating": "Generating...",
+      "capabilities_title": "Available capabilities",
+      "available_tools": "Available tools",
+      "available_ui": "Available UI components",
+      "yaml_title": "Agent YAML definition",
+      "view_mode": "View mode",
+      "edit_mode": "Edit mode",
+      "refine_title": "Refine agent",
+      "refine_label": "What would you like to change?",
+      "refine_placeholder": "E.g.: Add a field to upload multiple files, change the tone to be more formal...",
+      "refine_button": "Modify",
+      "no_result": "No result. Start by describing the agent you want to create.",
+      "missing_components_title": "Unavailable components",
+      "missing_components_message": "Some requested features require components that are not yet available on the platform.",
+      "contact_admin": "Contact the administrator to request these components",
+      "warnings_title": "Warnings",
+      "errors_title": "Validation errors",
+      "edit_in_builder": "Edit in Builder",
+      "create_agent": "Create agent",
+      "errors": {
+        "prompt_required": "Please describe the agent you want to create",
+        "prompt_too_short": "Description must be at least 20 characters",
+        "generation_failed": "Generation failed. Please try again.",
+        "refinement_failed": "Modification failed. Please try again.",
+        "create_failed": "Agent creation failed"
+      }
     }
   },
   "token_consumption": {
@@ -1059,6 +1127,120 @@
     "by_day": "Day",
     "by_week": "Week",
     "by_month": "Month"
+  },
+  "agent_config": {
+    "title": "Agent Configuration",
+    "user_info_banner": "Advanced settings (API keys, provider) are managed by the administrator. You can adjust temperature and tokens.",
+    "provider": "AI Provider",
+    "provider_locked": "Provider is configured by the administrator",
+    "provider_locked_hint": "Contact an administrator to change the provider",
+    "model": "Model",
+    "model_locked_hint": "Model is configured by the administrator",
+    "api_key": "API Key",
+    "api_key_placeholder": "Enter your API key",
+    "api_key_hint": "Your API key will never be shared",
+    "api_key_managed_by_admin": "API key is managed by the administrator",
+    "api_key_global_hint": "API keys are configured globally by the administrator",
+    "advanced_settings": "Advanced settings",
+    "temperature": "Temperature",
+    "temperature_hint": "Controls response creativity (0 = precise, 2 = creative)",
+    "max_tokens": "Maximum tokens",
+    "max_tokens_hint": "Maximum length of the generated response"
+  },
+  "llm_settings": {
+    "title": "AI Model Settings",
+    "subtitle": "Global configuration of LLM providers and models for all agents",
+    "reset": "Reset",
+    "save_success": "LLM settings saved successfully",
+    "save_error": "Error saving LLM settings",
+    "confirm_reset": "Are you sure you want to reset all LLM settings to defaults?",
+    "no_api_key": "No API key configured for this provider",
+    "testing_connection": "Testing connection...",
+    "connection_success": "Connection successful with {{provider}}",
+    "configured": "Configured",
+    "not_configured": "Not configured",
+    "tabs": {
+      "default_provider": "Default Provider",
+      "api_keys": "API Keys",
+      "user_limits": "User Limits"
+    },
+    "default_provider_title": "Default Provider",
+    "default_provider_desc": "Select the default AI provider used for all agents",
+    "provider": "Provider",
+    "default_params_title": "Default Parameters",
+    "default_params_desc": "These values will be used by default for all agents",
+    "temperature": "Temperature",
+    "temperature_help": "Controls response creativity (0 = precise, 2 = creative)",
+    "max_tokens": "Maximum tokens",
+    "max_tokens_help": "Maximum number of tokens in response",
+    "top_p": "Top P",
+    "api_key": "API Key",
+    "api_key_placeholder": "Enter your API key...",
+    "test_connection": "Test",
+    "default_model": "Default model",
+    "user_limits_title": "User Limits",
+    "user_limits_desc": "Define restrictions for non-admin users",
+    "allow_provider_change": "Allow provider change",
+    "allow_provider_change_help": "Users can choose a different provider",
+    "allow_model_change": "Allow model change",
+    "allow_model_change_help": "Users can choose a different model",
+    "max_temperature_limit": "Maximum allowed temperature",
+    "max_temperature_limit_help": "Limits the temperature users can configure",
+    "max_tokens_limit": "Maximum allowed tokens",
+    "max_tokens_limit_help": "Limits the number of tokens users can configure"
+  },
+  "catalog_management": {
+    "title": "Agent Catalog Management",
+    "subtitle_admin": "Manage all platform agents - Publish, hide, delete",
+    "subtitle_user": "Manage your own agents - Publish, hide",
+    "search": "Search",
+    "search_placeholder": "Search for an agent...",
+    "status_filter": "Filter by status",
+    "ownership_filter": "Filter by ownership",
+    "no_agents": "No agents found",
+    "load_error": "Error loading agents",
+    "permission_denied": "You do not have permission to perform this action",
+    "you": "You",
+    "unknown": "Unknown",
+    "columns": {
+      "name": "Name",
+      "category": "Category",
+      "status": "Status",
+      "created_by": "Created by",
+      "updated_at": "Updated at",
+      "actions": "Actions"
+    },
+    "status": {
+      "draft": "Draft",
+      "active": "Published",
+      "beta": "Beta",
+      "disabled": "Hidden",
+      "archived": "Archived"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "more": "More options",
+      "publish": "Publish",
+      "hide": "Hide",
+      "duplicate": "Duplicate",
+      "delete": "Delete"
+    },
+    "publish_success": "Agent \"{{name}}\" published successfully",
+    "publish_error": "Error publishing agent",
+    "hide_success": "Agent \"{{name}}\" hidden successfully",
+    "hide_error": "Error hiding agent",
+    "delete_success": "Agent \"{{name}}\" deleted successfully",
+    "delete_error": "Error deleting agent",
+    "confirm_delete": "Are you sure you want to delete agent \"{{name}}\"? This action cannot be undone.",
+    "duplicate_prompt": "New agent name:",
+    "duplicate_success": "Agent \"{{name}}\" created successfully",
+    "duplicate_error": "Error duplicating agent",
+    "legend": {
+      "admin": "You are an administrator - You can manage all agents",
+      "user": "You are a user - You can manage only your own agents",
+      "owner": "Indicates that you are the creator of this agent"
+    }
   },
   "nvidia_multimodal": {
     "title": "NVIDIA Multimodal Agent",
